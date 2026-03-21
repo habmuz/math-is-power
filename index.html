@@ -1,0 +1,1329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math Is Power 📖</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0005;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Georgia,serif;overflow:hidden}
+
+/* ══ SCENE WRAPPER ══ */
+#scene{position:relative;width:900px;height:600px}
+
+/* ══ BOOK COVER (closed) ══ */
+#cover{position:absolute;inset:0;background:linear-gradient(160deg,#4a0e00,#8b2500,#4a0e00);border-radius:8px;box-shadow:0 20px 60px rgba(0,0,0,.9);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;z-index:50;cursor:pointer;transition:transform .4s}
+#cover:hover{transform:scale(1.01)}
+#cover-title{color:#ffd700;font-size:38px;font-weight:bold;letter-spacing:3px;text-shadow:0 0 20px #ff8800}
+#cover-sub{color:#ffcc88;font-size:14px;letter-spacing:6px}
+
+/* Book face */
+#face{position:relative;width:140px;height:110px}
+.b-eye{position:absolute;width:28px;height:28px;background:#fff;border-radius:50%;border:3px solid #ffd700;overflow:hidden;transition:all .4s}
+.b-eye .pupil{width:12px;height:12px;background:#222;border-radius:50%;position:absolute;top:7px;left:7px;transition:all .3s}
+#eye-l{left:20px;top:20px}
+#eye-r{right:20px;top:20px}
+.b-eye.closed{height:4px;top:32px;border-radius:2px;background:#ffd700}
+.b-eye.closed .pupil{display:none}
+#mouth{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);width:60px;height:30px;border:4px solid #ffd700;border-top:none;border-radius:0 0 30px 30px;background:transparent;transition:all .4s}
+#mouth.happy{border-top:none;border-bottom:4px solid #ffd700;border-radius:0 0 30px 30px}
+#mouth.surprised{width:40px;height:40px;border-radius:50%;border:4px solid #ffd700}
+#mouth.peace{border-radius:0 0 20px 20px;width:50px;height:20px}
+#zzz{position:absolute;top:-10px;right:-20px;color:#aaf;font-size:18px;animation:floatZ 2s ease-in-out infinite;display:none}
+@keyframes floatZ{0%,100%{transform:translateY(0) scale(1);opacity:.8}50%{transform:translateY(-10px) scale(1.2);opacity:1}}
+
+#open-btn{padding:12px 36px;background:linear-gradient(#ffd700,#cc8800);color:#2d0000;border:none;border-radius:24px;font-size:16px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.5);transition:transform .2s}
+#open-btn:hover{transform:translateY(-3px)}
+#continue-btn{padding:10px 28px;background:linear-gradient(#1a6b1a,#0d440d);color:#88ff88;border:2px solid #44cc44;border-radius:24px;font-size:15px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.5);transition:transform .2s}
+#continue-btn:hover{transform:translateY(-3px)}
+#cover-msg{color:#ffcc88;font-size:13px;font-style:italic;min-height:20px;text-align:center}
+#cover-creators{position:absolute;bottom:18px;left:0;right:0;text-align:center;color:rgba(255,215,0,.75);font-size:11px;letter-spacing:3px;font-family:Georgia,serif;text-transform:uppercase;border-top:1px solid rgba(255,215,0,.2);padding-top:10px;margin:0 30px}
+
+/* ══ OPEN BOOK ══ */
+#book{position:absolute;inset:0;display:none;box-shadow:0 20px 60px rgba(0,0,0,.9)}
+#book.open{display:flex}
+
+/* spine */
+#spine{width:20px;background:linear-gradient(to right,#1a0800,#6b3510,#1a0800);flex-shrink:0;box-shadow:0 0 10px rgba(0,0,0,.6);z-index:5}
+
+/* pages */
+.page{flex:1;height:600px;position:relative;overflow:hidden}
+#page-l{background:linear-gradient(160deg,#0a0a18,#150a28,#080810);border-radius:8px 0 0 8px}
+#page-r{background:linear-gradient(160deg,#f6e8cc,#ede0b0,#e8d89a);border-radius:0 8px 8px 0}
+#page-r::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(transparent,transparent 28px,rgba(139,100,60,.07) 29px);pointer-events:none}
+
+/* ── PAGE FLIP ── */
+#flipper{position:absolute;top:0;right:0;width:450px;height:600px;transform-origin:left center;transform-style:preserve-3d;pointer-events:none;z-index:20;display:none}
+.flip-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.flip-front{background:linear-gradient(160deg,#f6e8cc,#ede0b0,#e8d89a);border-radius:0 8px 8px 0;overflow:hidden}
+.flip-back{background:linear-gradient(160deg,#0a0a18,#150a28,#080810);border-radius:8px 0 0 8px;transform:rotateY(180deg);overflow:hidden}
+@keyframes flipForward{0%{transform:rotateY(0)}100%{transform:rotateY(-180deg)}}
+@keyframes flipBack{0%{transform:rotateY(-180deg)}100%{transform:rotateY(0)}}
+
+/* ═══ LEFT PAGE CONTENT ═══ */
+/* Cave scene */
+#cave-scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+#stalactites{position:absolute;top:0;left:0;right:0;font-size:22px;text-align:center;letter-spacing:-4px;color:#1a1a30;line-height:.7}
+.flame{position:absolute;bottom:0;font-size:24px;animation:flicker 1.8s ease-in-out infinite}
+@keyframes flicker{0%,100%{opacity:.5;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.3)}}
+#cave-dragon-idle{font-size:90px;filter:drop-shadow(0 0 24px #ff4400);animation:breathe 3s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scale(1);filter:drop-shadow(0 0 20px #ff4400)}50%{transform:scale(1.06);filter:drop-shadow(0 0 44px #ff8800)}}
+#cave-dragon-text{color:#ff6600;font-size:12px;letter-spacing:3px;font-style:italic;text-shadow:0 0 10px #ff4400;margin-top:6px}
+
+/* Battle scene */
+#battle-scene{position:absolute;inset:0;display:none;flex-direction:column}
+#battle-top{display:flex;justify-content:space-between;padding:10px 14px;gap:8px}
+.b-hp-block{flex:1}
+.b-hp-name{font-size:10px;color:#ffcc88;margin-bottom:3px}
+.b-hp-track{background:#220000;border:1px solid #550000;border-radius:4px;height:10px;overflow:hidden}
+.b-hp-fill{height:100%;border-radius:4px;transition:width .5s}
+#player-hp-fill{background:linear-gradient(to right,#00cc00,#88ff00)}
+#dragon-hp-fill2{background:linear-gradient(to right,#ff0000,#ff8800)}
+#battle-arena{flex:1;position:relative;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+
+/* Stick man */
+#stickman{transition:transform .3s;filter:drop-shadow(0 0 6px #ffd700)}
+#stickman.attack{animation:smAttack .5s ease}
+@keyframes smAttack{0%{transform:translateX(0)}40%{transform:translateX(50px)}100%{transform:translateX(0)}}
+#stickman.hurt{animation:smHurt .4s ease}
+@keyframes smHurt{0%,100%{transform:translateX(0)}25%{transform:translateX(-20px)}75%{transform:translateX(-10px)}}
+#stickman.defend{filter:drop-shadow(0 0 12px #4488ff)}
+#stickman.heal{animation:smHeal .6s ease;filter:drop-shadow(0 0 16px #44ff44)}
+@keyframes smHeal{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+#stickman.walk{animation:smWalk .8s ease forwards}
+@keyframes smWalk{0%{transform:translateX(0)}100%{transform:translateX(120px)}}
+
+/* Dragon battle */
+#battle-dragon{font-size:86px;filter:drop-shadow(0 0 20px #ff4400);animation:breathe 3s ease-in-out infinite;position:relative;cursor:default;transition:all .4s}
+#battle-dragon.hurt{animation:drHurt .4s ease;filter:drop-shadow(0 0 30px #ff0000) brightness(2)}
+@keyframes drHurt{0%,100%{transform:translateX(0)}25%{transform:translateX(30px)}75%{transform:translateX(20px)}}
+#battle-dragon.dead{animation:drDead 1s ease forwards}
+@keyframes drDead{0%{opacity:1;transform:scale(1) rotate(0)}100%{opacity:0;transform:scale(.3) rotate(20deg) translateY(60px)}}
+
+/* hit flash */
+.hit-flash{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-size:28px;font-weight:bold;color:#ff4400;pointer-events:none;animation:floatUp .8s ease forwards}
+@keyframes floatUp{0%{opacity:1;transform:translate(-50%,-50%)}100%{opacity:0;transform:translate(-50%,-150%)}}
+
+/* Machine */
+#machine{display:none;position:absolute;inset:0;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(160deg,#0a0a18,#150a28)}
+#machine.visible{display:flex}
+#machine-box{background:linear-gradient(#222,#333);border:3px solid #888;border-radius:12px;padding:20px;text-align:center;width:260px;box-shadow:0 0 30px rgba(0,200,255,.3)}
+.m-gear{font-size:24px;animation:spin 3s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+#m-title{color:#88ccff;font-size:13px;letter-spacing:2px;margin:6px 0}
+#m-display{display:flex;gap:5px;justify-content:center;margin:10px 0}
+.m-slot{width:36px;height:44px;border:2px solid #888;border-radius:4px;background:#111;display:flex;align-items:center;justify-content:center;font-size:20px;font-family:monospace;color:#0f0;font-weight:bold;transition:all .3s}
+.m-slot.lit{background:#003300;border-color:#00ff00;box-shadow:0 0 10px #00ff00}
+#m-pad{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:8px 0}
+.m-key{padding:7px;background:#444;border:1px solid #666;border-radius:4px;color:#fff;cursor:pointer;font-size:15px;font-family:monospace;transition:background .15s}
+.m-key:hover{background:#666}
+#m-enter{grid-column:span 2;background:linear-gradient(#006600,#004400);border-color:#00cc00;color:#0f0}
+#m-clear{background:linear-gradient(#660000,#440000);border-color:#cc0000;color:#f88}
+#m-msg{color:#88ccff;font-size:11px;min-height:18px;margin-top:4px}
+#machine-light{font-size:28px;animation:blink 1s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:.4}50%{opacity:1}}
+#m-steam{position:absolute;top:20px;font-size:20px;animation:steam 2s ease-in-out infinite}
+@keyframes steam{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:.8;transform:translateY(-15px)}}
+
+/* Battle log */
+#b-log{position:absolute;bottom:0;left:0;right:0;max-height:90px;overflow-y:auto;padding:4px 10px;background:rgba(0,0,0,.5)}
+.b-log-entry{font-size:11px;color:#ffcc88;border-bottom:1px solid rgba(255,200,100,.1);padding:1px 0}
+
+/* ═══ RIGHT PAGE CONTENT ═══ */
+/* shared header */
+#rp-header{padding:14px 20px 8px;text-align:center;border-bottom:1px solid rgba(139,100,60,.2)}
+#chapter-title{font-size:16px;color:#5a2d00;font-weight:bold}
+#level-badge{display:inline-block;background:#8b4513;color:#f6e8cc;font-size:10px;padding:2px 10px;border-radius:10px;margin-top:3px}
+
+/* right-page panels */
+.rp-panel{display:none;flex-direction:column;gap:6px;padding:10px 18px;flex:1}
+.rp-panel.active{display:flex}
+
+/* intro panel */
+#panel-intro{align-items:center;justify-content:center;text-align:center}
+#panel-intro h2{color:#5a2d00;font-size:18px;margin-bottom:8px}
+.inst{background:rgba(139,100,60,.1);border-left:3px solid #8b4513;padding:5px 11px;border-radius:0 6px 6px 0;font-size:12px;color:#4a2000;text-align:left;width:100%}
+#start-btn{margin-top:12px;padding:10px 30px;background:linear-gradient(#8b4513,#5a2d00);color:#f6e8cc;border:none;border-radius:20px;font-size:15px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35);transition:transform .2s}
+#start-btn:hover{transform:translateY(-2px)}
+#level-select{margin-top:8px;padding:6px 12px;border:2px solid #8b4513;border-radius:6px;background:#fdf5e6;color:#2d0000;font-size:13px;font-family:Georgia,serif;cursor:pointer;width:200px}
+
+/* question panel */
+#narrator{background:rgba(90,45,0,.08);border:1px solid rgba(139,100,60,.3);border-radius:6px;padding:6px 11px;font-size:11px;color:#5a2d00;font-style:italic;min-height:32px}
+#q-box{background:rgba(139,100,60,.13);border:2px solid #8b4513;border-radius:8px;padding:11px 14px;text-align:center}
+#q-text{font-size:16px;color:#1e0000;font-weight:bold;margin-bottom:7px}
+#a-row{display:flex;gap:7px;align-items:center;justify-content:center}
+#a-input{width:110px;padding:5px 8px;border:2px solid #8b4513;border-radius:6px;background:#fdf5e6;font-size:16px;text-align:center;font-family:Georgia,serif;color:#1e0000;outline:none}
+#a-input:focus{border-color:#cc5500;box-shadow:0 0 6px rgba(204,85,0,.3)}
+#sub-btn{padding:6px 16px;background:linear-gradient(#cc5500,#8b3300);color:#f6e8cc;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-family:Georgia,serif}
+#sub-btn:hover{background:linear-gradient(#ee6600,#aa4400)}
+#feedback{text-align:center;font-size:12px;font-weight:bold;min-height:16px;color:#2d0000}
+#streak-row{display:flex;align-items:center;gap:5px;justify-content:center}
+.sdot{width:14px;height:14px;border-radius:50%;background:#d4b896;border:2px solid #8b4513;transition:all .3s}
+.sdot.on{background:#ff6600;border-color:#cc3300;box-shadow:0 0 7px #ff6600}
+.slabel{font-size:10px;color:#8b4513}
+#gear-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;min-height:54px;align-items:center}
+.gear-slot{position:relative;width:48px;height:52px;border:2px solid #8b4513;border-radius:7px;background:rgba(139,100,60,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;transition:all .3s}
+.gear-slot.on{background:rgba(255,140,0,.2);border-color:#ff6600;animation:gg 2s ease-in-out infinite}
+@keyframes gg{0%,100%{box-shadow:0 0 8px rgba(255,140,0,.4)}50%{box-shadow:0 0 18px rgba(255,140,0,.7)}}
+.gname{font-size:7px;color:#5a2d00;text-align:center;line-height:1.1}
+.gear-count{position:absolute;top:-6px;right:-6px;background:#ff6600;color:#fff;border-radius:50%;width:17px;height:17px;font-size:9px;font-weight:bold;display:flex;align-items:center;justify-content:center;border:2px solid #f6e8cc;box-shadow:0 1px 4px rgba(0,0,0,.4)}
+#pass-row{display:flex;gap:5px;justify-content:center}
+.pdig{width:36px;height:44px;border:2px solid #8b4513;border-radius:6px;background:rgba(139,100,60,.1);display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:bold;color:#2d0000;font-family:monospace;transition:all .4s}
+.pdig.shown{background:rgba(255,215,0,.3);border-color:#ffd700;box-shadow:0 0 12px rgba(255,215,0,.5);animation:dp .5s ease}
+@keyframes dp{0%{transform:scale(.4) rotateY(90deg);opacity:0}100%{transform:scale(1) rotateY(0);opacity:1}}
+#pass-label,#gear-label{font-size:10px;color:#8b4513;text-align:center;font-weight:bold;letter-spacing:1px;text-transform:uppercase;margin-bottom:2px}
+
+/* battle controls panel */
+#panel-battle{justify-content:space-around}
+#panel-battle h3{color:#5a2d00;font-size:14px;text-align:center}
+.bat-btn{padding:9px 0;width:100%;background:#5a2d00;color:#f6e8cc;border:none;border-radius:8px;font-size:14px;font-family:Georgia,serif;cursor:pointer;margin:2px 0;transition:all .2s}
+.bat-btn:hover{filter:brightness(1.3)}
+.bat-btn:disabled{opacity:.4;cursor:not-allowed}
+#btn-atk{background:linear-gradient(#cc4400,#881500)}
+#btn-def{background:linear-gradient(#2255cc,#113388)}
+#btn-heal{background:linear-gradient(#228822,#115511)}
+#b-tip{font-size:11px;color:#8b4513;text-align:center;font-style:italic;min-height:16px}
+#b-heals{font-size:11px;color:#5a2d00;text-align:center}
+
+/* ══ BOOKMARK ══ */
+/* scene needs overflow visible so bookmark can stick out above */
+#scene{overflow:visible}
+#book-wrap{overflow:visible}
+#bookmark{
+  position:absolute;
+  top:-72px;        /* 72px sticks out above the book */
+  right:64px;
+  width:46px;
+  height:220px;     /* total length — rest hides inside page */
+  background:linear-gradient(to right,#004d80,#0088cc,#33bbff,#0088cc,#004d80);
+  cursor:pointer;
+  z-index:30;
+  border-radius:4px 4px 0 0;
+  /* pointed bottom tip */
+  clip-path:polygon(0 0,100% 0,100% 88%,50% 100%,0 88%);
+  box-shadow:3px 0 12px rgba(0,0,0,.7), inset 1px 0 0 rgba(255,180,0,.3);
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  padding-top:8px;
+  gap:6px;
+  transition:top .25s ease;
+  user-select:none;
+}
+#bookmark:hover{top:-56px}
+#bookmark.open{top:-56px}
+#bm-icon{font-size:20px;filter:drop-shadow(0 0 4px #ff8800)}
+#bm-text{writing-mode:vertical-rl;text-orientation:mixed;color:#ffd700;font-size:10px;font-family:Georgia,serif;font-weight:bold;letter-spacing:2px;text-shadow:0 0 6px #ff8800;margin-top:2px}
+#bm-chapter{writing-mode:vertical-rl;color:rgba(255,220,150,.7);font-size:9px;font-family:Georgia,serif;letter-spacing:1px;margin-top:4px}
+/* gold ribbon stripe across bookmark */
+#bookmark::after{content:'';position:absolute;top:38px;left:0;right:0;height:3px;background:linear-gradient(to right,transparent,#ffd700,transparent)}
+/* bookmark hides when menu is open */
+#bookmark.hidden{opacity:0;pointer-events:none;transition:opacity .2s}
+
+/* ══ TORN PAPER HINT ══ */
+#torn-paper{
+  display:none;
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%) rotate(-3deg);
+  z-index:40;
+  background:#fffde7;
+  padding:14px 18px 18px;
+  width:160px;
+  text-align:center;
+  box-shadow:3px 4px 16px rgba(0,0,0,.6);
+  animation:paperDrop .4s ease;
+  /* torn top edge */
+  border-top:none;
+  clip-path:polygon(
+    0% 6%,3% 0%,6% 5%,9% 1%,12% 4%,15% 0%,18% 5%,21% 1%,24% 4%,
+    27% 0%,30% 4%,33% 1%,36% 5%,39% 0%,42% 4%,45% 1%,48% 5%,
+    51% 0%,54% 4%,57% 1%,60% 5%,63% 0%,66% 4%,69% 1%,72% 5%,
+    75% 0%,78% 4%,81% 1%,84% 5%,87% 0%,90% 4%,93% 1%,96% 4%,100% 0%,
+    100% 94%,97% 100%,94% 96%,91% 100%,88% 95%,85% 100%,82% 96%,
+    79% 100%,76% 95%,73% 100%,70% 96%,67% 100%,64% 95%,61% 100%,
+    58% 96%,55% 100%,52% 95%,49% 100%,46% 96%,43% 100%,40% 95%,
+    37% 100%,34% 96%,31% 100%,28% 95%,25% 100%,22% 96%,19% 100%,
+    16% 95%,13% 100%,10% 96%,7% 100%,4% 95%,0% 100%
+  );
+}
+@keyframes paperDrop{0%{transform:translate(-50%,-70%) rotate(-3deg);opacity:0}100%{transform:translate(-50%,-50%) rotate(-3deg);opacity:1}}
+#torn-paper .tp-label{font-size:10px;color:#8b4513;font-family:Georgia,serif;font-style:italic;margin-bottom:6px}
+#torn-paper .tp-pass{font-size:28px;font-family:monospace;font-weight:bold;color:#1a0000;letter-spacing:6px;text-shadow:0 1px 0 rgba(0,0,0,.2)}
+#torn-paper .tp-close{margin-top:8px;background:none;border:1px solid #8b4513;color:#8b4513;border-radius:8px;padding:2px 10px;font-size:10px;cursor:pointer;font-family:Georgia,serif}
+
+/* scroll menu */
+#scroll-menu{position:absolute;top:0;right:0;width:200px;height:100%;background:linear-gradient(160deg,#f0d898,#e8c86a);border-radius:0 8px 8px 0;padding:44px 12px 12px;display:none;flex-direction:column;gap:9px;z-index:15;box-shadow:-4px 0 20px rgba(0,0,0,.3);border-left:3px solid #8b4513}
+#scroll-menu.open{display:flex}
+#scroll-menu h3{color:#5a2d00;font-size:12px;text-align:center;border-bottom:1px solid #8b4513;padding-bottom:5px;letter-spacing:2px}
+.si label{font-size:9px;color:#8b4513;font-weight:bold;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px}
+.si select,.smb{padding:4px 7px;border:1px solid #8b4513;border-radius:4px;background:#fdf5e6;color:#2d0000;font-size:11px;font-family:Georgia,serif;cursor:pointer;width:100%}
+.smb.act{background:#8b4513;color:#f6e8cc}
+#close-sm{margin-top:auto;padding:5px;background:#5a2d00;color:#f6e8cc;border:none;border-radius:4px;cursor:pointer;font-family:Georgia,serif;font-size:11px}
+#gear-base-btn{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);z-index:10;padding:5px 14px;background:linear-gradient(#ffd700,#cc8800);color:#2d0000;border:none;border-radius:12px;font-size:11px;cursor:pointer;font-family:Georgia,serif;font-weight:bold;display:none}
+#page-nav{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:10;display:none}
+.pnav-btn{padding:5px 14px;background:rgba(139,100,60,.7);color:#f6e8cc;border:none;border-radius:10px;font-size:12px;cursor:pointer;font-family:Georgia,serif;transition:background .2s}
+.pnav-btn:hover{background:rgba(139,100,60,1)}
+
+/* ═══ MINI GAME MAP OVERLAY ═══ */
+#mini-map-overlay{position:absolute;inset:0;background:rgba(0,0,0,.9);z-index:80;display:none;align-items:center;justify-content:center}
+#mini-map-overlay.open{display:flex}
+#map-container{width:700px;height:500px;background:radial-gradient(#1a3a1a,#0a1a0a);border:3px solid #5a8a5a;border-radius:16px;position:relative;overflow:hidden}
+#map-title{text-align:center;color:#88ff88;font-size:20px;padding:14px;letter-spacing:3px;text-shadow:0 0 10px #44ff44;border-bottom:1px solid #336633}
+/* map paths */
+.map-path{position:absolute;background:#336633;z-index:1}
+/* game nodes */
+.map-node{position:absolute;width:110px;text-align:center;cursor:pointer;z-index:2;transition:transform .2s}
+.map-node:hover{transform:scale(1.08)}
+.node-icon{width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 4px;border:3px solid;box-shadow:0 0 16px;transition:all .3s}
+.node-name{font-size:11px;font-weight:bold;letter-spacing:1px}
+/* node colours */
+.n-add .node-icon{background:radial-gradient(#003366,#001133);border-color:#4488ff;box-shadow:0 0 16px #4488ff;color:#4488ff}
+.n-add .node-name{color:#4488ff}
+.n-sub .node-icon{background:radial-gradient(#660000,#330000);border-color:#ff4444;box-shadow:0 0 16px #ff4444}
+.n-sub .node-name{color:#ff4444}
+.n-mul .node-icon{background:radial-gradient(#006600,#003300);border-color:#44ff44;box-shadow:0 0 16px #44ff44}
+.n-mul .node-name{color:#44ff44}
+.n-div .node-icon{background:radial-gradient(#666600,#333300);border-color:#ffff44;box-shadow:0 0 16px #ffff44}
+.n-div .node-name{color:#ffff44}
+.n-dam .node-icon{background:radial-gradient(#660066,#330033);border-color:#ff44ff;box-shadow:0 0 20px #ff44ff;font-size:28px}
+.n-dam .node-name{color:#ff44ff;font-size:13px}
+#map-close{position:absolute;top:10px;right:12px;background:none;border:2px solid #88ff88;color:#88ff88;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:13px}
+/* mini game play overlay */
+#mini-play{position:absolute;inset:0;background:rgba(0,0,0,.85);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+#mini-play.open{display:flex}
+#mp-title{color:#ffd700;font-size:22px;font-weight:bold}
+#mp-desc{color:#ffcc88;font-size:13px;font-style:italic}
+#mp-q{background:rgba(255,255,255,.1);border:2px solid #ffd700;border-radius:10px;padding:14px 24px;color:#fff;font-size:20px;font-weight:bold;text-align:center;min-width:300px}
+#mp-input{width:120px;padding:8px;border:2px solid #ffd700;border-radius:6px;background:#111;color:#ffd700;font-size:20px;text-align:center;letter-spacing:2px;outline:none;font-family:monospace}
+#mp-submit{padding:8px 28px;background:linear-gradient(#ffd700,#cc8800);color:#000;border:none;border-radius:20px;font-size:15px;cursor:pointer;font-family:Georgia,serif;font-weight:bold}
+#mp-feedback{color:#fff;font-size:14px;min-height:20px;text-align:center}
+#mp-streak{display:flex;gap:5px;justify-content:center}
+.mpdot{width:14px;height:14px;border-radius:50%;background:#555;border:2px solid #888;transition:all .3s}
+.mpdot.on{background:#ffd700;border-color:#cc8800;box-shadow:0 0 8px #ffd700}
+#mp-close{padding:6px 20px;background:#333;color:#fff;border:none;border-radius:14px;cursor:pointer;font-size:12px}
+#mp-score{color:#88ff88;font-size:12px}
+
+/* ═══ GEAR ROOM OVERLAY ═══ */
+#gear-room-overlay{position:absolute;inset:0;background:radial-gradient(#1a0a2a,#0a0010);z-index:80;display:none;flex-direction:column;align-items:center;justify-content:center;gap:16px}
+#gear-room-overlay.open{display:flex}
+#gr-title{color:#ffd700;font-size:24px;letter-spacing:3px;text-shadow:0 0 16px #ff8800}
+#gr-subtitle{color:#ffcc88;font-size:12px;font-style:italic}
+#gr-room{display:flex;gap:24px;align-items:flex-start}
+.gr-box{width:200px;min-height:200px;border-radius:12px;padding:14px;text-align:center;position:relative}
+.grb-1{background:linear-gradient(#000a33,#001155);border:2px solid #4488ff;box-shadow:0 0 20px rgba(68,136,255,.3)}
+.grb-2{background:linear-gradient(#1a1a00,#333300);border:2px solid #888844;box-shadow:0 0 20px rgba(136,136,68,.3)}
+.grb-3{background:linear-gradient(#330000,#660000);border:2px solid #ff4444;box-shadow:0 0 20px rgba(255,68,68,.3)}
+.grb-title{font-size:12px;font-weight:bold;letter-spacing:1px;text-transform:uppercase;margin-bottom:10px;padding-bottom:6px;border-bottom:1px solid}
+.grb-1 .grb-title{color:#4488ff;border-color:#4488ff}
+.grb-2 .grb-title{color:#cccc44;border-color:#cccc44}
+.grb-3 .grb-title{color:#ff4444;border-color:#ff4444}
+.grb-desc{font-size:10px;color:#aaa;margin-bottom:8px}
+.gr-gear-item{display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.05);border-radius:6px;padding:3px 7px;margin:2px;font-size:12px;color:#fff}
+#gr-close{padding:8px 28px;background:linear-gradient(#8b4513,#5a2d00);color:#f6e8cc;border:none;border-radius:20px;font-size:14px;cursor:pointer;font-family:Georgia,serif}
+#gr-total{color:#ffcc88;font-size:12px}
+
+/* ═══ END OVERLAY ═══ */
+#end-overlay{position:absolute;inset:0;background:radial-gradient(#2d1a00,#0a0000);z-index:90;display:none;flex-direction:column;align-items:center;justify-content:center;gap:20px}
+#end-overlay.open{display:flex}
+#end-book{position:relative;width:160px;height:130px;background:linear-gradient(#4a0e00,#8b2500);border-radius:8px;border:3px solid #ffd700;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;box-shadow:0 0 40px rgba(255,215,0,.3)}
+.eb-eye{width:24px;height:24px;background:#fff;border-radius:50%;border:3px solid #ffd700;overflow:hidden;transition:all 1s;display:inline-block;margin:0 6px}
+.eb-eye .ep{width:10px;height:10px;background:#222;border-radius:50%;position:absolute;top:6px;left:6px;transition:all .5s}
+.eb-eye.closing{animation:eyeClose 1.5s ease forwards}
+@keyframes eyeClose{0%{height:24px;top:auto}80%{height:24px}100%{height:3px;background:#ffd700;border-radius:2px}}
+#eb-mouth{width:50px;height:22px;border:3px solid #ffd700;border-top:none;border-radius:0 0 25px 25px;transition:all 1s}
+#end-msg{color:#ffd700;font-size:22px;text-align:center;text-shadow:0 0 20px #ff8800;font-style:italic;max-width:500px;line-height:1.5}
+#end-zzz{color:#aaaaff;font-size:28px;animation:floatZ 2s ease-in-out infinite}
+#end-sub{color:#ffcc88;font-size:14px}
+#end-restart{padding:10px 28px;background:linear-gradient(#ffd700,#cc8800);color:#000;border:none;border-radius:20px;font-size:14px;cursor:pointer;font-family:Georgia,serif;font-weight:bold}
+
+/* ═══ DIALOG ═══ */
+#dialog{position:absolute;inset:0;background:rgba(0,0,0,.8);z-index:70;display:none;align-items:center;justify-content:center}
+#dialog.open{display:flex}
+#dialog-box{background:linear-gradient(160deg,#f6e8cc,#e8d89a);border:3px solid #8b4513;border-radius:14px;padding:24px 32px;text-align:center;max-width:340px;white-space:pre-line}
+#dialog-title{font-size:24px;color:#5a2d00;margin-bottom:8px}
+#dialog-msg{font-size:13px;color:#4a2000;margin-bottom:14px;line-height:1.6}
+#dialog-btn{padding:8px 26px;background:linear-gradient(#8b4513,#5a2d00);color:#f6e8cc;border:none;border-radius:20px;font-size:14px;cursor:pointer;font-family:Georgia,serif}
+
+/* ═══ PERSPECTIVE WRAPPER ═══ */
+#book-wrap{position:absolute;inset:0;perspective:2000px}
+</style>
+</head>
+<body>
+<div id="scene">
+
+<!-- ══ BOOK COVER ══ -->
+<div id="cover">
+  <div id="cover-title">MATH IS POWER</div>
+  <div id="cover-sub">AN ADVENTURE AWAITS</div>
+  <div id="face">
+    <div class="b-eye closed" id="eye-l"><div class="pupil"></div></div>
+    <div class="b-eye closed" id="eye-r"><div class="pupil"></div></div>
+    <div id="mouth" class="happy"></div>
+    <div id="zzz">z z z</div>
+  </div>
+  <div id="cover-msg">tap to wake the book…</div>
+  <button id="open-btn" style="display:none" onclick="openBook()">Open the Book! ✨</button>
+  <button id="continue-btn" style="display:none" onclick="continueGame()">📖 Continue Adventure</button>
+  <div id="save-info" style="color:#ffcc88;font-size:11px;font-style:italic;display:none"></div>
+  <div id="cover-creators">CREATORS: Nazmin and Thiyazhini</div>
+</div>
+
+<!-- ══ OPEN BOOK ══ -->
+<div id="book-wrap">
+<div id="book">
+  <!-- LEFT PAGE -->
+  <div id="page-l" class="page">
+    <!-- Cave scene (default) -->
+    <div id="cave-scene">
+      <div id="stalactites">▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼</div>
+      <div id="cave-dragon-idle">🐉</div>
+      <div id="cave-dragon-text">THE DRAGON'S LAIR</div>
+      <div class="flame" style="left:16px;animation-delay:0s">🔥</div>
+      <div class="flame" style="left:48px;animation-delay:.6s">🔥</div>
+      <div class="flame" style="right:20px;animation-delay:.3s">🔥</div>
+      <div class="flame" style="right:54px;animation-delay:.9s">🔥</div>
+    </div>
+
+    <!-- Battle scene -->
+    <div id="battle-scene">
+      <div id="battle-top">
+        <div class="b-hp-block">
+          <div class="b-hp-name">⚔️ YOU</div>
+          <div class="b-hp-track"><div class="b-hp-fill" id="player-hp-fill" style="width:100%"></div></div>
+          <div style="font-size:9px;color:#88ff88" id="player-hp-txt"></div>
+        </div>
+        <div class="b-hp-block" style="text-align:right">
+          <div class="b-hp-name">🐉 DRAGON</div>
+          <div class="b-hp-track"><div class="b-hp-fill" id="dragon-hp-fill2" style="width:100%"></div></div>
+          <div style="font-size:9px;color:#ff8844;text-align:right" id="dragon-hp-txt"></div>
+        </div>
+      </div>
+      <div id="battle-arena">
+        <!-- Stick Man SVG -->
+        <svg id="stickman" viewBox="0 0 90 150" width="90" height="150">
+          <g stroke="#ffd700" stroke-width="4" fill="none">
+            <circle cx="45" cy="17" r="15"/>
+            <line x1="45" y1="32" x2="45" y2="88"/>
+            <line x1="45" y1="50" x2="18" y2="73" id="arm-l"/>
+            <line x1="45" y1="50" x2="72" y2="73" id="arm-r"/>
+            <line x1="45" y1="88" x2="25" y2="130" id="leg-l"/>
+            <line x1="45" y1="88" x2="65" y2="130" id="leg-r"/>
+          </g>
+          <!-- eyes -->
+          <circle cx="39" cy="14" r="3" fill="#ffd700"/>
+          <circle cx="51" cy="14" r="3" fill="#ffd700"/>
+          <!-- sword -->
+          <line id="sm-sword" x1="72" y1="73" x2="90" y2="50" stroke="#88ccff" stroke-width="5"/>
+          <!-- shield (hidden by default) -->
+          <ellipse id="sm-shield" cx="20" cy="73" rx="12" ry="16" fill="rgba(68,136,255,.5)" stroke="#4488ff" stroke-width="3" style="display:none"/>
+        </svg>
+
+        <div id="battle-dragon">🐉</div>
+      </div>
+      <!-- Machine (shown after dragon defeated) -->
+      <div id="machine">
+        <div id="machine-box">
+          <div><span class="m-gear">⚙️</span> <span id="machine-light">💡</span> <span class="m-gear" style="animation-direction:reverse">⚙️</span></div>
+          <div id="m-title">PASSWORD MACHINE</div>
+          <div id="m-display">
+            <div class="m-slot" id="ms-0">_</div>
+            <div class="m-slot" id="ms-1">_</div>
+            <div class="m-slot" id="ms-2">_</div>
+            <div class="m-slot" id="ms-3">_</div>
+            <div class="m-slot" id="ms-4">_</div>
+          </div>
+          <div id="m-pad">
+            <button class="m-key" onclick="mKey('1')">1</button>
+            <button class="m-key" onclick="mKey('2')">2</button>
+            <button class="m-key" onclick="mKey('3')">3</button>
+            <button class="m-key" onclick="mKey('4')">4</button>
+            <button class="m-key" onclick="mKey('5')">5</button>
+            <button class="m-key" onclick="mKey('6')">6</button>
+            <button class="m-key" onclick="mKey('7')">7</button>
+            <button class="m-key" onclick="mKey('8')">8</button>
+            <button class="m-key" onclick="mKey('9')">9</button>
+            <button class="m-key" id="m-clear" onclick="mClear()">CLR</button>
+            <button class="m-key" onclick="mKey('0')">0</button>
+            <button class="m-key" id="m-enter" onclick="mEnter()">ENTER</button>
+          </div>
+          <div id="m-msg">Enter the 5-digit password</div>
+        </div>
+        <div id="m-steam">💨</div>
+        <!-- Torn paper hint (shows after 2 failed attempts) -->
+        <div id="torn-paper">
+          <div class="tp-label">psst… your password 🤫</div>
+          <div class="tp-pass" id="tp-digits">—————</div>
+          <button class="tp-close" onclick="document.getElementById('torn-paper').style.display='none'">hide it</button>
+        </div>
+      </div>
+      <div id="b-log"></div>
+    </div>
+  </div>
+
+  <div id="spine"></div>
+
+  <!-- RIGHT PAGE -->
+  <div id="page-r" class="page">
+    <div id="rp-header">
+      <div id="chapter-title">📖 Math Is Power</div>
+      <div id="level-badge">Choose your level</div>
+    </div>
+
+    <!-- Intro panel -->
+    <div class="rp-panel active" id="panel-intro">
+      <h2>Hello, Young Scholar! ✨</h2>
+      <div class="inst">📚 Answer math questions to collect Gears</div>
+      <div class="inst">🔥 3 correct in a row = 1 Gear + 1 Password Digit</div>
+      <div class="inst">⚙️ Collect 5 Gears → unlock the Dragon Battle</div>
+      <div class="inst">🐉 Defeat the Dragon → access the Password Machine</div>
+      <div class="inst">🔐 Enter the 5-digit password → next Chapter</div>
+      <div class="inst">🎮 Mini Games unlocked after Chapter 1!</div>
+      <select id="level-select" onchange="G.level=this.value">
+        <optgroup label="Primary"><option value="P1">P1 – Primary 1</option><option value="P2">P2 – Primary 2</option><option value="P3" selected>P3 – Primary 3</option><option value="P4">P4 – Primary 4</option><option value="P5">P5 – Primary 5</option><option value="P6">P6 – Primary 6</option></optgroup>
+        <optgroup label="Secondary"><option value="S1">S1 – Secondary 1</option><option value="S2">S2 – Secondary 2</option><option value="S3">S3 – Secondary 3</option><option value="S4">S4 – Secondary 4</option></optgroup>
+      </select>
+      <button id="start-btn" onclick="startGame()">Begin Adventure ✨</button>
+    </div>
+
+    <!-- Question panel -->
+    <div class="rp-panel" id="panel-q">
+      <div id="narrator">📜 The ancient book glows… a challenge awaits!</div>
+      <div id="q-box">
+        <div id="q-text">Loading…</div>
+        <div id="a-row">
+          <input type="number" id="a-input" placeholder="?" autocomplete="off"
+            onkeydown="if(event.key==='Enter')submitAns()">
+          <button id="sub-btn" onclick="submitAns()">Submit ✓</button>
+        </div>
+      </div>
+      <div id="feedback"></div>
+      <div id="streak-row">
+        <span class="slabel">Streak:</span>
+        <div class="sdot" id="d1"></div>
+        <div class="sdot" id="d2"></div>
+        <div class="sdot" id="d3"></div>
+        <span class="slabel">= 1 Gear + Digit</span>
+      </div>
+      <div>
+        <div id="gear-label">⚙️ GEARS</div>
+        <div id="gear-row"></div>
+      </div>
+      <div>
+        <div id="pass-label">🔐 PASSWORD</div>
+        <div id="pass-row">
+          <div class="pdig" id="p0">—</div>
+          <div class="pdig" id="p1">—</div>
+          <div class="pdig" id="p2">—</div>
+          <div class="pdig" id="p3">—</div>
+          <div class="pdig" id="p4">—</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Battle controls panel -->
+    <div class="rp-panel" id="panel-battle">
+      <h3>⚔️ Dragon Battle!</h3>
+      <div id="b-tip">Use your gears wisely…</div>
+      <button class="bat-btn" id="btn-atk" onclick="bAction('atk')">⚔️ Attack</button>
+      <button class="bat-btn" id="btn-def" onclick="bAction('def')">🛡️ Defend</button>
+      <button class="bat-btn" id="btn-heal" onclick="bAction('heal')">❤️ Heal</button>
+      <div id="b-heals">Heals: 3</div>
+      <div style="font-size:11px;color:#8b4513;margin-top:4px">Gears equipped:</div>
+      <div id="b-gear-display" style="font-size:18px;text-align:center;letter-spacing:4px"></div>
+    </div>
+
+    <!-- Bookmark (replaces scroll button) -->
+    <div id="bookmark" onclick="toggleScroll()">
+      <div id="bm-icon">🔖</div>
+      <div id="bm-text">MENU</div>
+      <div id="bm-chapter">CH 1</div>
+    </div>
+    <button id="gear-base-btn" onclick="openGearRoom()">🏠 Gear Base</button>
+
+    <!-- Scroll Menu -->
+    <div id="scroll-menu">
+      <h3>🔖 BOOKMARK</h3>
+      <div class="si"><label>Level</label>
+        <select onchange="G.level=this.value;document.getElementById('level-select').value=this.value;updateBadge()">
+          <optgroup label="Primary"><option value="P1">P1</option><option value="P2">P2</option><option value="P3" selected>P3</option><option value="P4">P4</option><option value="P5">P5</option><option value="P6">P6</option></optgroup>
+          <optgroup label="Secondary"><option value="S1">S1</option><option value="S2">S2</option><option value="S3">S3</option><option value="S4">S4</option></optgroup>
+        </select>
+      </div>
+      <div class="si"><label>Narrator</label><button class="smb act" id="narr-btn" onclick="toggleNarr()">ON</button></div>
+      <div class="si"><label>Page Flip</label><button class="smb act" id="flip-btn" onclick="toggleFlip()">Manual</button></div>
+      <div class="si"><label>Mini Games</label><button class="smb" id="mini-btn" onclick="openMiniMap()" disabled>🔒 After Ch.1</button></div>
+      <div class="si"><label>Gear Base</label><button class="smb" onclick="openGearRoom();toggleScroll()">🏠 View Gears</button></div>
+      <div class="si"><label>Directions</label><button class="smb" onclick="showDirs()">📖 How to Play</button></div>
+      <button id="close-sm" onclick="toggleScroll()">✕ Close</button>
+    </div>
+  </div>
+
+  <!-- PAGE FLIPPER -->
+  <div id="flipper" style="position:absolute;top:0;right:0;width:450px;height:600px;transform-origin:left center;transform-style:preserve-3d;pointer-events:none;z-index:20;display:none">
+    <div class="flip-face flip-front" id="flip-front"></div>
+    <div class="flip-face flip-back" id="flip-back" style="transform:rotateY(180deg)"></div>
+  </div>
+
+</div><!-- /book -->
+</div><!-- /book-wrap -->
+
+</div><!-- /scene -->
+
+<!-- ══ MINI GAME MAP OVERLAY ══ -->
+<div id="mini-map-overlay">
+  <div id="map-container">
+    <div id="map-title">🗺️ MINI GAME WORLD MAP 🗺️</div>
+    <button id="map-close" onclick="closeMiniMap()">✕ EXIT</button>
+
+    <!-- Paths -->
+    <div class="map-path" style="width:4px;height:80px;left:174px;top:180px;border-radius:2px;background:#336633"></div>
+    <div class="map-path" style="width:4px;height:80px;right:174px;top:180px;border-radius:2px;background:#336633"></div>
+    <div class="map-path" style="width:4px;height:80px;left:174px;top:330px;border-radius:2px;background:#336633"></div>
+    <div class="map-path" style="width:4px;height:80px;right:174px;top:330px;border-radius:2px;background:#336633"></div>
+    <div class="map-path" style="height:4px;width:80px;left:230px;top:390px;border-radius:2px;background:#336633"></div>
+    <div class="map-path" style="height:4px;width:80px;right:230px;top:390px;border-radius:2px;background:#336633"></div>
+    <div class="map-path" style="height:4px;width:80px;left:230px;top:240px;border-radius:2px;background:#336633"></div>
+    <div class="map-path" style="height:4px;width:80px;right:230px;top:240px;border-radius:2px;background:#336633"></div>
+
+    <!-- Addition Agents (top-left) -->
+    <div class="map-node n-add" style="left:60px;top:160px" onclick="playMiniGame('add')">
+      <div class="node-icon">➕</div>
+      <div class="node-name">ADDITION<br>AGENTS</div>
+    </div>
+    <!-- Multiplication Mania (top-right) -->
+    <div class="map-node n-mul" style="right:60px;top:160px" onclick="playMiniGame('mul')">
+      <div class="node-icon">✖️</div>
+      <div class="node-name">MULTIPLICATION<br>MANIA</div>
+    </div>
+    <!-- DAMsVille (centre) -->
+    <div class="map-node n-dam" style="left:50%;top:260px;transform:translateX(-50%)" onclick="playMiniGame('dam')">
+      <div class="node-icon">🏰</div>
+      <div class="node-name">DAMsVILLE<br><span style="font-size:9px">(All 4!)</span></div>
+    </div>
+    <!-- Subtraction Statics (bottom-left) -->
+    <div class="map-node n-sub" style="left:60px;top:350px" onclick="playMiniGame('sub')">
+      <div class="node-icon">➖</div>
+      <div class="node-name">SUBTRACTION<br>STATICS</div>
+    </div>
+    <!-- Division Drops (bottom-right) -->
+    <div class="map-node n-div" style="right:60px;top:350px" onclick="playMiniGame('div')">
+      <div class="node-icon">➗</div>
+      <div class="node-name">DIVISION<br>DROPS</div>
+    </div>
+
+    <!-- Mini game play panel -->
+    <div id="mini-play">
+      <div id="mp-title"></div>
+      <div id="mp-desc"></div>
+      <div id="mp-q"></div>
+      <div id="mp-streak"><div class="mpdot" id="md1"></div><div class="mpdot" id="md2"></div><div class="mpdot" id="md3"></div></div>
+      <input type="number" id="mp-input" placeholder="?" onkeydown="if(event.key==='Enter')mpSubmit()">
+      <button id="mp-submit" onclick="mpSubmit()">Submit ✓</button>
+      <div id="mp-feedback"></div>
+      <div id="mp-score"></div>
+      <button id="mp-close" onclick="closeMiniPlay()">← Back to Map</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ GEAR ROOM OVERLAY ══ -->
+<div id="gear-room-overlay">
+  <div id="gr-title">🏠 GEAR BASE</div>
+  <div id="gr-subtitle">Your collected gears across all chapters</div>
+  <div id="gr-total"></div>
+  <div id="gr-room">
+    <div class="gr-box grb-1">
+      <div class="grb-title">TYPE 1<br>POWER-UPS</div>
+      <div class="grb-desc">Immunity · Hourglass<br>Lamp · Invisibility</div>
+      <div id="gr-t1"></div>
+    </div>
+    <div class="gr-box grb-2">
+      <div class="grb-title">TYPE 2<br>DEFENCE</div>
+      <div class="grb-desc">Shield · Armor · Helmet</div>
+      <div id="gr-t2"></div>
+    </div>
+    <div class="gr-box grb-3">
+      <div class="grb-title">TYPE 3<br>ATTACK</div>
+      <div class="grb-desc">Sword · Fire · Water</div>
+      <div id="gr-t3"></div>
+    </div>
+  </div>
+  <button id="gr-close" onclick="closeGearRoom()">Close Base</button>
+</div>
+
+<!-- ══ END OVERLAY ══ -->
+<div id="end-overlay">
+  <div id="end-book">
+    <div style="display:flex;justify-content:center">
+      <div class="eb-eye" id="eb-el"></div>
+      <div class="eb-eye" id="eb-er"></div>
+    </div>
+    <div id="eb-mouth"></div>
+    <div id="end-zzz" style="display:none">z z z</div>
+  </div>
+  <div id="end-msg">The book is now at peace…</div>
+  <div id="end-sub">You conquered all 15 chapters! Math truly is Power.</div>
+  <button id="end-restart" onclick="clearSave();location.reload()">Play Again 📖</button>
+</div>
+
+<!-- ══ DIALOG ══ -->
+<div id="dialog">
+  <div id="dialog-box">
+    <div id="dialog-title"></div>
+    <div id="dialog-msg"></div>
+    <button id="dialog-btn" onclick="closeDialog()"></button>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// SOUND ENGINE (Web Audio API)
+// ═══════════════════════════════════════
+let _actx = null;
+function actx() {
+  if (!_actx) _actx = new (window.AudioContext || window.webkitAudioContext)();
+  return _actx;
+}
+function sfx(type) {
+  try {
+    const c = actx(), now = c.currentTime;
+    const osc = c.createOscillator(), g = c.createGain();
+    osc.connect(g); g.connect(c.destination);
+    if (type === 'correct') {
+      osc.type='sine'; osc.frequency.setValueAtTime(523,now); osc.frequency.setValueAtTime(659,now+.1); osc.frequency.setValueAtTime(784,now+.2);
+      g.gain.setValueAtTime(.3,now); g.gain.exponentialRampToValueAtTime(.001,now+.5); osc.start(now); osc.stop(now+.5);
+    } else if (type === 'wrong') {
+      osc.type='sawtooth'; osc.frequency.setValueAtTime(220,now); osc.frequency.linearRampToValueAtTime(110,now+.3);
+      g.gain.setValueAtTime(.2,now); g.gain.exponentialRampToValueAtTime(.001,now+.35); osc.start(now); osc.stop(now+.35);
+    } else if (type === 'gear') {
+      const o2=c.createOscillator(),g2=c.createGain(); o2.connect(g2); g2.connect(c.destination);
+      osc.type='sine'; osc.frequency.setValueAtTime(880,now); g.gain.setValueAtTime(.25,now); g.gain.exponentialRampToValueAtTime(.001,now+.4); osc.start(now); osc.stop(now+.4);
+      o2.type='sine'; o2.frequency.setValueAtTime(1100,now+.1); g2.gain.setValueAtTime(.2,now+.1); g2.gain.exponentialRampToValueAtTime(.001,now+.5); o2.start(now+.1); o2.stop(now+.5);
+    } else if (type === 'flip') {
+      const buf=c.createBuffer(1,c.sampleRate*.15,c.sampleRate);
+      const d=buf.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=(Math.random()*2-1)*Math.exp(-i/d.length*8);
+      const src=c.createBufferSource(); src.buffer=buf; const gn=c.createGain(); gn.gain.value=.15;
+      const filt=c.createBiquadFilter(); filt.type='bandpass'; filt.frequency.value=800;
+      src.connect(filt); filt.connect(gn); gn.connect(c.destination); src.start(now);
+    } else if (type === 'roar') {
+      osc.type='sawtooth'; osc.frequency.setValueAtTime(80,now); osc.frequency.linearRampToValueAtTime(40,now+.6);
+      g.gain.setValueAtTime(.4,now); g.gain.exponentialRampToValueAtTime(.001,now+.7); osc.start(now); osc.stop(now+.7);
+    } else if (type === 'slash') {
+      osc.type='triangle'; osc.frequency.setValueAtTime(600,now); osc.frequency.exponentialRampToValueAtTime(200,now+.2);
+      g.gain.setValueAtTime(.3,now); g.gain.exponentialRampToValueAtTime(.001,now+.25); osc.start(now); osc.stop(now+.25);
+    } else if (type === 'thud') {
+      osc.type='sine'; osc.frequency.setValueAtTime(150,now); osc.frequency.exponentialRampToValueAtTime(40,now+.3);
+      g.gain.setValueAtTime(.4,now); g.gain.exponentialRampToValueAtTime(.001,now+.35); osc.start(now); osc.stop(now+.35);
+    } else if (type === 'victory') {
+      const notes=[523,659,784,1047]; notes.forEach((f,i)=>{const o=c.createOscillator(),gn=c.createGain(); o.connect(gn); gn.connect(c.destination); o.type='sine'; o.frequency.value=f; gn.gain.setValueAtTime(.25,now+i*.12); gn.gain.exponentialRampToValueAtTime(.001,now+i*.12+.5); o.start(now+i*.12); o.stop(now+i*.12+.5);});
+    } else if (type === 'close') {
+      osc.type='sine'; osc.frequency.setValueAtTime(300,now); osc.frequency.exponentialRampToValueAtTime(80,now+1.5);
+      g.gain.setValueAtTime(.2,now); g.gain.exponentialRampToValueAtTime(.001,now+1.6); osc.start(now); osc.stop(now+1.6);
+    }
+  } catch(e){}
+}
+
+// ═══════════════════════════════════════
+// GAME STATE
+// ═══════════════════════════════════════
+const G = {
+  chapter:1, level:'P3', tier:'easy',
+  streak:0, gears:[], password:[],
+  phase:'questions', // questions | battle | machine
+  narrator:true, flipMode:'manual',
+  miniUnlocked:false,
+  consC:0, consW:0,
+  player:{hp:0,maxHp:0,heals:3},
+  dragon:{hp:0,maxHp:0},
+  defending:false, immunityUsed:false,
+  allGears:[], // all gears ever earned (for gear base)
+  dialogCb:null,
+  mpGame:null, mpStreak:0, mpQ:null,
+  machineInput:'',
+  machineAttempts:0,
+};
+
+// ═══════════════════════════════════════
+// GEARS
+// ═══════════════════════════════════════
+const GEARS = {
+  t1:[{name:'Immunity',emoji:'✨'},{name:'Hourglass',emoji:'⏳'},{name:'Lamp',emoji:'💡'},{name:'Invisible',emoji:'🌫️'}],
+  t2:[{name:'Shield',emoji:'🛡️'},{name:'Armor',emoji:'🦺'},{name:'Helmet',emoji:'⛑️'}],
+  t3:[{name:'Sword',emoji:'⚔️'},{name:'Fire',emoji:'🔥'},{name:'Water',emoji:'💧'}],
+};
+const ALL_G = [...GEARS.t1,...GEARS.t2,...GEARS.t3];
+function pickGear(slot){
+  if(slot===4) return GEARS.t3[rnd(0,GEARS.t3.length-1)];
+  const r=Math.random(); const p=r<.3?GEARS.t1:r<.6?GEARS.t2:GEARS.t3;
+  return p[rnd(0,p.length-1)];
+}
+function hasG(n){return G.gears.some(g=>g.name===n)}
+
+// ═══════════════════════════════════════
+// HELPERS
+// ═══════════════════════════════════════
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function pick(a){return a[rnd(0,a.length-1)]}
+function $id(id){return document.getElementById(id)}
+
+// ═══════════════════════════════════════
+// SINGAPORE MATH QUESTIONS
+// ═══════════════════════════════════════
+const QQ = {
+  P1:{
+    easy:()=>{const a=rnd(1,9),b=rnd(1,9);return{q:`${a} + ${b} = ?`,a:a+b,h:`Count on from ${a}`}},
+    medium:()=>pick([
+      ()=>{const a=rnd(10,20),b=rnd(1,9);return{q:`${a} + ${b} = ?`,a:a+b,h:`Start at ${a}`}},
+      ()=>{const a=rnd(10,20),b=rnd(1,10);return{q:`${a} − ${b} = ?`,a:a-b,h:`Count back ${b}`}},
+    ])(),
+    hard:()=>{const a=rnd(20,40),b=rnd(5,15);return pick([{q:`${a}+${b}=?`,a:a+b,h:'Add tens first'},{q:`${a}−${b}=?`,a:a-b,h:'Subtract ones then tens'}])}
+  },
+  P2:{
+    easy:()=>{const a=rnd(10,50),b=rnd(10,50);return{q:`${a} + ${b} = ?`,a:a+b,h:'Add tens first'}},
+    medium:()=>{const t=pick([2,3,4,5,10]),m=rnd(2,10);return{q:`${t} × ${m} = ?`,a:t*m,h:`${t} groups of ${m}`}},
+    hard:()=>{const t=rnd(2,10),m=rnd(2,12),p=t*m;return pick([{q:`${t}×${m}=?`,a:p,h:'Times tables'},{q:`${p}÷${t}=?`,a:m,h:`How many ${t}s in ${p}?`}])}
+  },
+  P3:{
+    easy:()=>{const a=rnd(100,500),b=rnd(100,400);return{q:`${a} + ${b} = ?`,a:a+b,h:'Add hundreds first'}},
+    medium:()=>{const w=rnd(2,12),h2=rnd(2,12);return pick([{q:`Area of ${w}×${h2} rectangle = ?`,a:w*h2,h:'L × W'},{q:`Perimeter of ${w}×${h2} rectangle = ?`,a:2*(w+h2),h:'2×(L+W)'}])},
+    hard:()=>{const a=rnd(3,9),b=rnd(3,9),c=rnd(2,10);return{q:`${a} × ${b} + ${c} = ?`,a:a*b+c,h:'Multiply first!'}}
+  },
+  P4:{
+    easy:()=>{const b=rnd(3,8),a=rnd(1,b-1);return{q:`${a}/${b} + ${a}/${b} = ?`,a:parseFloat((2*a/b).toFixed(2)),h:'Add numerators'}},
+    medium:()=>{const d=rnd(3,8),n1=rnd(1,d-2),n2=rnd(1,d-n1-1);return{q:`${n1}/${d} + ${n2}/${d} = ?`,a:parseFloat(((n1+n2)/d).toFixed(2)),h:'Same denominator'}},
+    hard:()=>{const a=rnd(1,8),b=rnd(a+1,9);return{q:`${a}/10 + ${b}/10 = ? (decimal)`,a:(a+b)/10,h:'Add tenths'}}
+  },
+  P5:{
+    easy:()=>{const w=rnd(20,80),p=pick([10,20,25,50]);return{q:`${p}% of ${w} = ?`,a:(p/100)*w,h:`÷100 × ${p}`}},
+    medium:()=>{const a=rnd(1,4),b=rnd(a+2,9),c=rnd(1,b-a-1);return{q:`${a}/${b} + ${c}/${b} = ?`,a:parseFloat(((a+c)/b).toFixed(2)),h:'Add numerators'}},
+    hard:()=>{const d=rnd(10,100),s=pick([2,4,5,10]);return{q:`Distance:${d}km Speed:${s}km/h Time=?hrs`,a:d/s,h:'T=D÷S'}}
+  },
+  P6:{
+    easy:()=>{const x=rnd(2,15),c=rnd(1,20);return{q:`x + ${c} = ${x+c}. Find x.`,a:x,h:`Subtract ${c}`}},
+    medium:()=>{const r=rnd(2,10);return{q:`Circle r=${r}. Circumference=? (π≈3.14, 2dp)`,a:parseFloat((2*3.14*r).toFixed(2)),h:'C=2πr'}},
+    hard:()=>{const o=rnd(40,200),p=pick([10,20,25]);return{q:`$${o} increased by ${p}%. New price=$?`,a:parseFloat((o*(1+p/100)).toFixed(2)),h:'×(1+p/100)'}}
+  },
+  S1:{
+    easy:()=>{const a=rnd(2,8),b=rnd(1,15),c=rnd(b+1,30);return{q:`${a}x + ${b} = ${c}. Solve x.`,a:parseFloat(((c-b)/a).toFixed(2)),h:`−${b} then ÷${a}`}},
+    medium:()=>{const a=rnd(20,60),b=rnd(20,60-a);return{q:`Triangle angles:${a}°,${b}°,x. Find x.`,a:180-a-b,h:'Sum=180°'}},
+    hard:()=>{const l=rnd(3,10),w=rnd(2,8),h2=rnd(2,6);return{q:`Volume cuboid ${l}×${w}×${h2}=?`,a:l*w*h2,h:'V=l×w×h'}}
+  },
+  S2:{
+    easy:()=>{const x=rnd(2,12),y=rnd(1,8);return{q:`x+y=${x+y}, x−y=${x-y}. Find x.`,a:x,h:'Add equations ÷2'}},
+    medium:()=>{const a=rnd(3,12),b=rnd(4,12);return{q:`Right triangle: ${a} and ${b}. Hypotenuse=?(2dp)`,a:parseFloat(Math.sqrt(a*a+b*b).toFixed(2)),h:'a²+b²=c²'}},
+    hard:()=>{const n=rnd(4,8),sum=rnd(20,80);return{q:`${n} numbers, sum=${sum}. Mean=?(2dp)`,a:parseFloat((sum/n).toFixed(2)),h:`÷${n}`}}
+  },
+  S3:{
+    easy:()=>{const c=pick([4,9,16,25,36,49]);return{q:`√${c} = ?`,a:Math.sqrt(c),h:'Square root'}},
+    medium:()=>{const ang=pick([30,45,60]);const v={30:.5,45:.71,60:.87};return{q:`sin(${ang}°) = ? (2dp)`,a:v[ang],h:'Trig table'}},
+    hard:()=>{const p=rnd(2,6),q=rnd(1,5);return{q:`x²+${p+q}x+${p*q}=0. One root=−${p}. Other root=?`,a:-q,h:'Product of roots=c'}}
+  },
+  S4:{
+    easy:()=>{const a=rnd(2,9);return{q:`Simplify √${a*a} = ?`,a:a,h:'Square root'}},
+    medium:()=>{const f=rnd(5,20),t=rnd(f+5,50);return{q:`${f} of ${t} like maths. P(like)=?(2dp)`,a:parseFloat((f/t).toFixed(2)),h:'P=fav÷total'}},
+    hard:()=>{const ang=pick([30,45,60]);const v={30:.87,45:.71,60:.5};return{q:`cos(${ang}°) = ? (2dp)`,a:v[ang],h:'Trig table'}}
+  }
+};
+function genQ(){return(QQ[G.level]?.[G.tier]||QQ.P3.easy)()}
+
+// ═══════════════════════════════════════
+// NARRATOR
+// ═══════════════════════════════════════
+const NL={
+  correct:['⚡ Brilliant!','✨ The book glows with power!','🌟 Excellent work!','📚 The dragon feels your knowledge!'],
+  wrong:['💨 Not quite — try again!','🌫️ Look carefully…','🐉 The dragon smirks. You can do this!','📜 Check your working…'],
+  gear:['⚙️ A gear materialises!','✨ Knowledge becomes power!','🔮 The magic gear appears!'],
+  battle:['🐉 The dragon ROARS!','⚡ The cave shakes — FIGHT!','🔥 Battle begins!'],
+};
+function narrate(k){if(!G.narrator)return;$id('narrator').textContent=pick(NL[k]||NL.correct)}
+
+// ═══════════════════════════════════════
+// ADAPTIVE DIFFICULTY
+// ═══════════════════════════════════════
+function adapt(ok){
+  if(ok){G.consW=0;G.consC++;if(G.consC>=4){if(G.tier==='easy'){G.tier='medium';$id('narrator').textContent+=' 📈'}else if(G.tier==='medium'){G.tier='hard';$id('narrator').textContent+=' 🔥'}G.consC=0}}
+  else{G.consC=0;G.consW++;if(G.consW>=3){if(G.tier==='hard')G.tier='medium';else if(G.tier==='medium')G.tier='easy';G.consW=0}}
+}
+
+// ═══════════════════════════════════════
+// BOOK COVER WAKE SEQUENCE
+// ═══════════════════════════════════════
+// ═══════════════════════════════════════
+// SAVE / LOAD
+// ═══════════════════════════════════════
+const SAVE_KEY='mathIsPower_save';
+function saveGame(){
+  const data={
+    chapter:G.chapter,
+    level:G.level,
+    miniUnlocked:G.miniUnlocked,
+    allGears:G.allGears,
+    savedAt:new Date().toLocaleDateString(),
+  };
+  localStorage.setItem(SAVE_KEY,JSON.stringify(data));
+}
+function loadSave(){
+  try{return JSON.parse(localStorage.getItem(SAVE_KEY));}catch{return null;}
+}
+function clearSave(){localStorage.removeItem(SAVE_KEY);}
+function continueGame(){
+  const save=loadSave(); if(!save)return;
+  G.chapter=save.chapter;
+  G.level=save.level;
+  G.miniUnlocked=save.miniUnlocked;
+  G.allGears=save.allGears||[];
+  if(G.miniUnlocked){$id('mini-btn').disabled=false;$id('mini-btn').textContent='🎮 Play';}
+  $id('level-select').value=G.level;
+  openBook();
+  setTimeout(()=>{
+    updateBadge();
+    $id('chapter-title').textContent=`📖 Chapter ${G.chapter} of 15`;
+    $id('bm-chapter').textContent='CH '+G.chapter;
+    showPanel('q');
+    startChapter();
+  },500);
+}
+
+window.onload=()=>{
+  const el=$id('eye-l'),er=$id('eye-r'),zz=$id('zzz'),msg=$id('cover-msg');
+  $id('zzz').style.display='block';
+  // Wake up on click
+  $id('cover').addEventListener('click',wakeBook,{once:true});
+};
+function wakeBook(){
+  sfx('correct');
+  const el=$id('eye-l'),er=$id('eye-r'),mouth=$id('mouth'),msg=$id('cover-msg'),zz=$id('zzz');
+  zz.style.display='none';
+  // Eyes open
+  setTimeout(()=>{
+    el.classList.remove('closed'); er.classList.remove('closed');
+    mouth.className='surprised';
+    msg.textContent='Oh! You woke me up!';
+  },300);
+  setTimeout(()=>{msg.textContent='Let\'s go on an adventure! 📖';mouth.className='happy'},1400);
+  setTimeout(()=>{
+    $id('open-btn').style.display='block';
+    const save=loadSave();
+    if(save){
+      $id('continue-btn').style.display='block';
+      $id('save-info').style.display='block';
+      $id('save-info').textContent=`Saved: Chapter ${save.chapter} · ${save.level} · ${save.savedAt}`;
+    }
+  },2000);
+}
+function openBook(){
+  sfx('flip');
+  $id('cover').style.transform='rotateY(-90deg)';
+  $id('cover').style.opacity='0';
+  setTimeout(()=>{
+    $id('cover').style.display='none';
+    $id('book').style.display='flex';
+    $id('book').classList.add('open');
+    $id('gear-base-btn').style.display='block';
+  },400);
+}
+function updateBadge(){
+  const n={P1:'Primary 1',P2:'Primary 2',P3:'Primary 3',P4:'Primary 4',P5:'Primary 5',P6:'Primary 6',S1:'Secondary 1',S2:'Secondary 2',S3:'Secondary 3',S4:'Secondary 4'};
+  $id('level-badge').textContent=`${G.level} — ${n[G.level]||G.level}`;
+}
+
+// ═══════════════════════════════════════
+// PANEL SWITCHING
+// ═══════════════════════════════════════
+function showPanel(id){
+  document.querySelectorAll('.rp-panel').forEach(p=>p.classList.remove('active'));
+  $id('panel-'+id).classList.add('active');
+}
+
+// ═══════════════════════════════════════
+// PAGE FLIP ANIMATION
+// ═══════════════════════════════════════
+function doFlip(onMid, onDone){
+  sfx('flip');
+  const fl=$id('flipper');
+  fl.style.display='block';
+  fl.style.animation='none'; fl.style.transform='rotateY(0)';
+  void fl.offsetWidth; // reflow
+  fl.style.transition='transform .7s ease-in-out';
+  fl.style.transform='rotateY(-180deg)';
+  setTimeout(()=>{if(onMid)onMid()},350);
+  setTimeout(()=>{fl.style.display='none';fl.style.transition='';fl.style.transform='rotateY(0)';if(onDone)onDone()},720);
+}
+
+// ═══════════════════════════════════════
+// GAME START / CHAPTER
+// ═══════════════════════════════════════
+function startGame(){
+  G.level=$id('level-select').value;
+  updateBadge();
+  $id('chapter-title').textContent=`📖 Chapter 1 of 15`;
+  showPanel('q');
+  startChapter();
+}
+function startChapter(){
+  G.phase='questions'; G.streak=0; G.gears=[]; G.password=[];
+  G.consC=0; G.consW=0; G.immunityUsed=false; G.defending=false;
+  G.machineAttempts=0; $id('torn-paper').style.display='none';
+  $id('bm-chapter').textContent='CH '+G.chapter;
+  G.tier=G.chapter<=4?'easy':G.chapter<=9?'medium':'hard';
+  // Reset gear display and password digits
+  renderGears();
+  for(let i=0;i<5;i++){const pd=$id('p'+i);pd.textContent='—';pd.classList.remove('shown');}
+  updateDots();
+  // Cave scene
+  $id('cave-scene').style.display='flex';
+  $id('battle-scene').style.display='none';
+  if(G.narrator)$id('narrator').textContent=`📖 Chapter ${G.chapter}! Collect 5 gears to face the dragon…`;
+  nextQ();
+}
+let curQ=null;
+function nextQ(){curQ=genQ();$id('q-text').textContent=curQ.q;$id('a-input').value='';setFb('');setTimeout(()=>$id('a-input').focus(),50)}
+function setFb(m,c){const e=$id('feedback');e.textContent=m;e.style.color=c||'#2d0000'}
+function updateDots(){for(let i=1;i<=3;i++)$id('d'+i).classList.toggle('on',i<=G.streak)}
+
+// ═══════════════════════════════════════
+// ANSWER SUBMISSION
+// ═══════════════════════════════════════
+function submitAns(){
+  if(G.phase!=='questions')return;
+  const raw=$id('a-input').value.trim(); if(raw==='')return;
+  const ok=Math.abs(parseFloat(raw)-curQ.a)<.06;
+  adapt(ok);
+  if(ok){
+    sfx('correct'); narrate('correct'); G.streak++;
+    updateDots();
+    if(G.streak>=3){awardGear();G.streak=0;updateDots();
+      if(G.gears.length>=5){setTimeout(goToBattlePage,1400);return}
+      setTimeout(nextQ,1400);return}
+    setFb('✅ Correct! Keep going!','#2d6a00');
+  } else {
+    sfx('wrong'); narrate('wrong'); G.streak=0; updateDots();
+    setFb(`❌ Hint: ${curQ.h}`,'#8b0000');
+  }
+  setTimeout(nextQ,900);
+}
+function renderGears(){
+  const row=$id('gear-row'); row.innerHTML='';
+  if(!G.gears.length){row.innerHTML='<span style="font-size:11px;color:#8b4513;font-style:italic">No gears yet…</span>';return}
+  // count unique
+  const map={};
+  for(const g of G.gears) map[g.name]={gear:g,n:(map[g.name]?.n||0)+1};
+  for(const key of Object.keys(map)){
+    const {gear,n}=map[key];
+    const s=document.createElement('div'); s.className='gear-slot on';
+    s.innerHTML=`${gear.emoji}<div class="gname">${gear.name}</div>${n>1?`<div class="gear-count">${n}</div>`:''}`;
+    row.appendChild(s);
+  }
+}
+function awardGear(){
+  const i=G.gears.length, gear=pickGear(i);
+  G.gears.push(gear); G.allGears.push(gear);
+  renderGears();
+  const d=rnd(0,9); G.password.push(d);
+  const pd=$id('p'+i); pd.textContent=d; pd.classList.add('shown');
+  sfx('gear');
+  setFb(`🎉 ${gear.emoji} ${gear.name} earned! Digit ${d} revealed!`,'#8b4513');
+  narrate('gear');
+}
+
+// ═══════════════════════════════════════
+// PAGE FLIP TO BATTLE
+// ═══════════════════════════════════════
+function goToBattlePage(){
+  doFlip(
+    ()=>{/* mid flip — cave becomes battle */
+      $id('cave-scene').style.display='none';
+      $id('battle-scene').style.display='flex';
+      $id('machine').classList.remove('visible');
+      $id('battle-dragon').style.display='block';
+      $id('battle-dragon').classList.remove('dead');
+      $id('b-log').innerHTML='';
+      showPanel('battle');
+    },
+    ()=>{ startBattle(); }
+  );
+}
+
+// ═══════════════════════════════════════
+// BATTLE
+// ═══════════════════════════════════════
+function startBattle(){
+  G.phase='battle';
+  G.player.maxHp=28+G.chapter*2+(hasG('Armor')?5:0);
+  G.player.hp=G.player.maxHp;
+  G.player.heals=3+(hasG('Hourglass')?1:0);
+  G.dragon.maxHp=20+G.chapter*5;
+  G.dragon.hp=G.dragon.maxHp;
+  $id('b-heals').textContent=`Heals: ${G.player.heals}`;
+  $id('b-gear-display').textContent=G.gears.map(g=>g.emoji).join(' ');
+  updateBHP(); updatePHP();
+  sfx('roar'); narrate('battle');
+  bLog(`⚔️ Battle! Dragon HP:${G.dragon.hp} | Your HP:${G.player.hp}`);
+  const d=$id('battle-dragon'); d.style.fontSize='100px'; setTimeout(()=>d.style.fontSize='86px',500);
+  ['btn-atk','btn-def','btn-heal'].forEach(b=>$id(b).disabled=false);
+}
+function updateBHP(){
+  const pct=Math.max(0,G.dragon.hp/G.dragon.maxHp*100);
+  $id('dragon-hp-fill2').style.width=pct+'%';
+  $id('dragon-hp-txt').textContent=`${Math.max(0,G.dragon.hp)}/${G.dragon.maxHp}`;
+}
+function updatePHP(){
+  const pct=Math.max(0,G.player.hp/G.player.maxHp*100);
+  $id('player-hp-fill').style.width=pct+'%';
+  $id('player-hp-txt').textContent=`${Math.max(0,G.player.hp)}/${G.player.maxHp}`;
+}
+function bLog(m){const e=document.createElement('div');e.className='b-log-entry';e.textContent=m;$id('b-log').appendChild(e);$id('b-log').scrollTop=9999}
+function calcAtk(){
+  let d=0;
+  for(const g of G.gears){
+    if(g.name==='Sword'||g.name==='Fire'||g.name==='Water') d+=6;        // Type 3: 6 damage
+    else if(g.name==='Shield'||g.name==='Armor'||g.name==='Helmet') d+=rnd(4,5); // Type 2: 4-5 damage
+    else d+=rnd(0,1);                                                      // Type 1: 0-1 (powerup)
+  }
+  return d;
+}
+function animSM(cls){const sm=$id('stickman');sm.classList.remove('attack','hurt','defend','heal');void sm.offsetWidth;sm.classList.add(cls);setTimeout(()=>sm.classList.remove(cls),600)}
+function bAction(act){
+  if(G.phase!=='battle')return;
+  G.defending=false;
+  ['btn-atk','btn-def','btn-heal'].forEach(b=>$id(b).disabled=true);
+  if(act==='atk'){
+    sfx('slash'); animSM('attack');
+    const dmg=calcAtk(); G.dragon.hp-=dmg;
+    bLog(`⚔️ You attack for ${dmg}! Dragon HP:${Math.max(0,G.dragon.hp)}`);
+    setTimeout(()=>{$id('battle-dragon').classList.add('hurt');addHitFlash('-'+dmg,'#ff4400');updateBHP();setTimeout(()=>$id('battle-dragon').classList.remove('hurt'),500)},300);
+    if(G.dragon.hp<=0){setTimeout(battleWin,800);return}
+  } else if(act==='def'){
+    G.defending=true; animSM('defend');
+    $id('sm-shield').style.display='block';
+    bLog('🛡️ You brace for impact!');
+    setTimeout(()=>$id('sm-shield').style.display='none',800);
+  } else if(act==='heal'){
+    if(G.player.heals<=0){bLog('❌ No heals!');['btn-atk','btn-def','btn-heal'].forEach(b=>$id(b).disabled=false);return}
+    sfx('correct'); animSM('heal');
+    const h=rnd(5,12); G.player.hp=Math.min(G.player.maxHp,G.player.hp+h);
+    G.player.heals--; $id('b-heals').textContent=`Heals: ${G.player.heals}`;
+    bLog(`❤️ Healed +${h}. HP:${G.player.hp}`); updatePHP();
+  }
+  setTimeout(dragonTurn,800);
+}
+function addHitFlash(txt,col){
+  const f=document.createElement('div'); f.className='hit-flash'; f.textContent=txt; f.style.color=col;
+  $id('battle-arena').appendChild(f); setTimeout(()=>f.remove(),900);
+}
+function dragonTurn(){
+  if(G.phase!=='battle')return;
+  if(hasG('Immunity')&&!G.immunityUsed){G.immunityUsed=true;bLog('✨ Immunity blocked!');['btn-atk','btn-def','btn-heal'].forEach(b=>$id(b).disabled=false);return}
+  if(hasG('Invisible')&&Math.random()<.35){bLog('🌫️ Dragon missed!');['btn-atk','btn-def','btn-heal'].forEach(b=>$id(b).disabled=false);return}
+  sfx('roar');
+  let d=rnd(3,8); // dragon max 8 damage
+  if(G.defending){let r=.5;if(hasG('Shield'))r=.65;if(hasG('Helmet'))d=Math.max(1,d-rnd(2,3));d=Math.max(1,Math.floor(d*(1-r)));bLog(`🛡️ Reduced to ${d} dmg`)}
+  else bLog(`🐉 Dragon attacks for ${d}!`);
+  animSM('hurt'); G.player.hp-=d; updatePHP(); addHitFlash('-'+d,'#88ff00');
+  if(G.player.hp<=0){battleLose();return}
+  ['btn-atk','btn-def','btn-heal'].forEach(b=>$id(b).disabled=false);
+}
+function battleWin(){
+  G.phase='machine'; sfx('victory');
+  $id('battle-dragon').classList.add('dead');
+  bLog('🏆 VICTORY! Dragon defeated!');
+  setTimeout(()=>{
+    $id('battle-dragon').style.display='none';
+    $id('machine').classList.add('visible');
+    G.machineInput=''; resetMachineDisplay();
+    bLog('🛠️ The machine is revealed! Enter the password.');
+    if(G.narrator)$id('b-tip').textContent='The machine is revealed! Enter the password.';
+  },1200);
+}
+function battleLose(){
+  G.immunityUsed=false;
+  bLog('💀 Defeated! Retrying…');
+  setTimeout(()=>showDialog('💀 Defeated!','The dragon wins this round.\nRetry with the same gears.','Retry!',()=>{
+    G.player.hp=G.player.maxHp; G.player.heals=3+(hasG('Hourglass')?1:0);
+    $id('b-heals').textContent=`Heals: ${G.player.heals}`;
+    G.dragon.hp=G.dragon.maxHp; G.phase='battle';
+    $id('b-log').innerHTML=''; updateBHP(); updatePHP();
+    ['btn-atk','btn-def','btn-heal'].forEach(b=>$id(b).disabled=false);
+    bLog('🔄 Retry!');
+  }),700);
+}
+
+// ═══════════════════════════════════════
+// MACHINE
+// ═══════════════════════════════════════
+function resetMachineDisplay(){for(let i=0;i<5;i++){const s=$id('ms-'+i);s.textContent='_';s.classList.remove('lit')}}
+function mKey(k){
+  if(G.phase!=='machine')return;
+  if(G.machineInput.length>=5)return;
+  G.machineInput+=k;
+  const i=G.machineInput.length-1;
+  const s=$id('ms-'+i); s.textContent=k; s.classList.add('lit');
+  sfx('correct');
+}
+function mClear(){G.machineInput='';resetMachineDisplay();$id('m-msg').textContent='Enter the 5-digit password'}
+function mEnter(){
+  if(G.machineInput.length<5){$id('m-msg').textContent='Need 5 digits!';return}
+  if(G.machineInput===G.password.join('')){
+    sfx('victory'); $id('m-msg').textContent='✅ ACCEPTED! Chapter unlocked!';
+    for(let i=0;i<5;i++)$id('ms-'+i).style.background='#003300';
+    if(G.chapter===1){G.miniUnlocked=true;$id('mini-btn').disabled=false;$id('mini-btn').textContent='🎮 Play'}
+    setTimeout(()=>{
+      if(G.chapter>=15){clearSave();endGame();return}
+      G.chapter++;
+      $id('chapter-title').textContent=`📖 Chapter ${G.chapter} of 15`;
+      saveGame();
+      showDialog(`🔓 Chapter ${G.chapter} Unlocked!`,`Great work! The dragon grows stronger…\nReady for Chapter ${G.chapter}?`,`Start Chapter ${G.chapter}!`,()=>{
+        doFlip(()=>{
+          $id('battle-scene').style.display='none';
+          $id('machine').classList.remove('visible');
+          $id('cave-scene').style.display='flex';
+          showPanel('q');
+        },()=>startChapter());
+      });
+    },1000);
+  } else {
+    sfx('wrong');
+    G.machineAttempts++;
+    $id('m-msg').textContent=`❌ Wrong code! Try ${Math.max(0,2-G.machineAttempts)} more time${2-G.machineAttempts===1?'':'s'} for a hint…`;
+    G.machineInput=''; resetMachineDisplay();
+    if(G.machineAttempts>=2){
+      $id('tp-digits').textContent=G.password.join('');
+      $id('torn-paper').style.display='block';
+    }
+  }
+}
+
+// ═══════════════════════════════════════
+// SCROLL MENU
+// ═══════════════════════════════════════
+function toggleScroll(){
+  const isOpen=$id('scroll-menu').classList.toggle('open');
+  // bookmark disappears when menu is open, reappears when closed
+  $id('bookmark').classList.toggle('hidden', isOpen);
+}
+function toggleNarr(){G.narrator=!G.narrator;const b=$id('narr-btn');b.textContent=G.narrator?'ON':'OFF';b.classList.toggle('act',G.narrator);$id('narrator').style.display=G.narrator?'':'none'}
+function toggleFlip(){G.flipMode=G.flipMode==='manual'?'auto':'manual';$id('flip-btn').textContent=G.flipMode==='manual'?'Manual':'Auto'}
+function showDirs(){toggleScroll();showDialog('📖 How to Play','1. Answer math questions at your level\n2. 3 correct in a row → 1 Gear + 1 Password Digit\n3. Collect 5 Gears → Dragon Battle begins\n4. Defeat the Dragon → Password Machine appears\n5. Enter the 5-digit Password → next Chapter\n6. 15 Chapters total!','Got it!',()=>{})}
+
+// ═══════════════════════════════════════
+// MINI GAME MAP
+// ═══════════════════════════════════════
+const MINI_INFO={
+  add:{name:'Addition Agents',emoji:'➕',desc:'Solve addition missions!',color:'#4488ff'},
+  sub:{name:'Subtraction Statics',emoji:'➖',desc:'Crack subtraction codes!',color:'#ff4444'},
+  mul:{name:'Multiplication Mania',emoji:'✖️',desc:'Multiply at max power!',color:'#44ff44'},
+  div:{name:'Division Drops',emoji:'➗',desc:'Drop into division!',color:'#ffff44'},
+  dam:{name:'DAMsVille 🏰',emoji:'🏰',desc:'All 4 operations — the ultimate challenge!',color:'#ff44ff'},
+};
+function openMiniMap(){if(!G.miniUnlocked)return;toggleScroll();$id('mini-map-overlay').classList.add('open')}
+function closeMiniMap(){$id('mini-map-overlay').classList.remove('open');$id('mini-play').classList.remove('open')}
+function closeMiniPlay(){$id('mini-play').classList.remove('open')}
+
+function genMiniQ(type){
+  const ops={
+    add:()=>{const a=rnd(5,50),b=rnd(5,50);return{q:`${a} + ${b} = ?`,a:a+b}},
+    sub:()=>{const a=rnd(20,80),b=rnd(5,a);return{q:`${a} − ${b} = ?`,a:a-b}},
+    mul:()=>{const a=rnd(2,12),b=rnd(2,12);return{q:`${a} × ${b} = ?`,a:a*b}},
+    div:()=>{const a=rnd(2,12),b=rnd(2,12);return{q:`${a*b} ÷ ${a} = ?`,a:b}},
+  };
+  if(type==='dam') return ops[pick(['add','sub','mul','div'])]();
+  return ops[type]();
+}
+let mpStreak=0, mpCurQ=null, mpGame=null;
+function playMiniGame(type){
+  mpGame=type; mpStreak=0;
+  const info=MINI_INFO[type];
+  $id('mp-title').textContent=info.emoji+' '+info.name;
+  $id('mp-desc').textContent=info.desc;
+  $id('mp-score').textContent='Get 3 in a row to earn a bonus gear!';
+  updateMpDots();
+  mpNextQ();
+  $id('mini-play').classList.add('open');
+}
+function mpNextQ(){
+  mpCurQ=genMiniQ(mpGame);
+  $id('mp-q').textContent=mpCurQ.q;
+  $id('mp-input').value=''; $id('mp-feedback').textContent='';
+  setTimeout(()=>$id('mp-input').focus(),50);
+}
+function updateMpDots(){for(let i=1;i<=3;i++)$id('md'+i).classList.toggle('on',i<=mpStreak)}
+function mpSubmit(){
+  const raw=$id('mp-input').value.trim(); if(!raw)return;
+  const ok=Math.abs(parseFloat(raw)-mpCurQ.a)<.06;
+  if(ok){
+    sfx('correct'); mpStreak++;
+    $id('mp-feedback').textContent='✅ Correct!'; $id('mp-feedback').style.color='#88ff88';
+    updateMpDots();
+    if(mpStreak>=3){
+      sfx('gear');
+      const bonus=pickGear(rnd(0,4));
+      G.allGears.push(bonus);
+      $id('mp-feedback').textContent=`🎉 3 in a row! Bonus gear: ${bonus.emoji} ${bonus.name}!`;
+      $id('mp-feedback').style.color='#ffd700';
+      mpStreak=0; updateMpDots();
+      setTimeout(mpNextQ,1800);return;
+    }
+  } else {
+    sfx('wrong'); mpStreak=0; updateMpDots();
+    $id('mp-feedback').textContent=`❌ Answer was ${mpCurQ.a}. Try again!`;
+    $id('mp-feedback').style.color='#ff8888';
+  }
+  setTimeout(mpNextQ,1000);
+}
+
+// ═══════════════════════════════════════
+// GEAR ROOM
+// ═══════════════════════════════════════
+function openGearRoom(){
+  const t1=G.allGears.filter(g=>GEARS.t1.find(x=>x.name===g.name));
+  const t2=G.allGears.filter(g=>GEARS.t2.find(x=>x.name===g.name));
+  const t3=G.allGears.filter(g=>GEARS.t3.find(x=>x.name===g.name));
+  const fill=(id,arr)=>{
+    const el=$id(id); el.innerHTML='';
+    if(!arr.length){el.innerHTML='<span style="color:#555;font-size:11px">None yet</span>';return}
+    // deduplicate with counts
+    const m={};for(const g of arr)m[g.name]={gear:g,n:(m[g.name]?.n||0)+1};
+    for(const key of Object.keys(m)){const{gear,n}=m[key];const d=document.createElement('div');d.className='gr-gear-item';d.innerHTML=`${gear.emoji} ${gear.name}${n>1?` <span style="background:#ff6600;color:#fff;border-radius:50%;padding:1px 5px;font-size:9px;font-weight:bold">${n}</span>`:''}`;el.appendChild(d)}
+  };
+  fill('gr-t1',t1); fill('gr-t2',t2); fill('gr-t3',t3);
+  $id('gr-total').textContent=`Total gears collected: ${G.allGears.length}`;
+  $id('gear-room-overlay').classList.add('open');
+}
+function closeGearRoom(){$id('gear-room-overlay').classList.remove('open')}
+
+// ═══════════════════════════════════════
+// END GAME
+// ═══════════════════════════════════════
+function endGame(){
+  sfx('close');
+  const ov=$id('end-overlay'); ov.classList.add('open');
+  const el=$id('eb-el'),er=$id('eb-er'),m=$id('eb-mouth'),zz=$id('end-zzz');
+  // Eyes start open
+  el.style.height='24px'; er.style.height='24px';
+  el.style.background='#fff'; er.style.background='#fff';
+  setTimeout(()=>{
+    el.classList.add('closing'); er.classList.add('closing');
+    m.style.cssText='width:50px;height:20px;border:3px solid #ffd700;border-top:none;border-radius:0 0 20px 20px;position:absolute;bottom:10px;left:50%;transform:translateX(-50%)';
+  },1500);
+  setTimeout(()=>{zz.style.display='block'},3000);
+  setTimeout(()=>{sfx('gear');},2500);
+}
+
+// ═══════════════════════════════════════
+// DIALOG
+// ═══════════════════════════════════════
+function showDialog(t,m,btn,cb){
+  $id('dialog-title').textContent=t;
+  $id('dialog-msg').textContent=m;
+  $id('dialog-btn').textContent=btn;
+  $id('dialog').classList.add('open');
+  G.dialogCb=cb;
+}
+function closeDialog(){
+  $id('dialog').classList.remove('open');
+  if(G.dialogCb)G.dialogCb();
+}
+</script>
+</body>
+</html>
