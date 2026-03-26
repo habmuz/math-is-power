@@ -347,6 +347,25 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 
 /* ═══ PERSPECTIVE WRAPPER ═══ */
 #book-wrap{position:absolute;inset:0;perspective:2000px}
+
+/* ══ POST-FIGHT PAGE FLIP ZONE ══ */
+#flip-zone{position:absolute;top:0;right:0;width:44px;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;z-index:15;border-radius:0 8px 8px 0;animation:flipPulse 1.4s ease-in-out infinite}
+@keyframes flipPulse{0%,100%{background:linear-gradient(to right,transparent,rgba(255,215,0,.1))}50%{background:linear-gradient(to right,transparent,rgba(255,215,0,.32))}}
+#flip-zone:hover{background:linear-gradient(to right,transparent,rgba(255,215,0,.45))!important}
+#flip-hint{color:#ffd700;font-size:10px;text-align:center;writing-mode:vertical-rl;letter-spacing:3px;text-shadow:0 0 10px #ff8800;font-family:Georgia,serif;font-weight:bold;pointer-events:none}
+#flip-arrow{font-size:22px;color:#ffd700;text-shadow:0 0 12px #ff8800;animation:arrowBounce 1.4s ease-in-out infinite;pointer-events:none}
+@keyframes arrowBounce{0%,100%{transform:translateX(0)}50%{transform:translateX(5px)}}
+
+/* ══ ADMIN OVERLAY ══ */
+#admin-overlay{position:absolute;inset:0;background:rgba(0,0,0,.88);z-index:95;display:none;align-items:center;justify-content:center}
+#admin-overlay.open{display:flex}
+#admin-box{background:linear-gradient(160deg,#0d1b2a,#1b2838);border:2px solid #4488ff;border-radius:14px;padding:26px 32px;text-align:center;min-width:270px;display:flex;flex-direction:column;gap:11px;box-shadow:0 0 30px rgba(68,136,255,.3)}
+#adm-title{color:#4488ff;font-size:17px;font-weight:bold;letter-spacing:2px;border-bottom:1px solid #2255aa;padding-bottom:8px}
+.adm-row{color:#88ccff;font-size:13px}.adm-row span{color:#ffd700;font-weight:bold;font-family:monospace;letter-spacing:2px}
+.adm-btn{padding:8px 16px;border:none;border-radius:8px;font-size:13px;font-family:Georgia,serif;cursor:pointer;background:#1a4488;color:#ccddff;transition:filter .2s}
+.adm-btn:hover{filter:brightness(1.35)}
+.adm-btn.danger{background:#882222;color:#ffcccc}
+.adm-btn.close-adm{background:#334;color:#aaa;margin-top:2px}
 </style>
 </head>
 <body>
@@ -533,6 +552,12 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
       <div id="b-gear-display" style="font-size:18px;text-align:center;letter-spacing:4px"></div>
     </div>
 
+    <!-- Post-fight flip zone (right edge of right page) -->
+    <div id="flip-zone" onclick="flipToMachine()">
+      <div id="flip-arrow">▶</div>
+      <div id="flip-hint">FLIP PAGE</div>
+    </div>
+
     <!-- Bookmark (replaces scroll button) -->
     <div id="bookmark" onclick="toggleScroll()">
       <div id="bm-icon">🔖</div>
@@ -555,6 +580,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
       <div class="si"><label>Mini Games</label><button class="smb" id="mini-btn" onclick="openMiniMap()" disabled>🔒 After Ch.1</button></div>
       <div class="si"><label>Gear Base</label><button class="smb" onclick="openGearRoom();toggleScroll()">🏠 View Gears</button></div>
       <div class="si"><label>Directions</label><button class="smb" onclick="showDirs()">📖 How to Play</button></div>
+      <div class="si"><label>Admin</label><button class="smb" onclick="adminLogin()">🔐 Admin</button></div>
       <button id="close-sm" onclick="toggleScroll()">✕ Close</button>
     </div>
   </div>
@@ -665,6 +691,19 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
   <div id="end-msg">The book is now at peace…</div>
   <div id="end-sub">You conquered all 15 chapters! Math truly is Power.</div>
   <button id="end-restart" onclick="clearSave();location.reload()">Play Again 📖</button>
+</div>
+
+<!-- ══ ADMIN OVERLAY ══ -->
+<div id="admin-overlay">
+  <div id="admin-box">
+    <div id="adm-title">🔐 Admin Panel</div>
+    <div class="adm-row">Chapter: <span id="adm-ch">—</span> / 15</div>
+    <div class="adm-row">Chapter Password: <span id="adm-pw">—</span></div>
+    <button class="adm-btn" onclick="admShowPw()">🔍 Reveal Password</button>
+    <button class="adm-btn" onclick="admSkip()">⏭ Skip Chapter</button>
+    <button class="adm-btn danger" onclick="admReset()">🗑 Reset Game</button>
+    <button class="adm-btn close-adm" onclick="closeAdmin()">✕ Close</button>
+  </div>
 </div>
 
 <!-- ══ DIALOG ══ -->
@@ -964,7 +1003,7 @@ function startGame(){
 function startChapter(){
   G.phase='questions'; G.streak=0; G.gears=[]; G.password=[];
   G.consC=0; G.consW=0; G.immunityUsed=false; G.defending=false;
-  G.machineAttempts=0; $id('torn-paper').style.display='none';
+  G.machineAttempts=0; $id('torn-paper').style.display='none'; $id('flip-zone').style.display='none';
   $id('bm-chapter').textContent='CH '+G.chapter;
   G.tier=G.chapter<=4?'easy':G.chapter<=9?'medium':'hard';
   // Reset gear display and password digits
@@ -1127,14 +1166,22 @@ function dragonTurn(){
 function battleWin(){
   G.phase='machine'; sfx('victory');
   $id('battle-dragon').classList.add('dead');
-  bLog('🏆 VICTORY! Dragon defeated!');
-  setTimeout(()=>{
-    $id('battle-dragon').style.display='none';
-    $id('machine').classList.add('visible');
-    G.machineInput=''; resetMachineDisplay();
-    bLog('🛠️ The machine is revealed! Enter the password.');
-    if(G.narrator)$id('b-tip').textContent='The machine is revealed! Enter the password.';
-  },1200);
+  bLog('🏆 VICTORY! Dragon defeated! Flip the page to continue…');
+  setTimeout(()=>{ $id('flip-zone').style.display='flex'; }, 1000);
+}
+function showFlipZone(){ $id('flip-zone').style.display='flex'; }
+function flipToMachine(){
+  $id('flip-zone').style.display='none';
+  doFlip(
+    ()=>{
+      $id('battle-dragon').style.display='none';
+      $id('machine').classList.add('visible');
+      G.machineInput=''; resetMachineDisplay();
+      bLog('🛠️ The machine is revealed! Enter the password.');
+      if(G.narrator)$id('b-tip').textContent='The machine is revealed! Enter the password.';
+    },
+    null
+  );
 }
 function battleLose(){
   G.immunityUsed=false;
@@ -1204,6 +1251,35 @@ function toggleScroll(){
 }
 function toggleNarr(){G.narrator=!G.narrator;const b=$id('narr-btn');b.textContent=G.narrator?'ON':'OFF';b.classList.toggle('act',G.narrator);$id('narrator').style.display=G.narrator?'':'none'}
 function toggleFlip(){G.flipMode=G.flipMode==='manual'?'auto':'manual';$id('flip-btn').textContent=G.flipMode==='manual'?'Manual':'Auto'}
+function adminLogin(){
+  const pw=prompt('🔐 Admin Password:');
+  if(!pw)return;
+  if(pw===atob('TWF0aEFkbWluMjY=')){openAdmin();}
+  else{alert('❌ Incorrect password.');}
+}
+function openAdmin(){
+  if($id('scroll-menu').classList.contains('open'))toggleScroll();
+  $id('adm-ch').textContent=G.chapter;
+  $id('adm-pw').textContent='—';
+  $id('admin-overlay').classList.add('open');
+}
+function closeAdmin(){$id('admin-overlay').classList.remove('open')}
+function admShowPw(){$id('adm-pw').textContent=G.password.length?G.password.join(''):'No password yet this chapter';}
+function admSkip(){
+  if(G.chapter>=15){alert('Already at last chapter!');return}
+  closeAdmin();
+  G.chapter++;
+  $id('chapter-title').textContent=`📖 Chapter ${G.chapter} of 15`;
+  saveGame();
+  $id('flip-zone').style.display='none';
+  doFlip(()=>{
+    $id('battle-scene').style.display='none';
+    $id('machine').classList.remove('visible');
+    $id('cave-scene').style.display='flex';
+    showPanel('q');
+  },()=>startChapter());
+}
+function admReset(){if(confirm('Reset ALL progress?')){clearSave();location.reload();}}
 function showDirs(){toggleScroll();showDialog('📖 How to Play','1. Answer math questions at your level\n2. 3 correct in a row → 1 Gear + 1 Password Digit\n3. Collect 5 Gears → Dragon Battle begins\n4. Defeat the Dragon → Password Machine appears\n5. Enter the 5-digit Password → next Chapter\n6. 15 Chapters total!','Got it!',()=>{})}
 
 // ═══════════════════════════════════════
