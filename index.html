@@ -145,6 +145,10 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 .inst{background:rgba(139,100,60,.1);border-left:3px solid #8b4513;padding:5px 11px;border-radius:0 6px 6px 0;font-size:12px;color:#4a2000;text-align:left;width:100%}
 #start-btn{margin-top:12px;padding:10px 30px;background:linear-gradient(#8b4513,#5a2d00);color:#f6e8cc;border:none;border-radius:20px;font-size:15px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35);transition:transform .2s}
 #start-btn:hover{transform:translateY(-2px)}
+#friend-btn{margin-top:6px;padding:7px 22px;background:linear-gradient(#1a6699,#0d3d5c);color:#e0f4ff;border:none;border-radius:16px;font-size:13px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3);transition:transform .2s}
+#friend-btn:hover{transform:translateY(-2px)}
+#solo-btn{margin-top:3px;padding:5px 18px;background:rgba(139,100,60,.15);color:#5a2d00;border:1px solid rgba(139,100,60,.4);border-radius:14px;font-size:12px;font-family:Georgia,serif;cursor:pointer;transition:background .2s}
+#solo-btn:hover{background:rgba(139,100,60,.28)}
 #level-select{margin-top:8px;padding:6px 12px;border:2px solid #8b4513;border-radius:6px;background:#fdf5e6;color:#2d0000;font-size:13px;font-family:Georgia,serif;cursor:pointer;width:200px}
 
 /* question panel */
@@ -449,8 +453,6 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
             <div class="m-slot" id="ms-0">_</div>
             <div class="m-slot" id="ms-1">_</div>
             <div class="m-slot" id="ms-2">_</div>
-            <div class="m-slot" id="ms-3">_</div>
-            <div class="m-slot" id="ms-4">_</div>
           </div>
           <div id="m-pad">
             <button class="m-key" onclick="mKey('1')">1</button>
@@ -466,13 +468,13 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
             <button class="m-key" onclick="mKey('0')">0</button>
             <button class="m-key" id="m-enter" onclick="mEnter()">ENTER</button>
           </div>
-          <div id="m-msg">Enter the 5-digit password</div>
+          <div id="m-msg">Enter the 3-digit password</div>
         </div>
         <div id="m-steam">💨</div>
         <!-- Torn paper hint (shows after 2 failed attempts) -->
         <div id="torn-paper">
           <div class="tp-label">psst… your password 🤫</div>
-          <div class="tp-pass" id="tp-digits">—————</div>
+          <div class="tp-pass" id="tp-digits">———</div>
           <button class="tp-close" onclick="document.getElementById('torn-paper').style.display='none'">hide it</button>
         </div>
       </div>
@@ -499,17 +501,19 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
     <!-- Intro panel -->
     <div class="rp-panel active" id="panel-intro">
       <h2>Hello, Young Scholar! ✨</h2>
-      <div class="inst">📚 Answer math questions to collect Gears</div>
-      <div class="inst">🔥 3 correct in a row = 1 Gear + 1 Password Digit</div>
-      <div class="inst">⚙️ Collect 5 Gears → unlock the Dragon Battle</div>
-      <div class="inst">🐉 Defeat the Dragon → access the Password Machine</div>
-      <div class="inst">🔐 Enter the 5-digit password → next Chapter</div>
+      <div class="inst">📚 Answer 9 math questions to collect Gears</div>
+      <div class="inst">🔥 3 correct in a row = 1 ⚙️ Gear + 1 Password Digit</div>
+      <div class="inst">⚙️ Collect 3 Gears → flip page → Dragon Battle!</div>
+      <div class="inst">🐉 Defeat the Dragon → flip page → Password Machine</div>
+      <div class="inst">🔐 Enter the 3-digit password → unlock next Chapter</div>
       <div class="inst">🎮 Mini Games unlocked after Chapter 1!</div>
       <select id="level-select" onchange="G.level=this.value">
         <optgroup label="Primary"><option value="P1">P1 – Primary 1</option><option value="P2">P2 – Primary 2</option><option value="P3" selected>P3 – Primary 3</option><option value="P4">P4 – Primary 4</option><option value="P5">P5 – Primary 5</option><option value="P6">P6 – Primary 6</option></optgroup>
         <optgroup label="Secondary"><option value="S1">S1 – Secondary 1</option><option value="S2">S2 – Secondary 2</option><option value="S3">S3 – Secondary 3</option><option value="S4">S4 – Secondary 4</option></optgroup>
       </select>
       <button id="start-btn" onclick="startGame()">Begin Adventure ✨</button>
+      <button id="friend-btn" onclick="openMpOverlay()">🔗 Play with Friend</button>
+      <button id="solo-btn" onclick="startGame()">▶ Play Solo (Skip)</button>
     </div>
 
     <!-- Question panel -->
@@ -541,8 +545,6 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
           <div class="pdig" id="p0">—</div>
           <div class="pdig" id="p1">—</div>
           <div class="pdig" id="p2">—</div>
-          <div class="pdig" id="p3">—</div>
-          <div class="pdig" id="p4">—</div>
         </div>
       </div>
     </div>
@@ -621,30 +623,30 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
     <div class="map-path" style="height:4px;width:80px;left:230px;top:240px;border-radius:2px;background:#336633"></div>
     <div class="map-path" style="height:4px;width:80px;right:230px;top:240px;border-radius:2px;background:#336633"></div>
 
-    <!-- Addition Agents (top-left) -->
+    <!-- 4 Operation Era (top-left) -->
     <div class="map-node n-add" style="left:60px;top:160px" onclick="playMiniGame('add')">
-      <div class="node-icon">➕</div>
-      <div class="node-name">ADDITION<br>AGENTS</div>
+      <div class="node-icon">🔢</div>
+      <div class="node-name">4 OPERATION<br>ERA</div>
     </div>
-    <!-- Multiplication Mania (top-right) -->
+    <!-- Pattern-drops (top-right) -->
     <div class="map-node n-mul" style="right:60px;top:160px" onclick="playMiniGame('mul')">
-      <div class="node-icon">✖️</div>
-      <div class="node-name">MULTIPLICATION<br>MANIA</div>
+      <div class="node-icon">🔮</div>
+      <div class="node-name">PATTERN<br>DROPS</div>
     </div>
     <!-- DAMsVille (centre) -->
     <div class="map-node n-dam" style="left:50%;top:260px;transform:translateX(-50%)" onclick="playMiniGame('dam')">
       <div class="node-icon">🏰</div>
       <div class="node-name">DAMsVILLE<br><span style="font-size:9px">(All 4!)</span></div>
     </div>
-    <!-- Subtraction Statics (bottom-left) -->
+    <!-- Palindrome-ville (bottom-left) -->
     <div class="map-node n-sub" style="left:60px;top:350px" onclick="playMiniGame('sub')">
-      <div class="node-icon">➖</div>
-      <div class="node-name">SUBTRACTION<br>STATICS</div>
+      <div class="node-icon">🔄</div>
+      <div class="node-name">PALINDROME<br>VILLE</div>
     </div>
-    <!-- Division Drops (bottom-right) -->
+    <!-- POPped Your Mind (bottom-right) -->
     <div class="map-node n-div" style="right:60px;top:350px" onclick="playMiniGame('div')">
-      <div class="node-icon">➗</div>
-      <div class="node-name">DIVISION<br>DROPS</div>
+      <div class="node-icon">💥</div>
+      <div class="node-name">POPped YOUR<br>MIND</div>
     </div>
 
     <!-- Mini game play panel -->
@@ -698,7 +700,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
     <div id="end-zzz" style="display:none">z z z</div>
   </div>
   <div id="end-msg">The book is now at peace…</div>
-  <div id="end-sub">You conquered all 15 chapters! Math truly is Power.</div>
+  <div id="end-sub">You conquered all 12 chapters! Math truly is Power.</div>
   <button id="end-restart" onclick="clearSave();location.reload()">Play Again 📖</button>
 </div>
 
@@ -802,7 +804,7 @@ const GEARS = {
 };
 const ALL_G = [...GEARS.t1,...GEARS.t2,...GEARS.t3];
 function pickGear(slot){
-  if(slot===4) return GEARS.t3[rnd(0,GEARS.t3.length-1)];
+  if(slot===2) return GEARS.t3[rnd(0,GEARS.t3.length-1)];
   const r=Math.random(); const p=r<.3?GEARS.t1:r<.6?GEARS.t2:GEARS.t3;
   return p[rnd(0,p.length-1)];
 }
@@ -926,7 +928,7 @@ function continueGame(){
   openBook();
   setTimeout(()=>{
     updateBadge();
-    $id('chapter-title').textContent=`📖 Chapter ${G.chapter} of 15`;
+    $id('chapter-title').textContent=`📖 Chapter ${G.chapter} of 12`;
     $id('bm-chapter').textContent='CH '+G.chapter;
     showPanel('q');
     startChapter();
@@ -1005,7 +1007,7 @@ function doFlip(onMid, onDone){
 function startGame(){
   G.level=$id('level-select').value;
   updateBadge();
-  $id('chapter-title').textContent=`📖 Chapter 1 of 15`;
+  $id('chapter-title').textContent=`📖 Chapter 1 of 12`;
   showPanel('q');
   startChapter();
 }
@@ -1014,15 +1016,15 @@ function startChapter(){
   G.consC=0; G.consW=0; G.immunityUsed=false; G.defending=false;
   G.machineAttempts=0; $id('torn-paper').style.display='none'; $id('flip-zone').style.display='none';
   $id('bm-chapter').textContent='CH '+G.chapter;
-  G.tier=G.chapter<=4?'easy':G.chapter<=9?'medium':'hard';
+  G.tier=G.chapter<=4?'easy':G.chapter<=8?'medium':'hard';
   // Reset gear display and password digits
   renderGears();
-  for(let i=0;i<5;i++){const pd=$id('p'+i);pd.textContent='—';pd.classList.remove('shown');}
+  for(let i=0;i<3;i++){const pd=$id('p'+i);pd.textContent='—';pd.classList.remove('shown');}
   updateDots();
   // Cave scene
   $id('cave-scene').style.display='flex';
   $id('battle-scene').style.display='none';
-  if(G.narrator)$id('narrator').textContent=`📖 Chapter ${G.chapter}! Collect 5 gears to face the dragon…`;
+  if(G.narrator)$id('narrator').textContent=`📖 Chapter ${G.chapter}! Collect 3 gears to face the dragon…`;
   nextQ();
 }
 let curQ=null;
@@ -1042,7 +1044,7 @@ function submitAns(){
     sfx('correct'); narrate('correct'); G.streak++;
     updateDots();
     if(G.streak>=3){awardGear();G.streak=0;updateDots();
-      if(G.gears.length>=5){setTimeout(goToBattlePage,1400);return}
+      if(G.gears.length>=3){setTimeout(goToBattlePage,1400);return}
       setTimeout(nextQ,1400);return}
     setFb('✅ Correct! Keep going!','#2d6a00');
   } else {
@@ -1208,26 +1210,26 @@ function battleLose(){
 // ═══════════════════════════════════════
 // MACHINE
 // ═══════════════════════════════════════
-function resetMachineDisplay(){for(let i=0;i<5;i++){const s=$id('ms-'+i);s.textContent='_';s.classList.remove('lit')}}
+function resetMachineDisplay(){for(let i=0;i<3;i++){const s=$id('ms-'+i);s.textContent='_';s.classList.remove('lit')}}
 function mKey(k){
   if(G.phase!=='machine')return;
-  if(G.machineInput.length>=5)return;
+  if(G.machineInput.length>=3)return;
   G.machineInput+=k;
   const i=G.machineInput.length-1;
   const s=$id('ms-'+i); s.textContent=k; s.classList.add('lit');
   sfx('correct');
 }
-function mClear(){G.machineInput='';resetMachineDisplay();$id('m-msg').textContent='Enter the 5-digit password'}
+function mClear(){G.machineInput='';resetMachineDisplay();$id('m-msg').textContent='Enter the 3-digit password'}
 function mEnter(){
-  if(G.machineInput.length<5){$id('m-msg').textContent='Need 5 digits!';return}
+  if(G.machineInput.length<3){$id('m-msg').textContent='Need 3 digits!';return}
   if(G.machineInput===G.password.join('')){
     sfx('victory'); $id('m-msg').textContent='✅ ACCEPTED! Chapter unlocked!';
-    for(let i=0;i<5;i++)$id('ms-'+i).style.background='#003300';
+    for(let i=0;i<3;i++)$id('ms-'+i).style.background='#003300';
     if(G.chapter===1){G.miniUnlocked=true;$id('mini-btn').disabled=false;$id('mini-btn').textContent='🎮 Play'}
     setTimeout(()=>{
-      if(G.chapter>=15){clearSave();endGame();return}
+      if(G.chapter>=12){clearSave();endGame();return}
       G.chapter++;
-      $id('chapter-title').textContent=`📖 Chapter ${G.chapter} of 15`;
+      $id('chapter-title').textContent=`📖 Chapter ${G.chapter} of 12`;
       saveGame();
       showDialog(`🔓 Chapter ${G.chapter} Unlocked!`,`Great work! The dragon grows stronger…\nReady for Chapter ${G.chapter}?`,`Start Chapter ${G.chapter}!`,()=>{
         doFlip(()=>{
@@ -1275,10 +1277,10 @@ function openAdmin(){
 function closeAdmin(){$id('admin-overlay').classList.remove('open')}
 function admShowPw(){$id('adm-pw').textContent=G.password.length?G.password.join(''):'No password yet this chapter';}
 function admSkip(){
-  if(G.chapter>=15){alert('Already at last chapter!');return}
+  if(G.chapter>=12){alert('Already at last chapter!');return}
   closeAdmin();
   G.chapter++;
-  $id('chapter-title').textContent=`📖 Chapter ${G.chapter} of 15`;
+  $id('chapter-title').textContent=`📖 Chapter ${G.chapter} of 12`;
   saveGame();
   $id('flip-zone').style.display='none';
   doFlip(()=>{
@@ -1289,17 +1291,17 @@ function admSkip(){
   },()=>startChapter());
 }
 function admReset(){if(confirm('Reset ALL progress?')){clearSave();location.reload();}}
-function showDirs(){toggleScroll();showDialog('📖 How to Play','1. Answer math questions at your level\n2. 3 correct in a row → 1 Gear + 1 Password Digit\n3. Collect 5 Gears → Dragon Battle begins\n4. Defeat the Dragon → Password Machine appears\n5. Enter the 5-digit Password → next Chapter\n6. 15 Chapters total!','Got it!',()=>{})}
+function showDirs(){toggleScroll();showDialog('📖 How to Play','1. Answer 9 math questions at your level\n2. 3 correct in a row → 1 ⚙️ Gear + 1 Password Digit\n3. Collect 3 Gears → flip page → Dragon Battle!\n4. Defeat the Dragon → flip page → Password Machine\n5. Enter the 3-digit Password → next Chapter\n6. 12 Chapters total!','Got it!',()=>{})}
 
 // ═══════════════════════════════════════
 // MINI GAME MAP
 // ═══════════════════════════════════════
 const MINI_INFO={
-  add:{name:'Addition Agents',emoji:'➕',desc:'Solve addition missions!',color:'#4488ff'},
-  sub:{name:'Subtraction Statics',emoji:'➖',desc:'Crack subtraction codes!',color:'#ff4444'},
-  mul:{name:'Multiplication Mania',emoji:'✖️',desc:'Multiply at max power!',color:'#44ff44'},
-  div:{name:'Division Drops',emoji:'➗',desc:'Drop into division!',color:'#ffff44'},
-  dam:{name:'DAMsVille 🏰',emoji:'🏰',desc:'All 4 operations — the ultimate challenge!',color:'#ff44ff'},
+  add:{name:'4 Operation Era',emoji:'🔢',desc:'Master all 4 operations — the era begins!',color:'#4488ff'},
+  sub:{name:'Palindrome-ville',emoji:'🔄',desc:'Find palindromes and crack the mirror code!',color:'#ff4444'},
+  mul:{name:'Pattern-drops',emoji:'🔮',desc:'Spot the pattern before it drops!',color:'#44ff44'},
+  div:{name:'POPped Your Mind',emoji:'💥',desc:'Mind-popping mixed challenge — all 4!',color:'#ffff44'},
+  dam:{name:'DAMsVILLE 🏰',emoji:'🏰',desc:'All 4 operations — the ultimate challenge!',color:'#ff44ff'},
 };
 function openMiniMap(){if(!G.miniUnlocked)return;toggleScroll();$id('mini-map-overlay').classList.add('open')}
 function closeMiniMap(){$id('mini-map-overlay').classList.remove('open');$id('mini-play').classList.remove('open')}

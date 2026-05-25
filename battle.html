@@ -529,6 +529,11 @@ document.getElementById('start-btn').onclick=()=>{
   if(!hasSupport){
     alert('🛡️ You need at least 1 support hero alongside your Fighter!\nAdd a Healer 💚, Math Master 🔢, Pattern Master 🔮, or Defender 🛡️.');return;
   }
+  const dupRole=roles.find((r,i)=>roles.indexOf(r)!==i);
+  if(dupRole){
+    const label={fighter:'Fighter ⚔️',healer:'Healer 💚',defender:'Defender 🛡️',math_master:'Math Master 🔢',pattern_master:'Pattern Master 🔮'}[dupRole]||dupRole;
+    alert(`⚠️ Two players have the same role (${label})!\nEach hero must have a unique role — switch one character.`);return;
+  }
   // ────────────────────────────────────────────────────────────────
   const players=[];
   for(let i=0;i<numP;i++){
