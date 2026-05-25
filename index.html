@@ -370,6 +370,29 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 .adm-btn:hover{filter:brightness(1.35)}
 .adm-btn.danger{background:#882222;color:#ffcccc}
 .adm-btn.close-adm{background:#334;color:#aaa;margin-top:2px}
+
+/* ══ CHAT BUBBLE + PANEL ══ */
+#chat-bubble{display:none;position:fixed;bottom:22px;right:22px;width:52px;height:52px;background:linear-gradient(135deg,#1e3a8a,#2563eb);border-radius:50%;align-items:center;justify-content:center;font-size:24px;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.55);z-index:500;transition:transform .2s;user-select:none}
+#chat-bubble:hover{transform:scale(1.12)}
+#chat-badge{position:absolute;top:-4px;right:-4px;background:#ef4444;color:#fff;border-radius:50%;width:19px;height:19px;font-size:11px;font-weight:bold;display:none;align-items:center;justify-content:center;border:2px solid #fff;font-family:monospace}
+#chat-panel{display:none;position:fixed;bottom:84px;right:16px;width:270px;height:350px;background:linear-gradient(160deg,#0f172a,#1e293b);border:2px solid #2563eb;border-radius:16px;flex-direction:column;z-index:500;box-shadow:0 10px 40px rgba(0,0,0,.7);overflow:hidden}
+#chat-hdr{background:linear-gradient(90deg,#1e3a8a,#2563eb);padding:10px 14px;display:flex;align-items:center;justify-content:space-between;font-size:13px;color:#e0f2fe;font-family:Georgia,serif;font-weight:bold}
+#chat-hdr button{background:none;border:none;color:#93c5fd;font-size:17px;cursor:pointer;line-height:1;padding:0 2px}
+#chat-hdr button:hover{color:#fff}
+#chat-msgs{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:7px;scrollbar-width:thin;scrollbar-color:#2563eb #0f172a}
+.cmsg{display:flex;flex-direction:column;max-width:86%}
+.cmsg.mine{align-self:flex-end;align-items:flex-end}
+.cmsg.theirs{align-self:flex-start;align-items:flex-start}
+.cname{font-size:9px;color:#64748b;font-family:Georgia,serif;margin-bottom:2px;letter-spacing:.5px}
+.ctext{padding:7px 11px;border-radius:12px;font-size:12px;font-family:Georgia,serif;word-break:break-word;line-height:1.45}
+.cmsg.mine .ctext{background:#2563eb;color:#eff6ff;border-radius:12px 12px 3px 12px}
+.cmsg.theirs .ctext{background:#1e293b;color:#cbd5e1;border:1px solid #2563eb;border-radius:12px 12px 12px 3px}
+.csys{text-align:center;font-size:10px;color:#475569;font-family:Georgia,serif;font-style:italic;padding:2px 0}
+#chat-foot{padding:8px;display:flex;gap:6px;border-top:1px solid rgba(37,99,235,.25);background:rgba(0,0,0,.25)}
+#chat-inp{flex:1;padding:7px 10px;background:#0f172a;color:#e0f2fe;border:1px solid #2563eb;border-radius:9px;font-size:12px;font-family:Georgia,serif;outline:none}
+#chat-inp:focus{border-color:#60a5fa;box-shadow:0 0 0 2px rgba(96,165,250,.2)}
+#chat-foot button{padding:7px 11px;background:#2563eb;color:#fff;border:none;border-radius:9px;font-size:15px;cursor:pointer;transition:background .15s}
+#chat-foot button:hover{background:#3b82f6}
 </style>
 </head>
 <body>
@@ -1080,18 +1103,30 @@ function awardGear(){
 // PAGE FLIP TO BATTLE
 // ═══════════════════════════════════════
 function goToBattlePage(){
-  doFlip(
-    ()=>{/* mid flip — cave becomes battle */
-      $id('cave-scene').style.display='none';
-      $id('battle-scene').style.display='flex';
-      $id('machine').classList.remove('visible');
-      $id('battle-dragon').style.display='block';
-      $id('battle-dragon').classList.remove('dead');
-      $id('b-log').innerHTML='';
-      showPanel('battle');
-    },
-    ()=>{ startBattle(); }
-  );
+  const pw=G.password.join('');
+  $id('mp-iframe').src='battle.html?solo=1&pw='+pw;
+  doFlip(()=>{
+    $id('cave-scene').style.display='none';
+    $id('battle-scene').style.display='none';
+    $id('mp-scene').style.display='block';
+  });
+}
+function onSoloBattleWin(){
+  doFlip(()=>{
+    $id('mp-scene').style.display='none';
+    $id('mp-iframe').src='';
+    $id('battle-scene').style.display='flex';
+    $id('machine').classList.add('visible');
+    $id('battle-dragon').style.display='none';
+    $id('stickman').style.display='none';
+    $id('b-log').innerHTML='';
+    showPanel('battle');
+  },()=>{
+    G.phase='machine';
+    resetMachineDisplay();
+    G.machineInput='';
+    sfx('victory');
+  });
 }
 
 // ═══════════════════════════════════════
@@ -1451,6 +1486,7 @@ function openMpOverlay(){$id('mp-overlay').classList.add('open');$id('mp-code-di
 function mpGenerate(){
   _mpCode=Math.floor(100000+Math.random()*900000).toString();
   $id('mp-code-disp').textContent=_mpCode;
+  initChat(_mpCode);
 }
 function mpCopyAndOpen(){
   if(!_mpCode)mpGenerate();
@@ -1462,6 +1498,7 @@ function mpCopyAndOpen(){
 function mpJoin(){
   var code=$id('mp-join-inp').value.trim();
   if(!code){alert('Enter the code your friend gave you!');return;}
+  initChat(code);
   $id('mp-overlay').classList.remove('open');
   openMpBattle(code);
 }
@@ -1481,6 +1518,92 @@ function closeMpScene(){
     $id('mp-iframe').src='';
     $id('cave-scene').style.display='flex';
   });
+}
+</script>
+
+<!-- ══ FLOATING CHAT ══ -->
+<div id="chat-bubble" onclick="toggleChat()">💬<div id="chat-badge"></div></div>
+<div id="chat-panel">
+  <div id="chat-hdr">
+    <span>💬 Friend Chat</span>
+    <button onclick="toggleChat()">✕</button>
+  </div>
+  <div id="chat-msgs"><div class="csys">Chat is live — say hi! 👋</div></div>
+  <div id="chat-foot">
+    <input id="chat-inp" placeholder="Type a message…" maxlength="200"
+      onkeydown="if(event.key==='Enter')sendChat()">
+    <button onclick="sendChat()">↑</button>
+  </div>
+</div>
+
+<script>
+// ══ CHAT (ntfy.sh realtime) ══════════════════════════════════════
+const _cSID = Math.random().toString(36).substr(2,10);
+let _cCode = null, _cEvt = null, _cOpen = false, _cUnread = 0;
+
+function initChat(code){
+  if(_cEvt){_cEvt.close();}
+  _cCode = code;
+  $id('chat-bubble').style.display = 'flex';
+  _cEvt = new EventSource('https://ntfy.sh/mathpower-'+code+'/sse');
+  _cEvt.onmessage = function(e){
+    try{
+      const d = JSON.parse(e.data);
+      if(d.event === 'keepalive') return;
+      const msg = JSON.parse(d.message || d.body || '{}');
+      if(msg.sid && msg.sid !== _cSID){
+        _cAppend(msg.name, msg.text, false);
+        if(!_cOpen){
+          _cUnread++;
+          const b = $id('chat-badge');
+          b.textContent = _cUnread > 9 ? '9+' : _cUnread;
+          b.style.display = 'flex';
+        }
+      }
+    }catch(err){}
+  };
+  _cEvt.onerror = function(){};
+}
+
+function toggleChat(){
+  _cOpen = !_cOpen;
+  $id('chat-panel').style.display = _cOpen ? 'flex' : 'none';
+  if(_cOpen){
+    _cUnread = 0;
+    $id('chat-badge').style.display = 'none';
+    const msgs = $id('chat-msgs');
+    msgs.scrollTop = msgs.scrollHeight;
+    setTimeout(()=>$id('chat-inp').focus(), 60);
+  }
+}
+
+function sendChat(){
+  const inp = $id('chat-inp');
+  const text = inp.value.trim();
+  if(!text || !_cCode) return;
+  let name = localStorage.getItem('mathpower-name');
+  if(!name){
+    name = (prompt('📖 Your name for chat:') || 'Scholar').substring(0,16);
+    localStorage.setItem('mathpower-name', name);
+  }
+  const msg = {sid:_cSID, name:name, text:text};
+  _cAppend(name, text, true);
+  fetch('https://ntfy.sh/mathpower-'+_cCode, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify(msg)
+  }).catch(()=>{});
+  inp.value = '';
+}
+
+function _cAppend(name, text, mine){
+  const msgs = $id('chat-msgs');
+  const d = document.createElement('div');
+  d.className = 'cmsg ' + (mine ? 'mine' : 'theirs');
+  d.innerHTML = '<span class="cname">'+name+'</span>'
+    +'<span class="ctext">'+text.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span>';
+  msgs.appendChild(d);
+  msgs.scrollTop = msgs.scrollHeight;
 }
 </script>
 </body>

@@ -363,7 +363,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <br>
     <button class="copy-btn" id="copy-btn" onclick="copyCode()">📋 Copy Code</button>
   </div>
-  <a class="book-link" href="index.html" onclick="if(window.parent!==window){event.preventDefault();window.parent.closeMpScene();}">📖 Return to Book</a><br>
+  <a class="book-link" href="index.html" onclick="if(window.parent!==window){event.preventDefault();_soloMode?(window.parent.onSoloBattleWin&&window.parent.onSoloBattleWin()):window.parent.closeMpScene();}">📖 Return to Book</a><br>
   <button class="again-btn" onclick="location.reload()">⚔️ Play Again</button>
 </div>
 
@@ -372,7 +372,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   <div class="res-emoji">💀</div>
   <div class="res-title res-d">Defeated…</div>
   <div class="res-sub">The Dralioster claims victory. Train harder and try again!</div>
-  <button class="again-btn" onclick="location.reload()">Try Again</button>
+  <button class="again-btn" onclick="location.reload()">⚔️ Try Again</button>
+  <a class="book-link" href="index.html" style="margin-top:.75rem;display:inline-block" onclick="if(window.parent!==window){event.preventDefault();window.parent.closeMpScene();}">📖 Return to Book</a>
 </div>
 
 <script>
@@ -407,7 +408,10 @@ const DRAGON_SUBS = [
 ];
 
 // ── SETUP STATE ───────────────────────────────────────────────────
-let numP = 2;
+const _bParams = new URLSearchParams(location.search);
+const _soloMode = _bParams.get('solo') === '1';
+const _soloPw   = _bParams.get('pw') || '';
+let numP = _soloMode ? 1 : 2;
 const pData = [];  // {playerName, gender, charName}
 
 function r(a,b){return Math.floor(Math.random()*(b-a+1))+a}
@@ -496,45 +500,54 @@ function renderSetup(){
   for(let i=0;i<numP;i++)c.appendChild(buildSetupRow(i));
 }
 
-// ── INVITE CODE (URL ?invite=CODE) ───────────────────────────────
+// ── INVITE CODE / SOLO MODE SETUP ────────────────────────────────
 (function(){
-  const code=new URLSearchParams(location.search).get('invite');
+  if(_soloMode){
+    document.querySelector('#setup-screen .game-title p').textContent='Solo Dragon Battle · Choose your hero!';
+    document.getElementById('btn-down').style.display='none';
+    document.getElementById('btn-up').style.display='none';
+    document.querySelector('.count-row span').style.display='none';
+    document.getElementById('cnt').textContent='1';
+    return;
+  }
+  const code=_bParams.get('invite');
   if(code){
     const banner=document.getElementById('mp-banner');
     document.getElementById('mp-session-code').textContent=code;
     banner.style.display='block';
-    numP=2; // default to 2 players for multiplayer
+    numP=2;
   }
 })();
 
-document.getElementById('btn-down').onclick=()=>{if(numP>1){numP--;renderSetup();}};
-document.getElementById('btn-up').onclick=()=>{if(numP<5){numP++;renderSetup();}};
+document.getElementById('btn-down').onclick=()=>{if(!_soloMode&&numP>1){numP--;renderSetup();}};
+document.getElementById('btn-up').onclick=()=>{if(!_soloMode&&numP<5){numP++;renderSetup();}};
 
 document.getElementById('start-btn').onclick=()=>{
   for(let i=0;i<numP;i++){
     if(!pData[i].playerName.trim()){alert('Enter a name for Player '+(i+1)+'!');return;}
     if(!pData[i].charName){alert('Choose a character for Player '+(i+1)+'!');return;}
   }
-  // ── Team composition check ──────────────────────────────────────
-  const roles=[];
-  for(let i=0;i<numP;i++){
-    const d=pData[i];
-    const ch=(CHARS[d.gender+'s']||CHARS.boys).find(c=>c.name===d.charName);
-    if(ch)roles.push(ch.role);
+  if(!_soloMode){
+    // ── Team composition check (multiplayer only) ─────────────────
+    const roles=[];
+    for(let i=0;i<numP;i++){
+      const d=pData[i];
+      const ch=(CHARS[d.gender+'s']||CHARS.boys).find(c=>c.name===d.charName);
+      if(ch)roles.push(ch.role);
+    }
+    if(!roles.includes('fighter')){
+      alert('⚔️ Your team needs at least 1 Fighter!\nA Fighter deals heavy damage and uses the Ultimate Attack.');return;
+    }
+    const hasSupport=roles.some(r=>r==='healer'||r==='pattern_master'||r==='math_master'||r==='defender');
+    if(!hasSupport){
+      alert('🛡️ You need at least 1 support hero alongside your Fighter!\nAdd a Healer 💚, Math Master 🔢, Pattern Master 🔮, or Defender 🛡️.');return;
+    }
+    const dupRole=roles.find((r,i)=>roles.indexOf(r)!==i);
+    if(dupRole){
+      const label={fighter:'Fighter ⚔️',healer:'Healer 💚',defender:'Defender 🛡️',math_master:'Math Master 🔢',pattern_master:'Pattern Master 🔮'}[dupRole]||dupRole;
+      alert(`⚠️ Two players have the same role (${label})!\nEach hero must have a unique role — switch one character.`);return;
+    }
   }
-  if(!roles.includes('fighter')){
-    alert('⚔️ Your team needs at least 1 Fighter!\nA Fighter deals heavy damage and uses the Ultimate Attack.');return;
-  }
-  const hasSupport=roles.some(r=>r==='healer'||r==='pattern_master'||r==='math_master'||r==='defender');
-  if(!hasSupport){
-    alert('🛡️ You need at least 1 support hero alongside your Fighter!\nAdd a Healer 💚, Math Master 🔢, Pattern Master 🔮, or Defender 🛡️.');return;
-  }
-  const dupRole=roles.find((r,i)=>roles.indexOf(r)!==i);
-  if(dupRole){
-    const label={fighter:'Fighter ⚔️',healer:'Healer 💚',defender:'Defender 🛡️',math_master:'Math Master 🔢',pattern_master:'Pattern Master 🔮'}[dupRole]||dupRole;
-    alert(`⚠️ Two players have the same role (${label})!\nEach hero must have a unique role — switch one character.`);return;
-  }
-  // ────────────────────────────────────────────────────────────────
   const players=[];
   for(let i=0;i<numP;i++){
     const d=pData[i];
@@ -894,8 +907,12 @@ function winGame(){
   log('🏆 DRALIOSTER DEFEATED! Heroes WIN!','log-pwr');
   const alive=G.players.filter(p=>p.isAlive).length;
   document.getElementById('v-sub').textContent='The Dralioster falls! '+alive+' hero'+(alive!==1?'es':'')+' survived.';
-  document.getElementById('v-code').textContent='Power Code: '+G.code.join('')+' ⚡';
+  const displayCode=(_soloMode&&_soloPw)?_soloPw:G.code.join('');
+  document.getElementById('v-code').textContent='Power Code: '+displayCode+' ⚡';
   showScreen('victory-screen');
+  if(_soloMode&&window.parent!==window){
+    setTimeout(()=>{if(window.parent.onSoloBattleWin)window.parent.onSoloBattleWin();},2800);
+  }
 }
 
 function loseGame(){
