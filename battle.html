@@ -59,6 +59,54 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.5px}
 .start-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,.4)}
 
+/* ── CHOOSE HERO BUTTON (replaces char-select dropdown) ── */
+.pick-btn{width:100%;padding:.35rem .6rem;border-radius:.5rem;border:1px dashed var(--gold);
+  background:rgba(255,215,0,.06);color:var(--gold);font-size:.75rem;cursor:pointer;
+  text-align:left;transition:all .2s;display:flex;align-items:center;gap:.5rem}
+.pick-btn:hover{background:rgba(255,215,0,.14);border-style:solid}
+.pick-btn .pick-thumb{width:2rem;height:2rem;border-radius:.35rem;object-fit:cover;flex-shrink:0;display:none}
+.pick-btn .pick-thumb.show{display:block}
+
+/* ── CHARACTER GALLERY OVERLAY ── */
+#char-gallery{position:fixed;inset:0;background:rgba(0,0,0,.88);z-index:900;
+  display:flex;flex-direction:column;overflow:hidden}
+#char-gallery.hidden{display:none!important}
+#cg-hdr{padding:.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between;
+  background:linear-gradient(90deg,#1a0a35,#0d0d1f);border-bottom:1px solid var(--gold);flex-shrink:0}
+#cg-hdr h2{font-size:1rem;font-weight:800;color:var(--gold);letter-spacing:1px}
+#cg-hdr span{font-size:.75rem;color:var(--muted);margin-left:.6rem}
+#cg-close{background:none;border:1px solid #666;color:#aaa;border-radius:.5rem;
+  padding:.3rem .7rem;font-size:.85rem;cursor:pointer}
+#cg-close:hover{border-color:#fff;color:#fff}
+#cg-tabs{display:flex;gap:.5rem;padding:.6rem 1rem;background:rgba(0,0,0,.4);flex-shrink:0;flex-wrap:wrap}
+.cg-tab{padding:.3rem .9rem;border-radius:2rem;border:1px solid var(--border);
+  background:transparent;color:var(--muted);font-size:.75rem;cursor:pointer;transition:all .2s}
+.cg-tab.active{background:var(--gold);border-color:var(--gold);color:#000;font-weight:700}
+#cg-grid{flex:1;overflow-y:auto;display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.75rem;padding:1rem}
+.cg-card{background:rgba(255,255,255,.04);border:2px solid var(--border);border-radius:.85rem;
+  padding:.6rem;cursor:pointer;transition:all .2s;position:relative;text-align:center;
+  display:flex;flex-direction:column;align-items:center;gap:.35rem}
+.cg-card:hover:not(.cg-taken){border-color:var(--gold);background:rgba(255,215,0,.08);transform:translateY(-2px)}
+.cg-card.cg-selected{border-color:#22c55e;background:rgba(34,197,94,.1);box-shadow:0 0 16px rgba(34,197,94,.3)}
+.cg-card.cg-taken{opacity:.45;cursor:not-allowed;filter:grayscale(.7)}
+.cg-card-img{width:72px;height:72px;border-radius:.6rem;object-fit:cover;background:rgba(255,255,255,.06);
+  border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:2rem;overflow:hidden}
+.cg-card-img img{width:100%;height:100%;object-fit:cover;border-radius:.5rem}
+.cg-card-name{font-size:.78rem;font-weight:700;color:var(--text)}
+.cg-card-role{font-size:.65rem;color:var(--muted);padding:.15rem .5rem;border-radius:2rem;
+  border:1px solid var(--border);background:rgba(255,255,255,.04)}
+.cg-taken-x{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  border-radius:.85rem;background:rgba(0,0,0,.45);font-size:2.2rem;color:#ef4444;font-weight:900;pointer-events:none}
+.cg-check{position:absolute;top:.4rem;right:.4rem;width:1.3rem;height:1.3rem;
+  background:#22c55e;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  font-size:.7rem;color:#000;font-weight:900;pointer-events:none}
+.role-fighter{border-color:#ef4444;color:#ef4444}
+.role-healer{border-color:#22c55e;color:#22c55e}
+.role-defender{border-color:#3b82f6;color:#3b82f6}
+.role-math{border-color:#a855f7;color:#a855f7}
+.role-pattern{border-color:#f59e0b;color:#f59e0b}
+
 /* ── BATTLE ── */
 #battle-screen{background:var(--bg)}
 .battle-arena{display:grid;grid-template-rows:auto 1fr auto;min-height:100vh}
@@ -463,18 +511,20 @@ function buildSetupRow(i){
     gr.appendChild(b);
   });
 
-  const cs=document.createElement('select');cs.className='char-select';
-  chars.forEach(c=>{
-    const o=document.createElement('option');o.value=c.name;
-    o.textContent=c.name+' ('+c.desc+')';
-    if(taken[d.gender+'_'+c.name]){o.disabled=true;o.textContent+=' — taken';}
-    if(c.name===d.charName)o.selected=true;
-    cs.appendChild(o);
-  });
-  if(!cs.value&&d.charName)cs.value=d.charName;
-  cs.onchange=e=>{pData[i].charName=e.target.value;refreshPreview(i);};
+  const pb=document.createElement('button'); pb.className='pick-btn'; pb.type='button';
+  const pbThumb=document.createElement('img'); pbThumb.className='pick-thumb'; pbThumb.alt='';
+  pbThumb.onerror=()=>{pbThumb.style.display='none'};
+  const pbLabel=document.createElement('span');
+  const selChar=chars.find(c=>c.name===d.charName);
+  if(selChar){pbThumb.src=selChar.img;pbThumb.classList.add('show');pbLabel.textContent=selChar.name+' · '+selChar.desc;}
+  else pbLabel.textContent='✨ Choose a Hero…';
+  pb.appendChild(pbThumb); pb.appendChild(pbLabel);
+  pb.onclick=()=>{
+    document.getElementById('cg-player-lbl').textContent='— Player '+(i+1);
+    openGallery(i);
+  };
 
-  inputs.appendChild(ni);inputs.appendChild(gr);inputs.appendChild(cs);
+  inputs.appendChild(ni);inputs.appendChild(gr);inputs.appendChild(pb);
 
   const img=document.createElement('img');
   img.className='char-preview';img.alt='';img.id='prev'+i;
@@ -948,6 +998,90 @@ function copyCode(){
     btn.textContent=code;setTimeout(()=>btn.textContent='📋 Copy Code',3000);
   }
 }
+
+// ── CHARACTER GALLERY ─────────────────────────────────────────────
+const ROLE_EMOJI={fighter:'⚔️',healer:'💚',defender:'🛡️',math_master:'🔢',pattern_master:'🔮'};
+const ROLE_CLASS={fighter:'role-fighter',healer:'role-healer',defender:'role-defender',
+  math_master:'role-math',pattern_master:'role-pattern'};
+let _cgIdx=-1, _cgFilter='all';
+
+function openGallery(playerIdx){
+  _cgIdx=playerIdx;
+  _cgFilter='all';
+  document.querySelectorAll('.cg-tab').forEach((t,i)=>{t.classList.toggle('active',i===0)});
+  renderGallery();
+  document.getElementById('char-gallery').classList.remove('hidden');
+}
+function closeGallery(){document.getElementById('char-gallery').classList.add('hidden');_cgIdx=-1;}
+function cgTab(filter,el){
+  _cgFilter=filter;
+  document.querySelectorAll('.cg-tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  renderGallery();
+}
+
+function renderGallery(){
+  const grid=document.getElementById('cg-grid'); grid.innerHTML='';
+  const taken=getTakenChars(_cgIdx);
+  const cur=pData[_cgIdx]||{};
+  let chars=[];
+  if(_cgFilter==='all'||_cgFilter==='girls') CHARS.girls.forEach(c=>chars.push({...c,gender:'girl'}));
+  if(_cgFilter==='all'||_cgFilter==='boys')  CHARS.boys.forEach(c=>chars.push({...c,gender:'boy'}));
+
+  chars.forEach(c=>{
+    const key=c.gender+'_'+c.name;
+    const isTaken=!!taken[key];
+    const isSelected=cur.charName===c.name&&cur.gender===c.gender;
+    const roleLabel=(ROLE_EMOJI[c.role]||'')+(c.role||'').replace('_',' ');
+    const rClass=ROLE_CLASS[c.role]||'';
+
+    const card=document.createElement('div');
+    card.className='cg-card'+(isTaken?' cg-taken':'')+(isSelected?' cg-selected':'');
+
+    const imgBox=document.createElement('div'); imgBox.className='cg-card-img';
+    const img=document.createElement('img'); img.alt=c.name; img.src=c.img;
+    img.onerror=()=>{imgBox.textContent=(c.gender==='girl'?'👧':'👦');};
+    imgBox.appendChild(img);
+
+    const name=document.createElement('div'); name.className='cg-card-name'; name.textContent=c.name;
+    const role=document.createElement('div'); role.className='cg-card-role '+rClass;
+    role.textContent=roleLabel;
+
+    card.appendChild(imgBox); card.appendChild(name); card.appendChild(role);
+
+    if(isTaken){
+      const x=document.createElement('div'); x.className='cg-taken-x'; x.textContent='✕';
+      card.appendChild(x);
+    }
+    if(isSelected){
+      const ck=document.createElement('div'); ck.className='cg-check'; ck.textContent='✓';
+      card.appendChild(ck);
+    }
+    if(!isTaken) card.onclick=()=>selectChar(_cgIdx,c.gender,c.name);
+    grid.appendChild(card);
+  });
+}
+
+function selectChar(idx,gender,name){
+  pData[idx].gender=gender; pData[idx].charName=name;
+  closeGallery();
+  renderSetup();
+}
 </script>
+
+<!-- Character Gallery Overlay -->
+<div id="char-gallery" class="hidden">
+  <div id="cg-hdr">
+    <div><h2>⚔️ Choose Your Hero <span id="cg-player-lbl"></span></h2></div>
+    <button id="cg-close" onclick="closeGallery()">✕ Close</button>
+  </div>
+  <div id="cg-tabs">
+    <button class="cg-tab active" onclick="cgTab('all',this)">🌟 All Heroes</button>
+    <button class="cg-tab" onclick="cgTab('girls',this)">👧 Girls</button>
+    <button class="cg-tab" onclick="cgTab('boys',this)">👦 Boys</button>
+  </div>
+  <div id="cg-grid"></div>
+</div>
+
 </body>
 </html>
