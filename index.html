@@ -371,6 +371,31 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 .adm-btn.danger{background:#882222;color:#ffcccc}
 .adm-btn.close-adm{background:#334;color:#aaa;margin-top:2px}
 
+/* ══ CHARACTER SELECTION PANEL (multiplayer page 2) ══ */
+#panel-chars{overflow-y:auto}
+#pc-header{text-align:center;flex-shrink:0}
+#pc-header h3{color:#5a2d00;font-size:13px;font-weight:bold;margin-bottom:2px}
+#pc-turn{font-size:11px;color:#8b4513;font-style:italic;min-height:16px}
+#pc-tabs{display:flex;gap:5px;justify-content:center;margin:5px 0;flex-shrink:0}
+.pct{padding:3px 12px;border-radius:16px;border:1px solid rgba(139,100,60,.4);background:transparent;color:#8b4513;font-size:10px;font-family:Georgia,serif;cursor:pointer;transition:all .2s}
+.pct.on{background:#8b4513;border-color:#8b4513;color:#f6e8cc;font-weight:bold}
+#pc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:2px;overflow-y:auto}
+.pc-card{background:rgba(139,100,60,.1);border:2px solid rgba(139,100,60,.25);border-radius:9px;padding:6px 4px;text-align:center;cursor:pointer;position:relative;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:3px}
+.pc-card:hover:not(.pc-taken){border-color:#8b4513;background:rgba(139,100,60,.22)}
+.pc-card.pc-p1{border-color:#2d6a00;background:rgba(45,106,0,.15)}
+.pc-card.pc-p2{border-color:#004488;background:rgba(0,68,136,.15)}
+.pc-card.pc-taken{opacity:.5;cursor:not-allowed}
+.pc-img{width:46px;height:46px;border-radius:6px;border:1px solid rgba(139,100,60,.3);display:flex;align-items:center;justify-content:center;font-size:1.6rem;overflow:hidden;flex-shrink:0;background:rgba(139,100,60,.08)}
+.pc-img img{width:100%;height:100%;object-fit:cover;border-radius:5px;display:block}
+.pc-name{font-size:10px;font-weight:bold;color:#2d0000;font-family:Georgia,serif;line-height:1.2}
+.pc-rolebadge{font-size:8px;padding:1px 5px;border-radius:8px;font-weight:bold}
+.pc-badge{position:absolute;top:-5px;right:-5px;width:18px;height:18px;border-radius:50%;font-size:9px;font-weight:bold;display:flex;align-items:center;justify-content:center;border:2px solid #f6e8cc}
+.pc-badge.p1{background:#2d6a00;color:#fff}
+.pc-badge.p2{background:#004488;color:#fff}
+.pc-x{position:absolute;inset:0;border-radius:8px;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#cc3333;font-weight:900;pointer-events:none}
+#pc-fight{margin-top:6px;padding:9px;width:100%;background:linear-gradient(#8b4513,#5a2d00);color:#f6e8cc;border:none;border-radius:12px;font-size:14px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3);flex-shrink:0}
+#pc-fight:hover{filter:brightness(1.2)}
+
 /* ══ CHAT BUBBLE + PANEL ══ */
 #chat-bubble{display:none;position:fixed;bottom:22px;right:22px;width:52px;height:52px;background:linear-gradient(135deg,#1e3a8a,#2563eb);border-radius:50%;align-items:center;justify-content:center;font-size:24px;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.55);z-index:500;transition:transform .2s;user-select:none}
 #chat-bubble:hover{transform:scale(1.12)}
@@ -582,6 +607,21 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
       <div id="b-heals">Heals: 3</div>
       <div style="font-size:11px;color:#8b4513;margin-top:4px">Gears equipped:</div>
       <div id="b-gear-display" style="font-size:18px;text-align:center;letter-spacing:4px"></div>
+    </div>
+
+    <!-- Character selection panel (multiplayer only) -->
+    <div class="rp-panel" id="panel-chars">
+      <div id="pc-header">
+        <h3>⚔️ Choose Your Heroes</h3>
+        <div id="pc-turn">Player 1 — tap your hero!</div>
+      </div>
+      <div id="pc-tabs">
+        <button class="pct on" onclick="pcTab('all',this)">All</button>
+        <button class="pct" onclick="pcTab('girls',this)">👧 Girls</button>
+        <button class="pct" onclick="pcTab('boys',this)">👦 Boys</button>
+      </div>
+      <div id="pc-grid"></div>
+      <button id="pc-fight" style="display:none" onclick="doMpBattle()">⚔️ Let's Fight!</button>
     </div>
 
     <!-- Post-fight flip zone (right edge of right page) -->
@@ -814,6 +854,7 @@ const G = {
   mpGame:null, mpStreak:0, mpQ:null,
   machineInput:'',
   machineAttempts:0,
+  mpPlayers:[], // pre-selected characters for multiplayer [{playerName,gender,charName}]
 };
 
 // ═══════════════════════════════════════
@@ -1104,7 +1145,18 @@ function awardGear(){
 // ═══════════════════════════════════════
 function goToBattlePage(){
   const pw=G.password.join('');
-  $id('mp-iframe').src='battle.html?solo=1&pw='+pw;
+  let src;
+  if(_mpCode&&G.mpPlayers&&G.mpPlayers.length>=2){
+    src='battle.html?invite='+_mpCode+'&pw='+pw+'&autostart=1';
+    G.mpPlayers.forEach((p,i)=>{
+      src+='&p'+(i+1)+'n='+encodeURIComponent(p.playerName)
+          +'&p'+(i+1)+'g='+p.gender
+          +'&p'+(i+1)+'c='+encodeURIComponent(p.charName);
+    });
+  } else {
+    src='battle.html?solo=1&pw='+pw;
+  }
+  $id('mp-iframe').src=src;
   doFlip(()=>{
     $id('cave-scene').style.display='none';
     $id('battle-scene').style.display='none';
@@ -1493,14 +1545,15 @@ function mpCopyAndOpen(){
   var btn=$id('mp-copy-btn');
   if(navigator.clipboard){navigator.clipboard.writeText(_mpCode).then(()=>{btn.textContent='✓ Code Copied!';setTimeout(()=>{btn.textContent='📋 Copy & Open Battle';},2000);});}
   $id('mp-overlay').classList.remove('open');
-  openMpBattle(_mpCode);
+  openCharPanel();
 }
 function mpJoin(){
   var code=$id('mp-join-inp').value.trim();
   if(!code){alert('Enter the code your friend gave you!');return;}
+  _mpCode=code;
   initChat(code);
   $id('mp-overlay').classList.remove('open');
-  openMpBattle(code);
+  openCharPanel();
 }
 function openMpBattle(inviteCode){
   $id('scroll-menu').classList.remove('open');
@@ -1517,7 +1570,121 @@ function closeMpScene(){
     $id('mp-scene').style.display='none';
     $id('mp-iframe').src='';
     $id('cave-scene').style.display='flex';
+    // after mp battle, go back to question panel
+    showPanel('q');
   });
+}
+
+// ── CHARACTER SELECTION PANEL ────────────────────────────────────
+const _IB='file:///Users/habeeb/Documents/nazmins%20game%20charecters/';
+const _CHARS={
+  girls:[
+    {name:'Zoey',  role:'fighter',        img:_IB+'6e6c7b93-b806-492b-b2ae-40922105fef6.jpg',  desc:'Power Attacker'},
+    {name:'Arya',  role:'defender',       img:_IB+'44513300-842f-4d72-9e69-92fca75c8ebc.jpg',  desc:'Defender'},
+    {name:'Autumn',role:'math_master',    img:_IB+'53e32a3e-50f4-402e-baa9-d0de3cbd934d.jpg',  desc:'4 Ops Master'},
+    {name:'Lily',  role:'healer',         img:_IB+'6426d4cb-264d-45fd-8893-212a9d133754.jpg',  desc:'Healer'},
+    {name:'Iris',  role:'pattern_master', img:_IB+'f9f0e704-044d-42d9-9a44-9bdb2e371cd4.png',  desc:'Pattern Master'},
+  ],
+  boys:[
+    {name:'Zach',  role:'fighter',        img:_IB+'4834f4e7-7b2b-44b0-b223-2fd8f667b16f.jpg',  desc:'Power Attacker'},
+    {name:'Max',   role:'defender',       img:_IB+'f0aacc90-a188-421c-8601-8ee088b648a5%202.jpg',desc:'Defender'},
+    {name:'Alex',  role:'math_master',    img:_IB+'e74bd7d5-865b-4821-aa1d-808b5cdcf4b8.jpg',  desc:'4 Ops Master'},
+    {name:'Liam',  role:'healer',         img:_IB+'ea55ac6a-0857-48cd-bdd4-238469fbb7b6.jpg',  desc:'Healer'},
+    {name:'Isaac', role:'pattern_master', img:_IB+'fa170847-2e48-4e0d-b184-a90cad9a308f.jpg',  desc:'Pattern Master'},
+  ]
+};
+const _RE={fighter:'⚔️',defender:'🛡️',healer:'💚',math_master:'🔢',pattern_master:'🔮'};
+const _RC={fighter:'#ef4444',defender:'#3b82f6',healer:'#22c55e',math_master:'#f97316',pattern_master:'#a855f7'};
+// _pcSel: {gender_name: 1|2}
+let _pcSel={}, _pcFilter='all', _pcTurn=1;
+
+function openCharPanel(){
+  _pcSel={}; _pcFilter='all'; _pcTurn=1;
+  G.mpPlayers=[];
+  document.querySelectorAll('.pct').forEach((t,i)=>t.classList.toggle('on',i===0));
+  $id('pc-fight').style.display='none';
+  renderPcGrid();
+  doFlip(()=>{
+    $id('cave-scene').style.display='flex';
+    $id('battle-scene').style.display='none';
+    $id('mp-scene').style.display='none';
+    showPanel('chars');
+  });
+}
+
+function pcTab(f,el){
+  _pcFilter=f;
+  document.querySelectorAll('.pct').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  renderPcGrid();
+}
+
+function renderPcGrid(){
+  const grid=$id('pc-grid'); grid.innerHTML='';
+  let chars=[];
+  if(_pcFilter!=='boys')  _CHARS.girls.forEach(c=>chars.push({...c,gender:'girl'}));
+  if(_pcFilter!=='girls') _CHARS.boys.forEach(c=>chars.push({...c,gender:'boy'}));
+
+  $id('pc-turn').textContent=_pcTurn<=2
+    ?'Player '+_pcTurn+' — tap your hero!'
+    :'Both heroes chosen! ✅';
+
+  chars.forEach(c=>{
+    const key=c.gender+'_'+c.name;
+    const claimedBy=_pcSel[key];
+    const card=document.createElement('div');
+    card.className='pc-card'+(claimedBy?' pc-p'+claimedBy+' pc-taken':'');
+
+    // avatar
+    const av=document.createElement('div'); av.className='pc-img';
+    const im=document.createElement('img'); im.src=c.img; im.alt=c.name;
+    im.onerror=()=>{av.removeChild(im);av.textContent=_RE[c.role]||'?';};
+    av.appendChild(im);
+
+    const nm=document.createElement('div'); nm.className='pc-name'; nm.textContent=c.name;
+    const rb=document.createElement('div'); rb.className='pc-rolebadge';
+    rb.textContent=_RE[c.role]+' '+c.desc;
+    rb.style.cssText='color:'+_RC[c.role]+';border:1px solid '+_RC[c.role]+';background:'+_RC[c.role]+'22';
+
+    card.appendChild(av); card.appendChild(nm); card.appendChild(rb);
+
+    if(claimedBy){
+      const badge=document.createElement('div');
+      badge.className='pc-badge p'+claimedBy;
+      badge.textContent='P'+claimedBy;
+      card.appendChild(badge);
+      const xo=document.createElement('div'); xo.className='pc-x'; xo.textContent='✕';
+      // show X for the OTHER player
+      if(_pcTurn<=2 && claimedBy!==_pcTurn) card.appendChild(xo);
+    } else if(_pcTurn<=2){
+      card.onclick=()=>pcPick(c.gender,c.name,c);
+    }
+    grid.appendChild(card);
+  });
+}
+
+function pcPick(gender,name,c){
+  const key=gender+'_'+name;
+  if(_pcSel[key]) return; // already taken
+  _pcSel[key]=_pcTurn;
+  // ask for player name
+  const defaultName='Player '+_pcTurn;
+  const pName=(prompt('Player '+_pcTurn+' name:',defaultName)||defaultName).substring(0,16);
+  G.mpPlayers.push({playerName:pName,gender,charName:name});
+  _pcTurn++;
+  renderPcGrid();
+  if(_pcTurn>2){
+    $id('pc-fight').style.display='block';
+    $id('pc-fight').textContent='▶ Start Adventure!';
+  }
+}
+
+function doMpBattle(){
+  // flip back to the book game and start
+  doFlip(()=>{
+    $id('cave-scene').style.display='flex';
+    showPanel('q');
+  },()=>startGame());
 }
 </script>
 

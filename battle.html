@@ -411,7 +411,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <br>
     <button class="copy-btn" id="copy-btn" onclick="copyCode()">📋 Copy Code</button>
   </div>
-  <a class="book-link" href="index.html" onclick="if(window.parent!==window){event.preventDefault();_soloMode?(window.parent.onSoloBattleWin&&window.parent.onSoloBattleWin()):window.parent.closeMpScene();}">📖 Return to Book</a><br>
+  <a class="book-link" href="index.html" onclick="if(window.parent!==window){event.preventDefault();(_soloMode||_bParams.get('autostart')==='1')?(window.parent.onSoloBattleWin&&window.parent.onSoloBattleWin()):window.parent.closeMpScene();}">📖 Return to Book</a><br>
   <button class="again-btn" onclick="location.reload()">⚔️ Play Again</button>
 </div>
 
@@ -550,7 +550,7 @@ function renderSetup(){
   for(let i=0;i<numP;i++)c.appendChild(buildSetupRow(i));
 }
 
-// ── INVITE CODE / SOLO MODE SETUP ────────────────────────────────
+// ── INVITE CODE / SOLO MODE / AUTOSTART SETUP ────────────────────
 (function(){
   if(_soloMode){
     document.querySelector('#setup-screen .game-title p').textContent='Solo Dragon Battle · Choose your hero!';
@@ -566,6 +566,24 @@ function renderSetup(){
     document.getElementById('mp-session-code').textContent=code;
     banner.style.display='block';
     numP=2;
+  }
+  // Auto-start with pre-selected characters passed from the book
+  if(_bParams.get('autostart')==='1'){
+    const players=[];
+    for(let i=1;i<=5;i++){
+      const pn=_bParams.get('p'+i+'n');
+      const pg=_bParams.get('p'+i+'g');
+      const pc=_bParams.get('p'+i+'c');
+      if(!pn||!pg||!pc) break;
+      const chars=(CHARS[pg+'s']||CHARS.boys);
+      const ch=chars.find(c=>c.name===pc);
+      if(ch) players.push({playerName:pn,character:ch});
+    }
+    if(players.length>0){
+      // Hide setup, go straight to battle after a brief moment
+      document.getElementById('setup-screen').style.display='none';
+      setTimeout(()=>startBattle(players),200);
+    }
   }
 })();
 
@@ -957,10 +975,10 @@ function winGame(){
   log('🏆 DRALIOSTER DEFEATED! Heroes WIN!','log-pwr');
   const alive=G.players.filter(p=>p.isAlive).length;
   document.getElementById('v-sub').textContent='The Dralioster falls! '+alive+' hero'+(alive!==1?'es':'')+' survived.';
-  const displayCode=(_soloMode&&_soloPw)?_soloPw:G.code.join('');
+  const displayCode=_soloPw||_bParams.get('pw')||G.code.join('');
   document.getElementById('v-code').textContent='Power Code: '+displayCode+' ⚡';
   showScreen('victory-screen');
-  if(_soloMode&&window.parent!==window){
+  if(window.parent!==window&&(_soloMode||_bParams.get('autostart')==='1')){
     setTimeout(()=>{if(window.parent.onSoloBattleWin)window.parent.onSoloBattleWin();},2800);
   }
 }
