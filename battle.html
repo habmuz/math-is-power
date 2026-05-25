@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Math is Power: Dragon Battle</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0d0d1f;--bg2:#1a1a35;--gold:#ffd700;--orange:#ff6b35;
+  --green:#22c55e;--red:#ef4444;--blue:#3b82f6;--purple:#a855f7;
+  --text:#e2e8f0;--muted:#94a3b8;--border:rgba(255,255,255,0.1)
+}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.hidden{display:none!important}
+.screen{display:none;min-height:100vh}
+.screen.active{display:flex;flex-direction:column}
+
+/* ── SETUP ── */
+#setup-screen{align-items:center;justify-content:flex-start;padding:2rem 1rem;
+  background:radial-gradient(ellipse at top,#1a0a35 0%,var(--bg) 60%)}
+.game-title{text-align:center;margin-bottom:1.5rem}
+.game-title h1{font-size:clamp(1.6rem,4vw,2.4rem);font-weight:900;
+  background:linear-gradient(135deg,var(--gold),var(--orange));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.game-title p{color:var(--muted);font-size:.85rem;margin-top:.3rem}
+.setup-card{background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:1rem;padding:1.5rem;width:100%;max-width:640px}
+.section-label{font-size:.7rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  color:var(--gold);margin-bottom:.6rem}
+.count-row{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem}
+.count-btn{width:2.2rem;height:2.2rem;border-radius:50%;border:2px solid var(--gold);
+  background:transparent;color:var(--gold);font-size:1.1rem;cursor:pointer;transition:all .2s}
+.count-btn:hover{background:var(--gold);color:#000}
+.count-num{font-size:1.4rem;font-weight:700;min-width:1.5rem;text-align:center}
+.player-rows{display:flex;flex-direction:column;gap:.65rem;margin-bottom:1.25rem}
+.player-row{background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:.75rem;padding:.85rem;display:grid;
+  grid-template-columns:2rem 1fr auto;gap:.75rem;align-items:center}
+.p-num{width:1.8rem;height:1.8rem;border-radius:50%;
+  background:linear-gradient(135deg,var(--gold),var(--orange));
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:.8rem;color:#000;flex-shrink:0}
+.p-inputs{display:flex;flex-direction:column;gap:.4rem}
+.p-name{background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:.5rem;
+  padding:.4rem .7rem;color:var(--text);font-size:.85rem;outline:none;transition:border-color .2s;width:100%}
+.p-name:focus{border-color:var(--gold)}
+.gender-row{display:flex;gap:.4rem}
+.g-btn{padding:.25rem .65rem;border-radius:2rem;border:1px solid var(--border);
+  background:transparent;color:var(--muted);cursor:pointer;font-size:.75rem;transition:all .2s}
+.g-btn.boy-active{background:#1d4ed8;border-color:var(--blue);color:#fff}
+.g-btn.girl-active{background:#9d174d;border-color:#ec4899;color:#fff}
+.char-select{background:rgba(255,255,255,.07);border:1px solid var(--border);border-radius:.5rem;
+  padding:.25rem .45rem;color:var(--text);font-size:.75rem;cursor:pointer;outline:none;width:100%}
+.char-preview{width:3rem;height:3rem;border-radius:.5rem;object-fit:cover;
+  border:2px solid var(--border);flex-shrink:0}
+.start-btn{width:100%;padding:.85rem;border-radius:.75rem;border:none;
+  background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;
+  font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.5px}
+.start-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,.4)}
+
+/* ── BATTLE ── */
+#battle-screen{background:var(--bg)}
+.battle-arena{display:grid;grid-template-rows:auto 1fr auto;min-height:100vh}
+
+/* Dragon top */
+.dragon-top{background:linear-gradient(180deg,#1a0a2a,var(--bg));padding:.85rem 1.25rem;
+  border-bottom:1px solid rgba(255,0,0,.2)}
+.dragon-hp-row{display:flex;align-items:center;gap:.75rem;margin-bottom:.4rem}
+.dragon-name{font-size:.7rem;font-weight:700;letter-spacing:2px;color:#ff6666;white-space:nowrap}
+.dragon-display{display:flex;align-items:center;gap:1rem}
+.dragon-emoji{font-size:3.5rem;filter:drop-shadow(0 0 10px #ff4444) drop-shadow(0 0 22px #ff0000);
+  animation:dfloat 3s ease-in-out infinite;user-select:none;flex-shrink:0}
+.dragon-sub{font-size:.72rem;color:var(--muted);font-style:italic}
+@keyframes dfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+@keyframes dshake{0%,100%{transform:translateX(0)}25%{transform:translateX(-7px)}75%{transform:translateX(7px)}}
+@keyframes fadein{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+@keyframes charshake{0%,100%{transform:translateX(0)}20%{transform:translateX(-5px)}60%{transform:translateX(5px)}}
+@keyframes digitpop{0%{transform:scale(.4);opacity:0}60%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
+.dshake{animation:dshake .45s ease!important}
+.cshake{animation:charshake .35s ease}
+
+/* HP bar */
+.hp-wrap{flex:1}
+.hp-labels{display:flex;justify-content:space-between;font-size:.65rem;color:var(--muted);margin-bottom:2px}
+.hp-track{height:9px;background:rgba(255,255,255,.1);border-radius:99px;overflow:hidden}
+.hp-fill{height:100%;border-radius:99px;transition:width .5s ease,background .4s ease}
+.hp-dragon{background:linear-gradient(to right,#ff4444,#ff8800)}
+.hp-high{background:linear-gradient(to right,#22c55e,#16a34a)}
+.hp-mid{background:linear-gradient(to right,#eab308,#ca8a04)}
+.hp-low{background:linear-gradient(to right,#ef4444,#dc2626)}
+
+/* Middle grid */
+.battle-mid{display:grid;grid-template-columns:1fr 210px;gap:.75rem;padding:.75rem 1.25rem;overflow:hidden;min-height:0}
+
+/* Active character panel */
+.active-panel{display:flex;flex-direction:column;gap:.65rem;min-height:0}
+.active-card{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:1rem;
+  padding:.85rem;display:flex;gap:.85rem;align-items:flex-start;animation:fadein .3s ease}
+.active-img{width:72px;height:72px;border-radius:.65rem;object-fit:cover;border:2px solid var(--border);flex-shrink:0}
+.active-info{flex:1;min-width:0}
+.active-name{font-size:1.1rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.active-role{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-top:.1rem}
+.active-status{margin-top:.35rem;display:flex;gap:.3rem;flex-wrap:wrap}
+.stag{display:inline-block;padding:.1rem .45rem;border-radius:99px;font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+.stag-shield{background:rgba(29,78,216,.3);color:#93c5fd;border:1px solid rgba(29,78,216,.5)}
+.stag-ko{background:rgba(239,68,68,.2);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
+
+/* Power charge */
+.power-box{background:rgba(255,215,0,.04);border:1px solid rgba(255,215,0,.18);border-radius:.85rem;padding:.8rem}
+.power-lbl{font-size:.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:.45rem}
+.orbs{display:flex;gap:.45rem;margin-bottom:.5rem}
+.orb{width:1.9rem;height:1.9rem;border-radius:50%;border:2px solid rgba(255,215,0,.3);
+  display:flex;align-items:center;justify-content:center;font-size:.75rem;transition:all .35s}
+.orb.on{background:radial-gradient(circle,var(--gold),var(--orange));border-color:var(--gold);
+  box-shadow:0 0 10px var(--gold)}
+.streak-row{display:flex;align-items:center;gap:.35rem}
+.sdot{width:.55rem;height:.55rem;border-radius:50%;border:1.5px solid rgba(255,215,0,.3);transition:all .3s}
+.sdot.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 4px var(--gold)}
+.streak-hint{font-size:.65rem;color:var(--muted);margin-left:.25rem}
+.code-row{display:flex;align-items:center;gap:.4rem;margin-top:.6rem}
+.code-lbl{font-size:.65rem;color:var(--muted)}
+.digit{width:1.8rem;height:2.2rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,215,0,.25);
+  border-radius:.35rem;display:flex;align-items:center;justify-content:center;
+  font-size:1.1rem;font-weight:700;font-family:monospace;color:var(--gold)}
+.digit.on{background:rgba(255,215,0,.1);border-color:var(--gold);box-shadow:0 0 7px rgba(255,215,0,.3);animation:digitpop .45s ease}
+
+/* Battle log */
+.b-log{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:.7rem;
+  padding:.65rem;overflow-y:auto;flex:1;min-height:80px;max-height:130px}
+.log-e{font-size:.72rem;color:var(--muted);padding:.15rem 0;border-bottom:1px solid rgba(255,255,255,.04);animation:fadein .25s ease}
+.log-e:last-child{border-bottom:none}
+.log-imp{color:var(--text)}
+.log-dmg{color:#ff8888}
+.log-ok{color:var(--green)}
+.log-pwr{color:var(--gold)}
+
+/* Team roster */
+.roster{display:flex;flex-direction:column;gap:.45rem;overflow-y:auto;min-height:0}
+.rcard{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:.7rem;padding:.55rem .65rem;transition:border-color .2s}
+.rcard.cur{border-color:var(--gold);background:rgba(255,215,0,.04)}
+.rcard.ko{opacity:.4}
+.rname-row{display:flex;align-items:center;gap:.4rem;margin-bottom:.35rem}
+.rimg{width:1.4rem;height:1.4rem;border-radius:50%;object-fit:cover;flex-shrink:0}
+.rname{font-size:.75rem;font-weight:600}
+.rrole{font-size:.6rem;color:var(--muted)}
+
+/* Action panel */
+.action-panel{border-top:1px solid var(--border);background:rgba(0,0,0,.5);padding:.85rem 1.25rem}
+.turn-ind{font-size:.75rem;color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:.6rem}
+.act-btns{display:flex;gap:.6rem;flex-wrap:wrap}
+.abtn{padding:.55rem 1rem;border-radius:.55rem;border:none;font-size:.8rem;font-weight:600;
+  cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.35rem}
+.abtn:hover:not(:disabled){transform:translateY(-2px)}
+.abtn:disabled{opacity:.35;cursor:not-allowed;transform:none}
+.b-atk{background:linear-gradient(135deg,#dc2626,#991b1b);color:#fff}
+.b-ult{background:linear-gradient(135deg,var(--gold),var(--orange));color:#000}
+.b-shld{background:linear-gradient(135deg,#1d4ed8,#1e40af);color:#fff}
+.b-heal{background:linear-gradient(135deg,#059669,#047857);color:#fff}
+.b-math{background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff}
+.b-pat{background:linear-gradient(135deg,#0891b2,#0e7490);color:#fff}
+.b-atk:hover:not(:disabled){box-shadow:0 4px 14px rgba(220,38,38,.4)}
+.b-ult:hover:not(:disabled){box-shadow:0 4px 14px rgba(255,215,0,.5)}
+.b-shld:hover:not(:disabled){box-shadow:0 4px 14px rgba(29,78,216,.4)}
+.b-heal:hover:not(:disabled){box-shadow:0 4px 14px rgba(5,150,105,.4)}
+.b-math:hover:not(:disabled){box-shadow:0 4px 14px rgba(124,58,237,.4)}
+.b-pat:hover:not(:disabled){box-shadow:0 4px 14px rgba(8,145,178,.4)}
+
+/* ── QUESTION MODAL ── */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.82);
+  display:flex;align-items:center;justify-content:center;z-index:100;padding:1rem}
+.modal-card{background:#1a1a35;border:1px solid rgba(255,255,255,.15);border-radius:1.2rem;
+  padding:1.75rem;width:100%;max-width:420px;animation:fadein .25s ease}
+.modal-hdr{font-size:.75rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:.4rem}
+.q-progress{display:flex;align-items:center;gap:.35rem;margin-bottom:.75rem}
+.qd{width:.65rem;height:.65rem;border-radius:50%;border:1.5px solid rgba(255,215,0,.3);transition:all .3s}
+.qd.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 4px var(--gold)}
+.q-hint{font-size:.65rem;color:var(--muted);margin-left:.3rem}
+.q-text{font-size:1.35rem;font-weight:700;text-align:center;margin-bottom:1.25rem;
+  white-space:pre-wrap;line-height:1.4}
+.q-fb{text-align:center;font-size:.85rem;font-weight:600;padding:.45rem;border-radius:.5rem;margin-bottom:.75rem}
+.fb-ok{background:rgba(34,197,94,.15);color:var(--green)}
+.fb-no{background:rgba(239,68,68,.15);color:var(--red)}
+.ans-inp{width:100%;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.2);
+  border-radius:.7rem;padding:.65rem 1rem;font-size:1.4rem;font-weight:700;text-align:center;
+  color:#fff;outline:none;margin-bottom:.85rem;transition:border-color .2s}
+.ans-inp:focus{border-color:var(--gold)}
+.sub-btn{width:100%;padding:.7rem;border-radius:.7rem;border:none;
+  background:linear-gradient(135deg,var(--gold),var(--orange));color:#000;
+  font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s}
+.sub-btn:hover{transform:translateY(-2px);box-shadow:0 4px 14px rgba(255,215,0,.4)}
+.yn-row{display:flex;gap:.85rem}
+.yn-btn{flex:1;padding:.7rem;border-radius:.7rem;border:none;font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s}
+.yn-yes{background:var(--green);color:#fff}.yn-no{background:var(--red);color:#fff}
+.yn-yes:hover,.yn-no:hover{transform:translateY(-2px)}
+
+/* ── WIN / LOSE ── */
+#victory-screen,#defeat-screen{align-items:center;justify-content:center;text-align:center;padding:2rem}
+#victory-screen{background:radial-gradient(ellipse at center,#1a350a 0%,var(--bg) 60%)}
+#defeat-screen{background:radial-gradient(ellipse at center,#350a0a 0%,var(--bg) 60%)}
+.res-emoji{font-size:5rem;margin-bottom:.85rem;animation:dfloat 2s ease-in-out infinite}
+.res-title{font-size:2.4rem;font-weight:900;margin-bottom:.4rem}
+.res-v{color:var(--gold)}.res-d{color:var(--red)}
+.res-sub{color:var(--muted);margin-bottom:1rem}
+.res-code{font-size:2.4rem;font-weight:900;color:var(--gold);letter-spacing:.3em;
+  text-shadow:0 0 20px rgba(255,215,0,.6);margin:.4rem 0}
+.book-page{background:linear-gradient(135deg,#2d1f0a,#1a1208);
+  border:2px solid #8b6914;border-radius:1rem;padding:1.4rem 2rem;
+  margin:.75rem 0 1.25rem;max-width:340px;width:100%;position:relative;
+  box-shadow:0 0 30px rgba(255,215,0,.15)}
+.book-page::before{content:'';position:absolute;inset:6px;
+  border:1px solid rgba(139,105,20,.3);border-radius:.55rem;pointer-events:none}
+.book-page-lbl{font-size:.65rem;letter-spacing:2px;text-transform:uppercase;
+  color:#8b6914;margin-bottom:.35rem;font-family:Georgia,serif}
+.book-page-hint{font-size:.78rem;color:#c4a44a;font-family:Georgia,serif;
+  font-style:italic;margin-top:.6rem;line-height:1.6}
+.copy-btn{margin-top:.7rem;padding:.35rem 1.1rem;border-radius:.5rem;
+  border:1px solid #8b6914;background:rgba(255,215,0,.08);color:var(--gold);
+  font-size:.78rem;cursor:pointer;transition:all .2s}
+.copy-btn:hover{background:rgba(255,215,0,.2)}
+.book-link{display:inline-block;margin-top:.6rem;padding:.55rem 1.5rem;
+  border-radius:.6rem;background:rgba(139,105,20,.18);border:1px solid #8b6914;
+  color:#c4a44a;font-size:.82rem;font-weight:600;text-decoration:none;transition:all .2s}
+.book-link:hover{background:rgba(139,105,20,.35)}
+.again-btn{padding:.8rem 2.2rem;border-radius:.7rem;border:none;
+  background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;
+  font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;margin-top:.5rem}
+.again-btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(124,58,237,.5)}
+
+::-webkit-scrollbar{width:4px}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
+@media(max-width:480px){
+  .battle-mid{grid-template-columns:1fr}
+  .roster{flex-direction:row;flex-wrap:wrap;overflow:visible}
+  .rcard{flex:1;min-width:130px}
+}
+</style>
+</head>
+<body>
+
+<!-- SETUP -->
+<div id="setup-screen" class="screen active">
+  <div class="game-title">
+    <h1>⚔️ Math is Power</h1>
+    <p>Cooperative Dragon Battle · Up to 5 Heroes</p>
+  </div>
+  <!-- Multiplayer session banner (shown when ?invite= is in URL) -->
+  <div id="mp-banner" style="display:none;background:linear-gradient(135deg,#1a2a1a,#0d1f0d);border:1px solid #22c55e;border-radius:.75rem;padding:.65rem 1rem;width:100%;max-width:640px;margin-bottom:.75rem;text-align:center">
+    <span style="font-size:.75rem;color:#22c55e;font-weight:700;letter-spacing:1px">🔗 MULTIPLAYER SESSION — CODE: </span>
+    <span id="mp-session-code" style="font-size:.95rem;font-weight:900;color:#ffd700;letter-spacing:4px"></span>
+    <div style="font-size:.68rem;color:#94a3b8;margin-top:.25rem">Player 1 &amp; Player 2 — fill in your heroes below, then Start!</div>
+  </div>
+  <div class="setup-card">
+    <div class="section-label">Number of Heroes</div>
+    <div class="count-row">
+      <button class="count-btn" id="btn-down">−</button>
+      <div class="count-num" id="cnt">2</div>
+      <button class="count-btn" id="btn-up">+</button>
+      <span style="color:var(--muted);font-size:.78rem">players joining the battle</span>
+    </div>
+    <div class="section-label">Choose Your Heroes</div>
+    <div class="player-rows" id="player-rows"></div>
+    <button class="start-btn" id="start-btn">⚔️ Start Battle!</button>
+  </div>
+</div>
+
+<!-- BATTLE -->
+<div id="battle-screen" class="screen">
+  <div class="battle-arena">
+    <div class="dragon-top">
+      <div class="dragon-hp-row">
+        <span class="dragon-name">☠ DRALIOSTER</span>
+        <div class="hp-wrap">
+          <div class="hp-labels"><span></span><span id="d-hp-txt">500/500</span></div>
+          <div class="hp-track"><div class="hp-fill hp-dragon" id="d-hp-bar" style="width:100%"></div></div>
+        </div>
+      </div>
+      <div class="dragon-display">
+        <div class="dragon-emoji" id="d-sprite">🐉</div>
+        <div class="dragon-sub" id="d-sub">The Dralioster watches with ancient, hungry eyes…</div>
+      </div>
+    </div>
+
+    <div class="battle-mid">
+      <div class="active-panel">
+        <div class="active-card" id="active-card">
+          <img src="" alt="" class="active-img" id="a-img" onerror="this.style.display='none'">
+          <div class="active-info">
+            <div class="active-name" id="a-name">—</div>
+            <div class="active-role" id="a-role">—</div>
+            <div style="margin-top:.45rem">
+              <div class="hp-labels"><span>HP</span><span id="a-hp-txt">100/100</span></div>
+              <div class="hp-track"><div class="hp-fill hp-high" id="a-hp-bar" style="width:100%"></div></div>
+            </div>
+            <div class="active-status" id="a-status"></div>
+          </div>
+        </div>
+
+        <div class="power-box">
+          <div class="power-lbl">⚡ Fighter Power Charge</div>
+          <div class="orbs">
+            <div class="orb" id="orb0">①</div>
+            <div class="orb" id="orb1">②</div>
+            <div class="orb" id="orb2">③</div>
+          </div>
+          <div class="streak-row">
+            <span style="font-size:.65rem;color:var(--muted)">Streak:</span>
+            <div class="sdot" id="sd0"></div>
+            <div class="sdot" id="sd1"></div>
+            <div class="sdot" id="sd2"></div>
+            <span class="streak-hint" id="streak-hint">3 in a row = 1 charge</span>
+          </div>
+          <div class="code-row">
+            <span class="code-lbl">CODE:</span>
+            <div class="digit" id="dg0">_</div>
+            <div class="digit" id="dg1">_</div>
+            <div class="digit" id="dg2">_</div>
+          </div>
+        </div>
+
+        <div class="b-log" id="b-log">
+          <div class="log-e log-imp">⚔️ The battle begins! Heroes vs. Dralioster!</div>
+        </div>
+      </div>
+
+      <div class="roster" id="roster"></div>
+    </div>
+
+    <div class="action-panel">
+      <div class="turn-ind" id="turn-ind">Preparing…</div>
+      <div class="act-btns" id="act-btns"></div>
+    </div>
+  </div>
+</div>
+
+<!-- QUESTION MODAL -->
+<div class="modal-overlay hidden" id="q-modal">
+  <div class="modal-card">
+    <div class="modal-hdr" id="m-hdr">🔢 Math Challenge!</div>
+    <div class="q-progress" id="q-prog"></div>
+    <div class="q-text" id="q-text">Question</div>
+    <div class="q-fb hidden" id="q-fb"></div>
+    <div id="num-area">
+      <input type="number" class="ans-inp" id="ans-inp" placeholder="?" autocomplete="off">
+      <button class="sub-btn" id="sub-btn">Submit Answer</button>
+    </div>
+    <div id="yn-area" class="hidden yn-row">
+      <button class="yn-btn yn-yes" id="yn-yes">Yes ✓</button>
+      <button class="yn-btn yn-no" id="yn-no">No ✗</button>
+    </div>
+  </div>
+</div>
+
+<!-- VICTORY -->
+<div id="victory-screen" class="screen">
+  <div class="res-emoji">🏆</div>
+  <div class="res-title res-v">Victory!</div>
+  <div class="res-sub" id="v-sub">The Dralioster has been defeated!</div>
+  <div class="book-page">
+    <div class="book-page-lbl">📖 Your Power Code</div>
+    <div class="res-code" id="v-code"></div>
+    <div class="book-page-hint">This code is hidden in your book.<br>Find it and enter it to unlock your next chapter!</div>
+    <br>
+    <button class="copy-btn" id="copy-btn" onclick="copyCode()">📋 Copy Code</button>
+  </div>
+  <a class="book-link" href="index.html" onclick="if(window.parent!==window){event.preventDefault();window.parent.closeMpScene();}">📖 Return to Book</a><br>
+  <button class="again-btn" onclick="location.reload()">⚔️ Play Again</button>
+</div>
+
+<!-- DEFEAT -->
+<div id="defeat-screen" class="screen">
+  <div class="res-emoji">💀</div>
+  <div class="res-title res-d">Defeated…</div>
+  <div class="res-sub">The Dralioster claims victory. Train harder and try again!</div>
+  <button class="again-btn" onclick="location.reload()">Try Again</button>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────
+const IB = 'file:///Users/habeeb/Documents/nazmins%20game%20charecters/';
+const CHARS = {
+  girls:[
+    {name:'Zoey',  role:'fighter',        color:'#22c55e',img:IB+'6e6c7b93-b806-492b-b2ae-40922105fef6.jpg',  desc:'Power Attacker'},
+    {name:'Arya',  role:'defender',       color:'#3b82f6',img:IB+'44513300-842f-4d72-9e69-92fca75c8ebc.jpg',  desc:'Power Defender'},
+    {name:'Autumn',role:'math_master',    color:'#f97316',img:IB+'53e32a3e-50f4-402e-baa9-d0de3cbd934d.jpg',  desc:'4 Ops Master'},
+    {name:'Lily',  role:'healer',         color:'#ec4899',img:IB+'6426d4cb-264d-45fd-8893-212a9d133754.jpg',  desc:'Healer'},
+    {name:'Iris',  role:'pattern_master', color:'#a855f7',img:IB+'f9f0e704-044d-42d9-9a44-9bdb2e371cd4.png',  desc:'Pattern Master'},
+  ],
+  boys:[
+    {name:'Zach',  role:'fighter',        color:'#22c55e',img:IB+'4834f4e7-7b2b-44b0-b223-2fd8f667b16f.jpg',  desc:'Power Attacker'},
+    {name:'Max',   role:'defender',       color:'#3b82f6',img:IB+'f0aacc90-a188-421c-8601-8ee088b648a5%202.jpg',desc:'Power Defender'},
+    {name:'Alex',  role:'math_master',    color:'#f97316',img:IB+'e74bd7d5-865b-4821-aa1d-808b5cdcf4b8.jpg',  desc:'4 Ops Master'},
+    {name:'Liam',  role:'healer',         color:'#ec4899',img:IB+'ea55ac6a-0857-48cd-bdd4-238469fbb7b6.jpg',  desc:'Power Healer'},
+    {name:'Isaac', role:'pattern_master', color:'#a855f7',img:IB+'fa170847-2e48-4e0d-b184-a90cad9a308f.jpg',  desc:'Pattern & Palindrome Master'},
+  ]
+};
+const ROLE_LBL = {
+  fighter:'⚔️ Fighter',defender:'🛡️ Defender',
+  math_master:'🔢 Math Master',healer:'💚 Healer',pattern_master:'🔮 Pattern Master'
+};
+const DRAGON_SUBS = [
+  'The Dralioster watches with ancient, hungry eyes…',
+  'Smoke curls from the Dralioster\'s flared nostrils…',
+  'The Dralioster snarls, scales cracking with each blow…',
+  'The Dralioster staggers, wings trembling…',
+  'The Dralioster howls — defeat draws near!',
+];
+
+// ── SETUP STATE ───────────────────────────────────────────────────
+let numP = 2;
+const pData = [];  // {playerName, gender, charName}
+
+function r(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+
+function initSetupData(){
+  for(let i=0;i<5;i++){
+    if(!pData[i]) pData[i]={playerName:'',gender:i%2===0?'boy':'girl',charName:''};
+  }
+}
+
+function getTakenChars(exceptIdx){
+  const t={};
+  pData.slice(0,numP).forEach((d,i)=>{if(i!==exceptIdx&&d.charName)t[d.gender+'_'+d.charName]=true;});
+  return t;
+}
+
+function buildSetupRow(i){
+  const d=pData[i];
+  const taken=getTakenChars(i);
+  const chars=CHARS[d.gender+'s']||CHARS.boys;
+
+  // Auto-assign first available char if none chosen or taken
+  if(!d.charName||taken[d.gender+'_'+d.charName]){
+    const avail=chars.find(c=>!taken[d.gender+'_'+c.name]);
+    d.charName=avail?avail.name:'';
+  }
+
+  const row=document.createElement('div');
+  row.className='player-row';
+
+  const num=document.createElement('div');
+  num.className='p-num';num.textContent=i+1;
+
+  const inputs=document.createElement('div');
+  inputs.className='p-inputs';
+
+  const ni=document.createElement('input');
+  ni.type='text';ni.className='p-name';ni.placeholder='Player '+(i+1)+' name';
+  ni.value=d.playerName;
+  ni.oninput=e=>{pData[i].playerName=e.target.value};
+
+  const gr=document.createElement('div');gr.className='gender-row';
+  ['boy','girl'].forEach(g=>{
+    const b=document.createElement('button');
+    b.className='g-btn'+(d.gender===g?' '+(g===d.gender?g+'-active':''):'');
+    b.textContent=g==='boy'?'👦 Boy':'👧 Girl';
+    b.onclick=()=>{pData[i].gender=g;pData[i].charName='';renderSetup()};
+    if(d.gender===g)b.classList.add(g+'-active');
+    gr.appendChild(b);
+  });
+
+  const cs=document.createElement('select');cs.className='char-select';
+  chars.forEach(c=>{
+    const o=document.createElement('option');o.value=c.name;
+    o.textContent=c.name+' ('+c.desc+')';
+    if(taken[d.gender+'_'+c.name]){o.disabled=true;o.textContent+=' — taken';}
+    if(c.name===d.charName)o.selected=true;
+    cs.appendChild(o);
+  });
+  if(!cs.value&&d.charName)cs.value=d.charName;
+  cs.onchange=e=>{pData[i].charName=e.target.value;refreshPreview(i);};
+
+  inputs.appendChild(ni);inputs.appendChild(gr);inputs.appendChild(cs);
+
+  const img=document.createElement('img');
+  img.className='char-preview';img.alt='';img.id='prev'+i;
+  img.onerror=()=>{img.style.display='none'};
+  const sc=chars.find(c=>c.name===d.charName);
+  if(sc)img.src=sc.img;
+
+  row.appendChild(num);row.appendChild(inputs);row.appendChild(img);
+  return row;
+}
+
+function refreshPreview(i){
+  const d=pData[i];
+  const chars=CHARS[d.gender+'s']||CHARS.boys;
+  const sc=chars.find(c=>c.name===d.charName);
+  const img=document.getElementById('prev'+i);
+  if(img&&sc){img.src=sc.img;img.style.display='';}
+}
+
+function renderSetup(){
+  const c=document.getElementById('player-rows');c.innerHTML='';
+  document.getElementById('cnt').textContent=numP;
+  for(let i=0;i<numP;i++)c.appendChild(buildSetupRow(i));
+}
+
+// ── INVITE CODE (URL ?invite=CODE) ───────────────────────────────
+(function(){
+  const code=new URLSearchParams(location.search).get('invite');
+  if(code){
+    const banner=document.getElementById('mp-banner');
+    document.getElementById('mp-session-code').textContent=code;
+    banner.style.display='block';
+    numP=2; // default to 2 players for multiplayer
+  }
+})();
+
+document.getElementById('btn-down').onclick=()=>{if(numP>1){numP--;renderSetup();}};
+document.getElementById('btn-up').onclick=()=>{if(numP<5){numP++;renderSetup();}};
+
+document.getElementById('start-btn').onclick=()=>{
+  for(let i=0;i<numP;i++){
+    if(!pData[i].playerName.trim()){alert('Enter a name for Player '+(i+1)+'!');return;}
+    if(!pData[i].charName){alert('Choose a character for Player '+(i+1)+'!');return;}
+  }
+  // ── Team composition check ──────────────────────────────────────
+  const roles=[];
+  for(let i=0;i<numP;i++){
+    const d=pData[i];
+    const ch=(CHARS[d.gender+'s']||CHARS.boys).find(c=>c.name===d.charName);
+    if(ch)roles.push(ch.role);
+  }
+  if(!roles.includes('fighter')){
+    alert('⚔️ Your team needs at least 1 Fighter!\nA Fighter deals heavy damage and uses the Ultimate Attack.');return;
+  }
+  const hasSupport=roles.some(r=>r==='healer'||r==='pattern_master'||r==='math_master'||r==='defender');
+  if(!hasSupport){
+    alert('🛡️ You need at least 1 support hero alongside your Fighter!\nAdd a Healer 💚, Math Master 🔢, Pattern Master 🔮, or Defender 🛡️.');return;
+  }
+  // ────────────────────────────────────────────────────────────────
+  const players=[];
+  for(let i=0;i<numP;i++){
+    const d=pData[i];
+    const ch=(CHARS[d.gender+'s']||CHARS.boys).find(c=>c.name===d.charName);
+    players.push({playerName:d.playerName.trim(),character:ch});
+  }
+  startBattle(players);
+};
+
+initSetupData();renderSetup();
+
+// ── GAME STATE ────────────────────────────────────────────────────
+let G={};
+
+function startBattle(players){
+  const code=[r(1,9),r(1,9),r(1,9)];
+  G={
+    players:players.map(p=>({playerName:p.playerName,character:p.character,hp:100,maxHp:100,isAlive:true,shielded:false})),
+    dragon:{hp:500,maxHp:500},
+    round:1,
+    curIdx:0,
+    charges:0,
+    streak:0,
+    code,
+    revealed:[false,false,false],
+    acted:new Set(),
+    pq:null,   // pending question
+    qt:null,   // question type
+    done:false,
+  };
+  showScreen('battle-screen');
+  renderRoster();
+  refreshActive();
+  refreshDragon();
+  renderActions();
+  log('⚔️ The battle begins! Heroes vs Dralioster!','log-imp');
+  log('💡 Math & Pattern Masters: 3 correct in a row = 1 power charge!','');
+}
+
+// ── SCREENS ───────────────────────────────────────────────────────
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ── DISPLAY ───────────────────────────────────────────────────────
+function hpClass(pct){return pct>50?'hp-high':pct>25?'hp-mid':'hp-low'}
+
+function refreshActive(){
+  const p=G.players[G.curIdx];const ch=p.character;
+  const aImg=document.getElementById('a-img');
+  aImg.src=ch.img;aImg.style.display='';
+  document.getElementById('a-name').textContent=p.playerName+' · '+ch.name;
+  document.getElementById('a-name').style.color=ch.color;
+  document.getElementById('a-role').textContent=ROLE_LBL[ch.role];
+  const pct=(p.hp/p.maxHp)*100;
+  document.getElementById('a-hp-txt').textContent=p.hp+'/'+p.maxHp;
+  const bar=document.getElementById('a-hp-bar');
+  bar.style.width=pct+'%';bar.className='hp-fill '+hpClass(pct);
+  const st=document.getElementById('a-status');st.innerHTML='';
+  if(p.shielded)st.innerHTML+='<span class="stag stag-shield">🛡️ Shielded</span>';
+  if(!p.isAlive)st.innerHTML+='<span class="stag stag-ko">💀 KO\'d</span>';
+  document.getElementById('turn-ind').textContent='⚡ '+p.playerName+'\'s Turn  ('+ch.name+')';
+  refreshPower();
+}
+
+function refreshPower(){
+  for(let i=0;i<3;i++){
+    document.getElementById('orb'+i).classList.toggle('on',G.charges>i);
+    document.getElementById('sd'+i).classList.toggle('on',G.streak>i);
+    const dg=document.getElementById('dg'+i);
+    if(G.revealed[i]){dg.textContent=G.code[i];dg.classList.add('on');}
+    else{dg.textContent='_';dg.classList.remove('on');}
+  }
+  document.getElementById('streak-hint').textContent='('+G.streak+'/3 streak → '+G.charges+'/3 charges)';
+}
+
+function refreshDragon(){
+  const pct=(G.dragon.hp/G.dragon.maxHp)*100;
+  document.getElementById('d-hp-txt').textContent=G.dragon.hp+'/'+G.dragon.maxHp;
+  document.getElementById('d-hp-bar').style.width=pct+'%';
+  const idx=Math.min(DRAGON_SUBS.length-1,Math.floor((1-pct/100)*(DRAGON_SUBS.length-0.01)));
+  document.getElementById('d-sub').textContent=DRAGON_SUBS[idx];
+}
+
+function renderRoster(){
+  const c=document.getElementById('roster');c.innerHTML='';
+  G.players.forEach((p,i)=>{
+    const card=document.createElement('div');
+    card.className='rcard'+(i===G.curIdx?' cur':'')+(!p.isAlive?' ko':'');
+    card.id='rc'+i;
+    const img=document.createElement('img');
+    img.src=p.character.img;img.alt='';img.className='rimg';
+    img.onerror=()=>img.style.display='none';
+    const nameDiv=document.createElement('div');
+    nameDiv.innerHTML='<div class="rname">'+p.character.name+'</div><div class="rrole">'+p.playerName+'</div>';
+    const row=document.createElement('div');row.className='rname-row';
+    row.appendChild(img);row.appendChild(nameDiv);
+    const pct=(p.hp/p.maxHp)*100;
+    const hpDiv=document.createElement('div');
+    hpDiv.innerHTML='<div class="hp-labels"><span>HP</span><span>'+p.hp+'/'+p.maxHp+'</span></div>'
+      +'<div class="hp-track"><div class="hp-fill '+hpClass(pct)+'" style="width:'+pct+'%"></div></div>';
+    if(p.shielded){const t=document.createElement('span');t.className='stag stag-shield';t.textContent='🛡️';card.appendChild(t);}
+    card.appendChild(row);card.appendChild(hpDiv);
+    c.appendChild(card);
+  });
+}
+
+function renderActions(){
+  const c=document.getElementById('act-btns');c.innerHTML='';
+  const p=G.players[G.curIdx];if(!p)return;
+  const role=p.character.role;
+  const defs=[];
+  if(role==='fighter'){
+    defs.push({l:'⚔️ Attack',cls:'b-atk',a:'attack'});
+    const ultLbl=G.charges>=3?'💥 ULTIMATE! ('+G.code.join('')+')':'💥 Ultimate Attack';
+    defs.push({l:ultLbl,cls:'b-ult',a:'ultimate',dis:G.charges<3});
+  }else if(role==='defender'){
+    defs.push({l:'🛡️ Raise Shield',cls:'b-shld',a:'shield'});
+  }else if(role==='healer'){
+    defs.push({l:'💚 Heal Ally',cls:'b-heal',a:'heal'});
+  }else if(role==='math_master'){
+    defs.push({l:'🔢 Solve Math Question',cls:'b-math',a:'math'});
+  }else if(role==='pattern_master'){
+    defs.push({l:'🔮 Solve Pattern / Palindrome',cls:'b-pat',a:'pattern'});
+  }
+  defs.forEach(d=>{
+    const b=document.createElement('button');b.className='abtn '+d.cls;b.textContent=d.l;
+    if(d.dis)b.disabled=true;
+    b.onclick=()=>doAction(d.a);
+    c.appendChild(b);
+  });
+}
+
+// ── ACTIONS ───────────────────────────────────────────────────────
+function doAction(a){
+  if(G.done)return;
+  const p=G.players[G.curIdx];const ch=p.character;
+  if(a==='attack'){
+    const dmg=r(18,38);
+    G.dragon.hp=Math.max(0,G.dragon.hp-dmg);
+    log('⚔️ '+ch.name+' attacks! '+dmg+' damage to Dralioster.','log-imp');
+    shakeDragon();refreshDragon();endTurn();
+  }else if(a==='ultimate'){
+    if(G.charges<3)return;
+    const dmg=r(180,260);
+    G.dragon.hp=Math.max(0,G.dragon.hp-dmg);
+    G.charges=0;G.streak=0;G.revealed=[false,false,false];
+    log('💥 '+ch.name+' ULTIMATE ATTACK! '+dmg+' damage!!!','log-pwr');
+    shakeDragon();refreshDragon();refreshPower();endTurn();
+  }else if(a==='shield'){
+    p.shielded=true;
+    log('🛡️ '+ch.name+' raises a Power Shield! Dragon\'s next attack -60%.','log-imp');
+    endTurn();
+  }else if(a==='heal'){
+    const t=lowestAlive();
+    if(!t){log('💚 No allies need healing.','');endTurn();return;}
+    const amt=r(28,48);
+    t.hp=Math.min(t.maxHp,t.hp+amt);
+    log('💚 '+ch.name+' heals '+t.character.name+'! +'+amt+' HP  ('+t.hp+'/'+t.maxHp+')','log-ok');
+    endTurn();
+  }else if(a==='math'){
+    openQ('math');
+  }else if(a==='pattern'){
+    openQ('pattern');
+  }
+}
+
+function lowestAlive(){
+  let min=Infinity,target=null;
+  G.players.forEach(p=>{if(p.isAlive&&p.hp<min){min=p.hp;target=p;}});
+  return target;
+}
+
+function shakeDragon(){
+  const el=document.getElementById('d-sprite');
+  el.classList.remove('dshake');void el.offsetWidth;el.classList.add('dshake');
+  setTimeout(()=>el.classList.remove('dshake'),500);
+}
+
+// ── TURN MANAGEMENT ───────────────────────────────────────────────
+function endTurn(){
+  renderRoster();refreshActive();
+  if(G.dragon.hp<=0){setTimeout(winGame,500);return;}
+
+  G.acted.add(G.curIdx);
+  // Find next alive player who hasn't acted
+  let found=-1;
+  for(let i=1;i<=G.players.length;i++){
+    const idx=(G.curIdx+i)%G.players.length;
+    if(G.players[idx].isAlive&&!G.acted.has(idx)){found=idx;break;}
+  }
+  if(found===-1){
+    // All alive players acted — dragon's turn
+    G.acted=new Set();
+    setTimeout(dragonTurn,400);
+  }else{
+    G.curIdx=found;
+    refreshActive();renderRoster();renderActions();
+  }
+}
+
+function dragonTurn(){
+  if(G.done)return;
+  G.round++;
+  log('🐉 ── Round '+G.round+': Dralioster attacks! ──','log-dmg');
+  const alive=G.players.filter(p=>p.isAlive);
+  if(!alive.length){loseGame();return;}
+
+  const special=G.round%3===0;
+  if(special){
+    log('🔥 Dralioster ROARS — ALL heroes take fire damage!','log-dmg');
+    alive.forEach(p=>{
+      const raw=r(12,25);const dmg=p.shielded?Math.floor(raw*.4):raw;
+      if(p.shielded){log('  🛡️ '+p.character.name+'\'s shield absorbs fire! ('+raw+'→'+dmg+')','log-imp');p.shielded=false;}
+      p.hp=Math.max(0,p.hp-dmg);
+      log('  🔥 '+p.character.name+' takes '+dmg+' damage! HP: '+p.hp,'log-dmg');
+      if(p.hp===0){p.isAlive=false;log('  💀 '+p.character.name+' is knocked out!','log-dmg');}
+    });
+  }else{
+    const tgt=alive[Math.floor(Math.random()*alive.length)];
+    const raw=r(28,55);const dmg=tgt.shielded?Math.floor(raw*.4):raw;
+    if(tgt.shielded){log('🛡️ '+tgt.character.name+'\'s shield absorbs the blow! ('+raw+'→'+dmg+')','log-imp');tgt.shielded=false;}
+    tgt.hp=Math.max(0,tgt.hp-dmg);
+    log('💥 Dralioster attacks '+tgt.character.name+'! '+dmg+' damage! HP: '+tgt.hp,'log-dmg');
+    if(tgt.hp===0){tgt.isAlive=false;log('💀 '+tgt.character.name+' is knocked out!','log-dmg');}
+  }
+
+  renderRoster();
+  if(G.players.every(p=>!p.isAlive)){setTimeout(loseGame,500);return;}
+
+  // Find first alive player for new round
+  let first=G.players.findIndex(p=>p.isAlive);
+  if(first===-1){loseGame();return;}
+  G.curIdx=first;
+  refreshActive();renderRoster();renderActions();
+}
+
+// ── QUESTIONS ─────────────────────────────────────────────────────
+function openQ(type){
+  G.qt=type;
+  const qd=type==='math'?genMath():genPattern();
+  G.pq=qd;
+  document.getElementById('m-hdr').textContent=type==='math'?'🔢 Math Challenge!':'🔮 Pattern Challenge!';
+  document.getElementById('q-text').textContent=qd.question;
+  renderQProg();
+  const fb=document.getElementById('q-fb');fb.className='q-fb hidden';fb.textContent='';
+  if(qd.type==='palindrome'){
+    document.getElementById('num-area').classList.add('hidden');
+    document.getElementById('yn-area').classList.remove('hidden');
+  }else{
+    document.getElementById('yn-area').classList.add('hidden');
+    document.getElementById('num-area').classList.remove('hidden');
+    const inp=document.getElementById('ans-inp');inp.value='';
+    setTimeout(()=>inp.focus(),120);
+  }
+  document.getElementById('q-modal').classList.remove('hidden');
+}
+
+function renderQProg(){
+  const c=document.getElementById('q-prog');c.innerHTML='';
+  for(let i=0;i<3;i++){
+    const d=document.createElement('div');d.className='qd'+(G.streak>i?' on':'');c.appendChild(d);
+  }
+  const h=document.createElement('span');h.className='q-hint';
+  h.textContent='('+G.streak+'/3 → '+G.charges+'/3 charges)';c.appendChild(h);
+}
+
+function submitAns(given){
+  const correct=String(G.pq.answer).trim().toLowerCase()===String(given).trim().toLowerCase();
+  const fb=document.getElementById('q-fb');
+  fb.className='q-fb '+(correct?'fb-ok':'fb-no');
+  const ch=G.players[G.curIdx].character;
+
+  if(correct){
+    G.streak++;
+    fb.textContent='✅ Correct! Streak: '+G.streak+'/3';
+    if(G.streak>=3&&G.charges<3){
+      G.streak=0;G.charges++;G.revealed[G.charges-1]=true;
+      fb.textContent='🌟 Streak complete! Charge '+G.charges+'/3 unlocked! Digit: '+G.code[G.charges-1];
+      log('⚡ Power charge '+G.charges+'/3! Code digit '+G.charges+' revealed: '+G.code[G.charges-1],'log-pwr');
+      if(G.charges===3)log('💥 FULL POWER! Fighter can now use Ultimate Attack!','log-pwr');
+    }else if(G.streak>=3){
+      G.streak=0;
+      fb.textContent='✅ Correct! (Power already fully charged — keep it up!)';
+    }else{
+      log('✅ '+ch.name+' answered correctly! Streak: '+G.streak+'/3','log-ok');
+    }
+  }else{
+    G.streak=0;
+    fb.textContent='❌ Wrong! Answer was '+G.pq.answer+'. Streak reset.';
+    log('❌ '+ch.name+' missed the question. Streak reset.','');
+  }
+
+  refreshPower();renderQProg();
+
+  setTimeout(()=>{
+    document.getElementById('q-modal').classList.add('hidden');
+    document.getElementById('ans-inp').value='';
+    endTurn();
+  },1900);
+}
+
+// ── QUESTION GENERATORS ───────────────────────────────────────────
+function genMath(){
+  const ops=['+','-','×','÷'];const op=ops[r(0,3)];
+  let a,b,ans;
+  if(op==='+'){a=r(10,99);b=r(10,99);ans=a+b;}
+  else if(op==='-'){a=r(20,99);b=r(1,a-1);ans=a-b;}
+  else if(op==='×'){a=r(2,12);b=r(2,12);ans=a*b;}
+  else{b=r(2,12);ans=r(2,12);a=b*ans;}
+  return{question:a+' '+op+' '+b+' = ?',answer:String(ans)};
+}
+
+function genPattern(){
+  const t=r(0,5);
+  if(t===0){
+    // Ascending arithmetic
+    const s=r(1,20),d=r(1,10);
+    const seq=[s,s+d,s+2*d,s+3*d];
+    return{question:'What comes next?\n'+seq.join(' ,  ')+' ,  ?',answer:String(s+4*d)};
+  }else if(t===1){
+    // Geometric (×2 or ×3)
+    const s=r(1,5),m=r(2,3);
+    const seq=[s,s*m,s*m*m,s*m*m*m];
+    return{question:'What comes next?\n'+seq.join(' ,  ')+' ,  ?',answer:String(s*Math.pow(m,4))};
+  }else if(t===2){
+    // Word palindrome
+    const palins=['racecar','level','noon','refer','madam','civic','kayak','radar','stats','deed','peep','tenet','rotator','repaper'];
+    const nonP=['hello','world','python','tiger','dragon','battle','school','orange','pencil','carpet'];
+    const ip=r(0,1)===1;
+    const word=ip?palins[r(0,palins.length-1)]:nonP[r(0,nonP.length-1)];
+    return{question:'Is  "'+word+'"  a palindrome?\n(yes or no)',answer:ip?'yes':'no',type:'palindrome'};
+  }else if(t===3){
+    // Descending arithmetic
+    const s=r(30,100),d=r(2,10);
+    const seq=[s,s-d,s-2*d,s-3*d];
+    return{question:'What comes next?\n'+seq.join(' ,  ')+' ,  ?',answer:String(s-4*d)};
+  }else if(t===4){
+    // Number palindrome
+    const palNums=[121,131,141,1221,1331,12321,12421,10101,11011,99,11,22,33];
+    const nonPNums=[123,124,132,1234,12345,10203,11012,12320,100,112];
+    const ip=r(0,1)===1;
+    const num=ip?palNums[r(0,palNums.length-1)]:nonPNums[r(0,nonPNums.length-1)];
+    return{question:'Is the number  '+num+'  a palindrome?\n(yes or no)',answer:ip?'yes':'no',type:'palindrome'};
+  }else{
+    // Alternating add pattern (+d1, +d2, +d1, +d2 …)
+    const s=r(2,15);const d1=r(3,8);const d2=r(1,d1-1);
+    const a=s,b=a+d1,c=b+d2,d=c+d1,e=d+d2;
+    return{question:'What comes next?\n'+[a,b,c,d].join(' ,  ')+' ,  ?',answer:String(e)};
+  }
+}
+
+// ── WIN / LOSE ────────────────────────────────────────────────────
+function winGame(){
+  if(G.done)return;G.done=true;
+  log('🏆 DRALIOSTER DEFEATED! Heroes WIN!','log-pwr');
+  const alive=G.players.filter(p=>p.isAlive).length;
+  document.getElementById('v-sub').textContent='The Dralioster falls! '+alive+' hero'+(alive!==1?'es':'')+' survived.';
+  document.getElementById('v-code').textContent='Power Code: '+G.code.join('')+' ⚡';
+  showScreen('victory-screen');
+}
+
+function loseGame(){
+  if(G.done)return;G.done=true;
+  log('💀 All heroes have fallen…','log-dmg');
+  showScreen('defeat-screen');
+}
+
+// ── BATTLE LOG ────────────────────────────────────────────────────
+function log(msg,cls){
+  const c=document.getElementById('b-log');
+  const e=document.createElement('div');e.className='log-e'+(cls?' '+cls:'');e.textContent=msg;
+  c.appendChild(e);c.scrollTop=c.scrollHeight;
+  while(c.children.length>35)c.removeChild(c.firstChild);
+}
+
+// ── EVENT LISTENERS ───────────────────────────────────────────────
+document.getElementById('sub-btn').onclick=()=>{
+  const v=document.getElementById('ans-inp').value.trim();if(!v)return;submitAns(v);
+};
+document.getElementById('ans-inp').onkeydown=e=>{if(e.key==='Enter')document.getElementById('sub-btn').click();};
+document.getElementById('yn-yes').onclick=()=>submitAns('yes');
+document.getElementById('yn-no').onclick=()=>submitAns('no');
+
+function copyCode(){
+  const code=G.code.join('');
+  const btn=document.getElementById('copy-btn');
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(code).then(()=>{
+      btn.textContent='✓ Copied!';setTimeout(()=>btn.textContent='📋 Copy Code',2000);
+    });
+  }else{
+    btn.textContent=code;setTimeout(()=>btn.textContent='📋 Copy Code',3000);
+  }
+}
+</script>
+</body>
+</html>
