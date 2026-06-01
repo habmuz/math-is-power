@@ -372,7 +372,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 .adm-btn.close-adm{background:#334;color:#aaa;margin-top:2px}
 
 /* ══ CHARACTER SELECTION PANEL (multiplayer page 2) ══ */
-#panel-chars{overflow-y:auto}
+#panel-chars{overflow-y:auto;position:relative}
 #pc-header{text-align:center;flex-shrink:0}
 #pc-header h3{color:#5a2d00;font-size:13px;font-weight:bold;margin-bottom:2px}
 #pc-turn{font-size:11px;color:#8b4513;font-style:italic;min-height:16px}
@@ -382,6 +382,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 #pc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:2px;overflow-y:auto}
 .pc-card{background:rgba(139,100,60,.1);border:2px solid rgba(139,100,60,.25);border-radius:9px;padding:6px 4px;text-align:center;cursor:pointer;position:relative;transition:all .2s;display:flex;flex-direction:column;align-items:center;gap:3px}
 .pc-card:hover:not(.pc-taken){border-color:#8b4513;background:rgba(139,100,60,.22)}
+.pc-card.pc-previewed{border-color:#cc5500;box-shadow:0 0 8px rgba(204,85,0,.4);transform:scale(1.04)}
 .pc-card.pc-p1{border-color:#2d6a00;background:rgba(45,106,0,.15)}
 .pc-card.pc-p2{border-color:#004488;background:rgba(0,68,136,.15)}
 .pc-card.pc-taken{opacity:.5;cursor:not-allowed}
@@ -395,6 +396,26 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 .pc-x{position:absolute;inset:0;border-radius:8px;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#cc3333;font-weight:900;pointer-events:none}
 #pc-fight{margin-top:6px;padding:9px;width:100%;background:linear-gradient(#8b4513,#5a2d00);color:#f6e8cc;border:none;border-radius:12px;font-size:14px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3);flex-shrink:0}
 #pc-fight:hover{filter:brightness(1.2)}
+/* character profile overlay — full-bleed hero card */
+#pc-profile{display:none;position:absolute;inset:0;border-radius:9px;z-index:10;flex-direction:column;overflow:hidden;animation:pcpIn .15s ease}
+#pc-profile.show{display:flex}
+@keyframes pcpIn{from{opacity:0}to{opacity:1}}
+/* image fills everything above the bottom bar */
+#pcp-img-wrap{flex:1;min-height:0;width:100%;overflow:hidden;position:relative;background:linear-gradient(160deg,#1a0e2e,#0d0820);display:flex;align-items:center;justify-content:center;font-size:5rem}
+#pcp-img-wrap img{width:100%;height:100%;object-fit:contain;display:block;filter:contrast(1.12) saturate(1.18);transform:translateZ(0)}
+body.sharp-off #pcp-img-wrap img{filter:none}
+/* back button floats top-left over the image */
+#pcp-back{position:absolute;top:7px;left:7px;z-index:2;background:rgba(0,0,0,.52);border:none;color:#fff;border-radius:8px;padding:5px 11px;font-size:12px;cursor:pointer;font-family:Georgia,serif;backdrop-filter:blur(4px)}
+#pcp-back:hover{background:rgba(0,0,0,.72)}
+/* bottom info bar */
+#pcp-bar{flex-shrink:0;background:linear-gradient(160deg,#fdf5e6,#ede0b0);padding:8px 12px;display:flex;flex-direction:column;gap:4px}
+#pcp-name{font-size:18px;font-weight:bold;color:#2d0000;font-family:Georgia,serif}
+#pcp-badge{font-size:11px;padding:2px 9px;border-radius:8px;font-weight:bold;align-self:flex-start}
+#pcp-select{padding:9px 0;width:100%;background:linear-gradient(#8b4513,#5a2d00);color:#f6e8cc;border:none;border-radius:12px;font-size:14px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3)}
+#pcp-select:hover{filter:brightness(1.2)}
+/* hide unused elements */
+#pcp-desc{font-size:10px;color:#5a2d00;line-height:1.4}
+#pcp-hint{display:none}
 
 /* ══ CHAT BUBBLE + PANEL ══ */
 #chat-bubble{display:none;position:fixed;bottom:22px;right:22px;width:52px;height:52px;background:linear-gradient(135deg,#1e3a8a,#2563eb);border-radius:50%;align-items:center;justify-content:center;font-size:24px;cursor:pointer;box-shadow:0 4px 18px rgba(0,0,0,.55);z-index:500;transition:transform .2s;user-select:none}
@@ -611,10 +632,32 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 
     <!-- Character selection panel (multiplayer only) -->
     <div class="rp-panel" id="panel-chars">
+      <!-- zoomed profile overlay — full bleed hero card -->
+      <div id="pc-profile">
+        <div id="pcp-img-wrap">
+          <button id="pcp-back" onclick="pcCloseProfile()">← Back</button>
+        </div>
+        <div id="pcp-bar">
+          <div id="pcp-name"></div>
+          <div id="pcp-badge"></div>
+          <div id="pcp-desc"></div>
+          <div id="pcp-hint"></div>
+          <button id="pcp-select" onclick="pcConfirmPick()">✅ Choose This Hero!</button>
+        </div>
+      </div>
       <div id="pc-header">
         <h3>⚔️ Choose Your Heroes</h3>
         <div id="pc-turn">Player 1 — tap your hero!</div>
       </div>
+      <!-- Lobby status (multiplayer only) -->
+      <div id="pc-lobby">
+        <div id="pc-lobby-bar">
+          <span id="pc-lobby-count">1 player connected</span>
+          <span id="pc-lobby-dots"></span>
+        </div>
+      </div>
+      <!-- Waiting message for mid-game joiners -->
+      <div id="mid-wait"><b>⏳ Game in progress!</b>Pick your hero below, then wait — you'll join at the next chapter.</div>
       <div id="pc-tabs">
         <button class="pct on" onclick="pcTab('all',this)">All</button>
         <button class="pct" onclick="pcTab('girls',this)">👧 Girls</button>
@@ -666,6 +709,9 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 
 </div><!-- /book -->
 </div><!-- /book-wrap -->
+
+<!-- Top-left join notifications (appear over the book scene) -->
+<div id="join-notifs"></div>
 
 </div><!-- /scene -->
 
@@ -1075,6 +1121,11 @@ function startGame(){
   startChapter();
 }
 function startChapter(){
+  // Notify pending mid-game joiners that they can now start
+  if(_pendingJoin.length>0 && G.chapter>1){
+    _cSendGame({type:'chapter_done',chapter:G.chapter});
+    _pendingJoin=[];
+  }
   G.phase='questions'; G.streak=0; G.gears=[]; G.password=[];
   G.consC=0; G.consW=0; G.immunityUsed=false; G.defending=false;
   G.machineAttempts=0; $id('torn-paper').style.display='none'; $id('flip-zone').style.display='none';
@@ -1513,6 +1564,26 @@ function closeDialog(){
 .mp-divider{text-align:center;color:#8b4513;font-size:11px;font-weight:bold;margin:12px 0;letter-spacing:2px}
 .mp-input{padding:6px 8px;border:2px solid #8b4513;border-radius:5px;background:#fdf5e6;color:#2d0000;font-size:13px;font-family:Georgia,serif;width:100%;box-sizing:border-box;letter-spacing:3px}
 .mp-close{margin-top:14px;background:none;border:1px solid #8b4513;color:#8b4513;border-radius:8px;padding:5px;font-size:11px;cursor:pointer;font-family:Georgia,serif;width:100%}
+/* ── player count picker ── */
+.mp-cnt-row{display:none;margin:5px 0 2px}
+.mp-cnt-btn{flex:1;padding:5px 2px;border:2px solid #8b4513;border-radius:5px;background:#fdf5e6;color:#5a2d00;font-size:13px;font-weight:bold;font-family:Georgia,serif;cursor:pointer;transition:all .15s}
+.mp-cnt-btn.active{background:#8b4513;color:#f6e8cc}
+/* ── lobby panel in char select ── */
+#pc-lobby{background:rgba(139,69,19,.07);border:1px solid rgba(139,69,19,.2);border-radius:8px;padding:5px 10px;margin:0 0 5px;display:none;flex-direction:column;gap:2px;flex-shrink:0}
+#pc-lobby-bar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:4px}
+#pc-lobby-count{font-size:10px;font-weight:bold;color:#5a2d00}
+.lob-dot{display:inline-block;width:11px;height:11px;border-radius:50%;border:1.5px solid rgba(139,69,19,.3);background:#e8d89a;margin:0 1px;transition:all .3s}
+.lob-dot.here{background:#22c55e;border-color:#22c55e}
+.lob-dot.me{background:#3b82f6;border-color:#3b82f6}
+/* ── mid-game join notification (top-left of scene) ── */
+#join-notifs{position:absolute;top:8px;left:8px;z-index:9999;display:flex;flex-direction:column;gap:5px;pointer-events:none;max-width:210px}
+.jn-card{background:#0d1b2a;border:2px solid #22c55e;border-radius:10px;padding:7px 11px;color:#e2e8f0;font-size:11px;font-family:Georgia,serif;box-shadow:0 4px 16px rgba(0,0,0,.6);animation:jnIn .35s ease;pointer-events:auto}
+@keyframes jnIn{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+.jn-card .jn-name{color:#4ade80;font-weight:bold;margin-bottom:2px}
+.jn-card .jn-hint{color:#94a3b8;font-size:9.5px;font-style:italic}
+/* ── waiting panel for mid-game joiners ── */
+#mid-wait{display:none;background:rgba(139,69,19,.09);border:1px solid rgba(139,69,19,.25);border-radius:8px;padding:7px 10px;margin:0 0 5px;text-align:center;font-size:10px;color:#5a2d00;flex-shrink:0}
+#mid-wait b{display:block;margin-bottom:2px;font-size:12px}
 </style>
 
 <div id="mp-overlay">
@@ -1522,6 +1593,15 @@ function closeDialog(){
     <div class="mp-side-hint">Generate a code and send it to your friend</div>
     <div class="mp-code-display" id="mp-code-disp">——</div>
     <button class="mp-smb" onclick="mpGenerate()">✨ Generate Code</button>
+    <div class="mp-cnt-row" id="mp-cnt-row">
+      <div class="mp-side-hint" style="margin-bottom:4px">How many players total?</div>
+      <div style="display:flex;gap:5px">
+        <button class="mp-cnt-btn active" onclick="mpSetCount(this,2)">2</button>
+        <button class="mp-cnt-btn" onclick="mpSetCount(this,3)">3</button>
+        <button class="mp-cnt-btn" onclick="mpSetCount(this,4)">4</button>
+        <button class="mp-cnt-btn" onclick="mpSetCount(this,5)">5</button>
+      </div>
+    </div>
     <button class="mp-smb light" id="mp-copy-btn" onclick="mpCopyAndOpen()">📋 Copy &amp; Open Battle</button>
     <div class="mp-divider">── OR ──</div>
     <div class="mp-side-lbl">🎮 You are Player 2</div>
@@ -1534,10 +1614,22 @@ function closeDialog(){
 
 <script>
 var _mpCode=null;
-function openMpOverlay(){$id('mp-overlay').classList.add('open');$id('mp-code-disp').textContent='——';_mpCode=null;$id('mp-join-inp').value='';}
+var _myPlayer=0;        // 1=host, 2+= joiner
+var _p2Joined=false;    // at least one other player is connected
+var _maxPlayers=2;      // total expected players (set by host)
+var _lobby={};          // {playerNum: {sid}} — who's in the lobby
+var _nextPlayerNum=2;   // host assigns numbers starting from 2
+var _pendingJoin=[];    // playerNums queued to join at next chapter end
+var _isMidGame=false;   // true when this device joins while game is in progress
+var _joinTimeout=null;
+function openMpOverlay(){$id('mp-overlay').classList.add('open');$id('mp-code-disp').textContent='——';$id('mp-cnt-row').style.display='none';_mpCode=null;_myPlayer=0;_p2Joined=false;_lobby={};_nextPlayerNum=2;$id('mp-join-inp').value='';}
+function mpSetCount(el,n){_maxPlayers=n;document.querySelectorAll('.mp-cnt-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderLobby();}
 function mpGenerate(){
   _mpCode=Math.floor(100000+Math.random()*900000).toString();
+  _myPlayer=1; _p2Joined=false; _nextPlayerNum=2;
+  _lobby={1:{sid:_cSID}};
   $id('mp-code-disp').textContent=_mpCode;
+  $id('mp-cnt-row').style.display='block';
   initChat(_mpCode);
 }
 function mpCopyAndOpen(){
@@ -1550,10 +1642,19 @@ function mpCopyAndOpen(){
 function mpJoin(){
   var code=$id('mp-join-inp').value.trim();
   if(!code){alert('Enter the code your friend gave you!');return;}
-  _mpCode=code;
+  _mpCode=code; _myPlayer=0; _isMidGame=false;
   initChat(code);
   $id('mp-overlay').classList.remove('open');
+  // Open char panel immediately; player number assigned by host
   openCharPanel();
+  $id('pc-turn').textContent='⏳ Connecting to host…';
+  // Fallback if host doesn't respond in 4s
+  clearTimeout(_joinTimeout);
+  _joinTimeout=setTimeout(()=>{
+    if(_myPlayer===0){_myPlayer=2;_p2Joined=true;renderPcGrid();renderLobby();}
+  },4000);
+  // Request join (with slight delay so EventSource is ready)
+  setTimeout(()=>_cSendGame({type:'join',reqSid:_cSID}),700);
 }
 function openMpBattle(inviteCode){
   $id('scroll-menu').classList.remove('open');
@@ -1576,18 +1677,18 @@ function closeMpScene(){
 }
 
 // ── CHARACTER SELECTION PANEL ────────────────────────────────────
-const _IB='file:///Users/habeeb/Documents/nazmins%20game%20charecters/';
+const _IB='chars/';
 const _CHARS={
   girls:[
     {name:'Zoey',  role:'fighter',        img:_IB+'6e6c7b93-b806-492b-b2ae-40922105fef6.jpg',  desc:'Power Attacker'},
     {name:'Arya',  role:'defender',       img:_IB+'44513300-842f-4d72-9e69-92fca75c8ebc.jpg',  desc:'Defender'},
     {name:'Autumn',role:'math_master',    img:_IB+'53e32a3e-50f4-402e-baa9-d0de3cbd934d.jpg',  desc:'4 Ops Master'},
-    {name:'Lily',  role:'healer',         img:_IB+'6426d4cb-264d-45fd-8893-212a9d133754.jpg',  desc:'Healer'},
+    {name:'Lily',  role:'healer',         img:_IB+'87f93c17-076a-4e87-930e-ce31799937bd.jpg',  desc:'Healer'},
     {name:'Iris',  role:'pattern_master', img:_IB+'f9f0e704-044d-42d9-9a44-9bdb2e371cd4.png',  desc:'Pattern Master'},
   ],
   boys:[
     {name:'Zach',  role:'fighter',        img:_IB+'4834f4e7-7b2b-44b0-b223-2fd8f667b16f.jpg',  desc:'Power Attacker'},
-    {name:'Max',   role:'defender',       img:_IB+'f0aacc90-a188-421c-8601-8ee088b648a5%202.jpg',desc:'Defender'},
+    {name:'Max',   role:'defender',       img:_IB+'d3d14242-4c81-46bf-a8b2-64b626fe149b.jpg',  desc:'Defender'},
     {name:'Alex',  role:'math_master',    img:_IB+'e74bd7d5-865b-4821-aa1d-808b5cdcf4b8.jpg',  desc:'4 Ops Master'},
     {name:'Liam',  role:'healer',         img:_IB+'ea55ac6a-0857-48cd-bdd4-238469fbb7b6.jpg',  desc:'Healer'},
     {name:'Isaac', role:'pattern_master', img:_IB+'fa170847-2e48-4e0d-b184-a90cad9a308f.jpg',  desc:'Pattern Master'},
@@ -1597,12 +1698,20 @@ const _RE={fighter:'⚔️',defender:'🛡️',healer:'💚',math_master:'🔢',
 const _RC={fighter:'#ef4444',defender:'#3b82f6',healer:'#22c55e',math_master:'#f97316',pattern_master:'#a855f7'};
 // _pcSel: {gender_name: 1|2}
 let _pcSel={}, _pcFilter='all', _pcTurn=1;
+let _pcPrevChar=null; // currently previewed char {gender,name,c}
+let _pcLastTapKey='', _pcLastTapTime=0; // double-tap detection
 
 function openCharPanel(){
-  _pcSel={}; _pcFilter='all'; _pcTurn=1;
+  _pcSel={}; _pcFilter='all'; _pcTurn=1; _pcPrevChar=null;
   G.mpPlayers=[];
   document.querySelectorAll('.pct').forEach((t,i)=>t.classList.toggle('on',i===0));
   $id('pc-fight').style.display='none';
+  $id('pc-profile').classList.remove('show');
+  // Show lobby section only in cross-device mode
+  const inMp=(_myPlayer>0||_mpCode);
+  $id('pc-lobby').style.display=inMp?'flex':'none';
+  $id('mid-wait').style.display='none';
+  if(inMp) renderLobby();
   renderPcGrid();
   doFlip(()=>{
     $id('cave-scene').style.display='flex';
@@ -1625,20 +1734,33 @@ function renderPcGrid(){
   if(_pcFilter!=='boys')  _CHARS.girls.forEach(c=>chars.push({...c,gender:'girl'}));
   if(_pcFilter!=='girls') _CHARS.boys.forEach(c=>chars.push({...c,gender:'boy'}));
 
-  $id('pc-turn').textContent=_pcTurn<=2
-    ?'Player '+_pcTurn+' — tap your hero!'
-    :'Both heroes chosen! ✅';
+  // Status line — cross-device vs same-device
+  if(_myPlayer>0){
+    const iHavePicked=Object.values(_pcSel).includes(_myPlayer);
+    const bothPicked=Object.keys(_pcSel).length>=2;
+    if(bothPicked) $id('pc-turn').textContent='Both heroes chosen! ✅';
+    else if(_myPlayer===1&&!_p2Joined) $id('pc-turn').textContent='⏳ Waiting for Player 2 to join…';
+    else if(iHavePicked) $id('pc-turn').textContent='You (Player '+_myPlayer+') — hero confirmed ✅  Waiting for friend…';
+    else $id('pc-turn').textContent='You are Player '+_myPlayer+' — tap a hero to pick!';
+  } else {
+    $id('pc-turn').textContent=_pcTurn<=2
+      ?'Player '+_pcTurn+' — tap a hero to preview!'
+      :'Both heroes chosen! ✅';
+  }
+
+  const myAlreadyPicked=_myPlayer>0&&Object.values(_pcSel).includes(_myPlayer);
 
   chars.forEach(c=>{
     const key=c.gender+'_'+c.name;
     const claimedBy=_pcSel[key];
     const card=document.createElement('div');
-    card.className='pc-card'+(claimedBy?' pc-p'+claimedBy+' pc-taken':'');
+    const isPreviewed=(_pcPrevChar&&_pcPrevChar.gender===c.gender&&_pcPrevChar.name===c.name);
+    card.className='pc-card'+(claimedBy?' pc-p'+claimedBy+' pc-taken':(isPreviewed?' pc-previewed':''));
 
     // avatar
     const av=document.createElement('div'); av.className='pc-img';
     const im=document.createElement('img'); im.src=c.img; im.alt=c.name;
-    im.onerror=()=>{av.removeChild(im);av.textContent=_RE[c.role]||'?';};
+    im.onerror=()=>{try{av.removeChild(im);}catch(e){}av.textContent=_RE[c.role]||'?';};
     av.appendChild(im);
 
     const nm=document.createElement('div'); nm.className='pc-name'; nm.textContent=c.name;
@@ -1654,35 +1776,161 @@ function renderPcGrid(){
       badge.textContent='P'+claimedBy;
       card.appendChild(badge);
       const xo=document.createElement('div'); xo.className='pc-x'; xo.textContent='✕';
-      // show X for the OTHER player
-      if(_pcTurn<=2 && claimedBy!==_pcTurn) card.appendChild(xo);
-    } else if(_pcTurn<=2){
-      card.onclick=()=>pcPick(c.gender,c.name,c);
+      // show the ✕ lock if taken by someone else
+      const takenByOther=_myPlayer>0 ? claimedBy!==_myPlayer : claimedBy!==_pcTurn;
+      if(takenByOther) card.appendChild(xo);
+    } else {
+      // allow click only if this player still needs to pick
+      const canClick=_myPlayer>0 ? !myAlreadyPicked : _pcTurn<=2;
+      if(canClick) card.onclick=()=>pcCardTap(c.gender,c.name,c);
     }
     grid.appendChild(card);
   });
 }
 
+function pcCardTap(gender,name,c){
+  const key=gender+'_'+name;
+  if(_pcSel[key]) return;
+  // Cross-device: block if this player already picked a hero
+  if(_myPlayer>0 && Object.values(_pcSel).includes(_myPlayer)) return;
+  const now=Date.now();
+  // double-tap on same card within 400ms → confirm immediately
+  if(_pcLastTapKey===key && now-_pcLastTapTime<400){
+    _pcLastTapKey=''; _pcLastTapTime=0;
+    pcCloseProfile();
+    pcPick(gender,name,c);
+    return;
+  }
+  _pcLastTapKey=key; _pcLastTapTime=now;
+  pcShowProfile(gender,name,c);
+}
+
+// per-character zoom/crop to fix bad photo framing (Lily has black phone screen border)
+const _roleDesc={
+  fighter:      'Deals heavy damage & can use the Ultimate Attack!',
+  defender:     'Reduces damage taken and shields the team.',
+  math_master:  'Unlocks all 4 operations with a math power bonus.',
+  healer:       'Restores HP to keep the whole team alive.',
+  pattern_master:'Masters patterns & palindromes with special attacks.',
+};
+
+function pcShowProfile(gender,name,c){
+  _pcPrevChar={gender,name,c};
+  renderPcGrid();
+
+  const wrap=$id('pcp-img-wrap');
+  const backBtn=$id('pcp-back');
+  [...wrap.children].forEach(ch=>{if(ch!==backBtn)ch.remove();});
+
+  const im=document.createElement('img'); im.src=c.img; im.alt=name;
+  im.onerror=()=>{
+    im.remove();
+    const em=document.createElement('span');
+    em.style.cssText='font-size:5rem;line-height:1';
+    em.textContent=_RE[c.role]||'?';
+    wrap.appendChild(em);
+  };
+  wrap.appendChild(im);
+
+  $id('pcp-name').textContent=name;
+  const badge=$id('pcp-badge');
+  badge.textContent=_RE[c.role]+' '+c.desc;
+  badge.style.cssText='color:'+_RC[c.role]+';border:1px solid '+_RC[c.role]+';background:'+_RC[c.role]+'22;white-space:normal';
+  $id('pcp-desc').textContent=_roleDesc[c.role]||'';
+
+  $id('pc-profile').classList.add('show');
+}
+
+function pcCloseProfile(){
+  $id('pc-profile').classList.remove('show');
+  _pcPrevChar=null;
+  renderPcGrid();
+}
+
+function pcConfirmPick(){
+  if(!_pcPrevChar) return;
+  const {gender,name,c}=_pcPrevChar;
+  pcCloseProfile();
+  pcPick(gender,name,c);
+}
+
 function pcPick(gender,name,c){
   const key=gender+'_'+name;
-  if(_pcSel[key]) return; // already taken
-  _pcSel[key]=_pcTurn;
-  // ask for player name
-  const defaultName='Player '+_pcTurn;
-  const pName=(prompt('Player '+_pcTurn+' name:',defaultName)||defaultName).substring(0,16);
-  G.mpPlayers.push({playerName:pName,gender,charName:name});
-  _pcTurn++;
+  if(_pcSel[key]) return;
+  if(_myPlayer>0 && Object.values(_pcSel).includes(_myPlayer)) return;
+
+  const playerNum=_myPlayer>0 ? _myPlayer : _pcTurn;
+  _pcSel[key]=playerNum;
+
+  // Store by slot so P1 is always index-0, P2 always index-1
+  while(G.mpPlayers.length<playerNum) G.mpPlayers.push(null);
+  G.mpPlayers[playerNum-1]={playerName:'Player '+playerNum,gender,charName:name};
+
+  // Broadcast pick to the other device
+  if(_myPlayer>0 && _cCode) _cSendGame({type:'pick',player:_myPlayer,gender,charName:name});
+
+  if(!(_myPlayer>0)) _pcTurn++;
   renderPcGrid();
-  if(_pcTurn>2){
+  if(Object.keys(_pcSel).length>=2){
     $id('pc-fight').style.display='block';
     $id('pc-fight').textContent='▶ Start Adventure!';
   }
 }
 
-function doMpBattle(){
-  // flip back to the book game and start
+// ── LOBBY & JOIN NOTIFICATION ────────────────────────────────────
+function renderLobby(){
+  const connCount=Object.keys(_lobby).length||1;
+  const total=_maxPlayers;
+  $id('pc-lobby-count').textContent=connCount+'/'+total+' players connected';
+  const dots=$id('pc-lobby-dots'); dots.innerHTML='';
+  for(let i=1;i<=total;i++){
+    const d=document.createElement('span');
+    d.className='lob-dot'+(_lobby[i]?' here':'')+( i===_myPlayer?' me':'');
+    dots.appendChild(d);
+  }
+}
+
+function showJoinNotif(playerNum, name){
+  const c=$id('join-notifs');
+  const d=document.createElement('div');
+  d.className='jn-card'; d.id='jn-p'+playerNum;
+  const label=name||('Player '+playerNum);
+  d.innerHTML='<div class="jn-name">👤 '+label+' wants to enter game</div>'
+    +'<div class="jn-hint">They\'ll join at the next chapter ✨</div>';
+  c.appendChild(d);
+  setTimeout(()=>{if(d.parentNode)d.parentNode.removeChild(d);},9000);
+}
+
+// ── secret "reset" keysequence — toggles profile image sharpening ──
+let _resetBuf='';
+document.addEventListener('keydown',function(e){
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+  _resetBuf+=e.key.toLowerCase();
+  if(_resetBuf.length>5)_resetBuf=_resetBuf.slice(-5);
+  if(_resetBuf==='reset'){
+    _resetBuf='';
+    const imgs=document.styleSheets;
+    // toggle a class on body instead
+    document.body.classList.toggle('sharp-off');
+    const on=!document.body.classList.contains('sharp-off');
+    // flash a small toast
+    let t=document.getElementById('_sharp-toast');
+    if(!t){t=document.createElement('div');t.id='_sharp-toast';
+      t.style.cssText='position:fixed;bottom:88px;right:22px;background:#1e293b;color:#e2e8f0;padding:7px 14px;border-radius:10px;font-size:12px;font-family:Georgia,serif;z-index:999;pointer-events:none;transition:opacity .4s';
+      document.body.appendChild(t);}
+    t.textContent=on?'✨ Sharpening ON':'🔄 Sharpening OFF (normal)';
+    t.style.opacity='1';
+    clearTimeout(t._hide);
+    t._hide=setTimeout(()=>t.style.opacity='0',1800);
+  }
+});
+
+function doMpBattle(_noBroadcast){
+  if(!_noBroadcast && _cCode) _cSendGame({type:'start'});
   doFlip(()=>{
     $id('cave-scene').style.display='flex';
+    $id('battle-scene').style.display='none';
+    $id('mp-scene').style.display='none';
     showPanel('q');
   },()=>startGame());
 }
@@ -1718,7 +1966,10 @@ function initChat(code){
       const d = JSON.parse(e.data);
       if(d.event === 'keepalive') return;
       const msg = JSON.parse(d.message || d.body || '{}');
-      if(msg.sid && msg.sid !== _cSID){
+      if(!msg.sid || msg.sid === _cSID) return;
+      if(msg._game){
+        _cHandleGame(msg);
+      } else {
         _cAppend(msg.name, msg.text, false);
         if(!_cOpen){
           _cUnread++;
@@ -1771,6 +2022,92 @@ function _cAppend(name, text, mine){
     +'<span class="ctext">'+text.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</span>';
   msgs.appendChild(d);
   msgs.scrollTop = msgs.scrollHeight;
+}
+
+// ── GAME SYNC OVER NTFY ──────────────────────────────────────────
+function _cSendGame(data){
+  if(!_cCode) return;
+  fetch('https://ntfy.sh/mathpower-'+_cCode, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify(Object.assign({sid:_cSID,_game:true}, data))
+  }).catch(()=>{});
+}
+
+function _cHandleGame(msg){
+  if(msg.type==='join'){
+    // Someone wants to join — host assigns a player number
+    if(_myPlayer===1){
+      const n=_nextPlayerNum++;
+      _lobby[n]={sid:msg.reqSid};
+      _cSendGame({type:'welcome',forSid:msg.reqSid,player:n,maxPlayers:_maxPlayers,
+                  presentPlayers:Object.keys(_lobby).map(Number)});
+      if(G.chapter>0){
+        // Mid-game join
+        _pendingJoin.push(n);
+        showJoinNotif(n);
+        _cSendGame({type:'game_status',forSid:msg.reqSid,inGame:true,chapter:G.chapter});
+      } else {
+        _p2Joined=true;
+        renderPcGrid();
+      }
+      renderLobby();
+    } else {
+      // Non-host: still update lobby count when we see a new joiner
+      const tmpKey='tmp_'+msg.reqSid;
+      _lobby[tmpKey]={};
+      renderLobby();
+    }
+  } else if(msg.type==='welcome'){
+    // Update lobby for everyone (host broadcasts this for all to see)
+    _lobby[msg.player]={};
+    if(msg.forSid===_cSID){
+      // This welcome is addressed to me
+      clearTimeout(_joinTimeout);
+      _myPlayer=msg.player; _maxPlayers=msg.maxPlayers;
+      // Rebuild lobby from presentPlayers list
+      _lobby={};
+      (msg.presentPlayers||[]).forEach(n=>_lobby[n]={});
+      _p2Joined=true;
+      renderPcGrid();
+    }
+    renderLobby();
+  } else if(msg.type==='game_status'){
+    // Host tells us the game is already in progress
+    if(msg.forSid===_cSID && msg.inGame){
+      _isMidGame=true;
+      $id('mid-wait').style.display='block';
+      $id('pc-turn').textContent='Pick your hero and wait ⏳';
+    }
+  } else if(msg.type==='chapter_done'){
+    // A chapter just ended — pending joiner can now start
+    if(_isMidGame && $id('panel-chars').classList.contains('active')){
+      const myPick=Object.keys(_pcSel).find(k=>_pcSel[k]===_myPlayer);
+      if(myPick){
+        $id('mid-wait').innerHTML='<b>🎉 Joining now!</b>';
+        setTimeout(()=>doMpBattle(true),1200);
+      } else {
+        $id('mid-wait').innerHTML='<b>⚡ Chapter ended!</b>Pick your hero fast!';
+      }
+    }
+  } else if(msg.type==='joined'){
+    // Legacy fallback
+    _p2Joined=true; renderPcGrid();
+    _cAppend('📖 Game','Player 2 joined! Choose your heroes.',false);
+  } else if(msg.type==='pick'){
+    // Other player locked a character — mirror it here
+    const key=msg.gender+'_'+msg.charName;
+    _pcSel[key]=msg.player;
+    while(G.mpPlayers.length<msg.player) G.mpPlayers.push(null);
+    G.mpPlayers[msg.player-1]={playerName:'Player '+msg.player,gender:msg.gender,charName:msg.charName};
+    renderPcGrid();
+    if(Object.keys(_pcSel).length>=2){
+      $id('pc-fight').style.display='block';
+      $id('pc-fight').textContent='▶ Start Adventure!';
+    }
+  } else if(msg.type==='start'){
+    if($id('panel-chars').classList.contains('active')) doMpBattle(true);
+  }
 }
 </script>
 </body>
