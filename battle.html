@@ -154,24 +154,71 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .stag-shield{background:rgba(29,78,216,.3);color:#93c5fd;border:1px solid rgba(29,78,216,.5)}
 .stag-ko{background:rgba(239,68,68,.2);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
 
-/* Power charge */
-.power-box{background:rgba(255,215,0,.04);border:1px solid rgba(255,215,0,.18);border-radius:.85rem;padding:.8rem}
-.power-lbl{font-size:.68rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:.45rem}
-.orbs{display:flex;gap:.45rem;margin-bottom:.5rem}
-.orb{width:1.9rem;height:1.9rem;border-radius:50%;border:2px solid rgba(255,215,0,.3);
-  display:flex;align-items:center;justify-content:center;font-size:.75rem;transition:all .35s}
-.orb.on{background:radial-gradient(circle,var(--gold),var(--orange));border-color:var(--gold);
-  box-shadow:0 0 10px var(--gold)}
-.streak-row{display:flex;align-items:center;gap:.35rem}
-.sdot{width:.55rem;height:.55rem;border-radius:50%;border:1.5px solid rgba(255,215,0,.3);transition:all .3s}
-.sdot.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 4px var(--gold)}
-.streak-hint{font-size:.65rem;color:var(--muted);margin-left:.25rem}
-.code-row{display:flex;align-items:center;gap:.4rem;margin-top:.6rem}
-.code-lbl{font-size:.65rem;color:var(--muted)}
-.digit{width:1.8rem;height:2.2rem;background:rgba(255,255,255,.05);border:1px solid rgba(255,215,0,.25);
-  border-radius:.35rem;display:flex;align-items:center;justify-content:center;
-  font-size:1.1rem;font-weight:700;font-family:monospace;color:var(--gold)}
-.digit.on{background:rgba(255,215,0,.1);border-color:var(--gold);box-shadow:0 0 7px rgba(255,215,0,.3);animation:digitpop .45s ease}
+/* Streak box */
+.streak-box{display:flex;align-items:center;gap:.7rem;background:rgba(255,215,0,.04);
+  border:1px solid rgba(255,215,0,.2);border-radius:.75rem;padding:.5rem .9rem;margin-bottom:.5rem;flex-wrap:wrap}
+.streak-label{font-size:.65rem;color:var(--gold);font-weight:700;letter-spacing:1px;text-transform:uppercase}
+.streak-dots{display:flex;gap:.35rem}
+.sdot{width:11px;height:11px;border-radius:50%;border:2px solid rgba(255,215,0,.35);transition:all .3s}
+.sdot.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 6px var(--gold)}
+.streak-charges{font-size:.65rem;color:var(--muted)}
+/* Battle timer */
+#battle-timer-wrap{display:flex;align-items:center;gap:.5rem;margin-left:auto}
+#battle-timer-txt{font-size:.95rem;font-weight:700;color:var(--gold);min-width:2.5rem;text-align:right}
+#battle-timer-bar{width:70px;height:5px;background:rgba(255,255,255,.12);border-radius:3px}
+#battle-timer-fill{height:100%;background:linear-gradient(90deg,#22c55e,#f59e0b);border-radius:3px;transition:width 1s linear}
+/* Gear tray */
+#gear-tray{display:flex;flex-wrap:wrap;gap:.4rem;padding:.6rem 1.25rem;border-top:1px solid var(--border);background:rgba(0,0,0,.4)}
+.gear-card{display:flex;flex-direction:column;align-items:center;gap:.15rem;padding:.35rem .4rem;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);
+  border-radius:.5rem;cursor:pointer;width:4.2rem;transition:all .2s;position:relative}
+.gear-card.usable{border-color:#d97706;background:linear-gradient(135deg,rgba(120,53,15,.6),rgba(146,64,14,.5));cursor:pointer}
+.gear-card.usable:hover{box-shadow:0 4px 14px rgba(217,119,6,.5);transform:translateY(-2px)}
+.gear-card.locked{opacity:.28;cursor:not-allowed}
+.gear-card.disabled{opacity:.5;cursor:not-allowed}
+.gear-img{width:2.4rem;height:2.4rem;object-fit:contain;border-radius:.25rem}
+.gear-img-no-face{width:2.4rem;height:2.8rem;object-fit:cover;object-position:center bottom;
+  clip-path:inset(38% 0 0 0 round .25rem)}
+.gear-css{width:2.4rem;height:2.4rem;border-radius:.35rem;display:flex;align-items:center;justify-content:center;font-size:1.4rem}
+.gear-nm{font-size:.52rem;font-weight:700;text-align:center;color:var(--text)}
+/* Hourglass interrupt button */
+#hourglass-btn{position:fixed;bottom:5.5rem;right:.75rem;z-index:200;
+  background:linear-gradient(135deg,#78350f,#92400e);border:2px solid #d97706;
+  border-radius:.65rem;padding:.4rem .5rem;cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;gap:.15rem;color:#fef3c7;font-size:.6rem;font-weight:700;
+  box-shadow:0 4px 14px rgba(217,119,6,.4);transition:all .2s}
+#hourglass-btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(217,119,6,.6)}
+.hg-btn-img{width:2rem;height:2.4rem;object-fit:cover;object-position:center bottom;
+  clip-path:inset(38% 0 0 0 round .2rem)}
+/* Question timer */
+#q-timer-wrap{display:flex;align-items:center;gap:.5rem;margin:.3rem 0 .75rem}
+#q-timer-bar{flex:1;height:6px;background:rgba(255,255,255,.12);border-radius:3px}
+#q-timer-fill{height:100%;background:#f59e0b;border-radius:3px;transition:width 1s linear}
+#q-timer-txt{font-size:.75rem;color:var(--muted);min-width:2.4rem;text-align:right;font-weight:600}
+/* Timeout screen */
+#timeout-screen{align-items:center;justify-content:center;text-align:center;padding:2rem;
+  background:radial-gradient(ellipse at center,#350a0a 0%,var(--bg) 60%)}
+#timeout-dragon-sprite{font-size:6rem;animation:dfloat 1.5s ease-in-out infinite}
+/* Visual FX */
+@keyframes blastFx{
+  0%{opacity:0;transform:scaleX(0) translateX(0)}
+  30%{opacity:1;transform:scaleX(1) translateX(15px)}
+  80%{opacity:.85;transform:scaleX(1.2) translateX(90px)}
+  100%{opacity:0;transform:scaleX(1.4) translateX(160px)}
+}
+.fx-ultimate{position:absolute;top:50%;left:70%;margin-top:-12px;height:24px;width:80px;
+  background:linear-gradient(90deg,#065f46,#059669,#34d399,#6ee7b7);
+  border-radius:50%;filter:blur(5px);animation:blastFx .75s ease-out forwards;pointer-events:none;z-index:10}
+.fx-fire{position:absolute;top:50%;left:70%;margin-top:-10px;height:20px;width:65px;
+  background:linear-gradient(90deg,#7f1d1d,#dc2626,#f97316,#fca5a5);
+  border-radius:50%;filter:blur(4px);animation:blastFx .65s ease-out forwards;pointer-events:none;z-index:10}
+.fx-water{position:absolute;top:50%;left:70%;margin-top:-10px;height:20px;width:65px;
+  background:linear-gradient(90deg,#1e3a8a,#3b82f6,#93c5fd,#bfdbfe);
+  border-radius:50%;filter:blur(4px);animation:blastFx .65s ease-out forwards;pointer-events:none;z-index:10}
+@keyframes immunityFlash{0%{opacity:0}30%{opacity:.55}70%{opacity:.45}100%{opacity:0}}
+.fx-immunity-overlay{position:fixed;inset:0;background:rgba(139,92,246,.22);
+  border:3px solid #a78bfa;animation:immunityFlash 1.3s ease forwards;pointer-events:none;z-index:500}
+.roster.invisible-active .rcard{opacity:.22;filter:blur(1px);transition:all .6s}
 
 /* Battle log */
 .b-log{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:.7rem;
@@ -344,31 +391,21 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
           </div>
         </div>
 
-        <div class="power-box">
-          <div class="power-lbl">⚡ Fighter Power Charge</div>
-          <div class="orbs">
-            <div class="orb" id="orb0">①</div>
-            <div class="orb" id="orb1">②</div>
-            <div class="orb" id="orb2">③</div>
-          </div>
-          <div class="streak-row">
-            <span style="font-size:.65rem;color:var(--muted)">Streak:</span>
+        <div class="streak-box">
+          <span class="streak-label">Streak</span>
+          <div class="streak-dots">
             <div class="sdot" id="sd0"></div>
             <div class="sdot" id="sd1"></div>
             <div class="sdot" id="sd2"></div>
-            <span class="streak-hint" id="streak-hint">3 in a row = 1 charge</span>
           </div>
-          <div class="code-row">
-            <span class="code-lbl">CODE:</span>
-            <div class="digit" id="dg0">_</div>
-            <div class="digit" id="dg1">_</div>
-            <div class="digit" id="dg2">_</div>
+          <span class="streak-charges" id="streak-charges">0/3 charges</span>
+          <div id="battle-timer-wrap">
+            <span id="battle-timer-txt">3:30</span>
+            <div id="battle-timer-bar"><div id="battle-timer-fill"></div></div>
           </div>
         </div>
 
-        <div class="b-log" id="b-log">
-          <div class="log-e log-imp">⚔️ The battle begins! Heroes vs. Dralioster!</div>
-        </div>
+        <div class="b-log" id="b-log"></div>
       </div>
 
       <div class="roster" id="roster"></div>
@@ -378,14 +415,26 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <div class="turn-ind" id="turn-ind">Preparing…</div>
       <div class="act-btns" id="act-btns"></div>
     </div>
+
+    <!-- GEAR TRAY — all players see all gears -->
+    <div id="gear-tray"></div>
+    <!-- Hourglass interrupt button (always visible to healer) -->
+    <button id="hourglass-btn" class="hidden" onclick="useGear('Hourglass')">
+      <img src="gears/hourglass.webp" class="hg-btn-img" alt="Hourglass">
+      <span>+30s</span>
+    </button>
   </div>
 </div>
 
 <!-- QUESTION MODAL -->
 <div class="modal-overlay hidden" id="q-modal">
   <div class="modal-card">
-    <div class="modal-hdr" id="m-hdr">🔢 Math Challenge!</div>
+    <div class="modal-hdr" id="m-hdr">Math Challenge!</div>
     <div class="q-progress" id="q-prog"></div>
+    <div id="q-timer-wrap">
+      <div id="q-timer-bar"><div id="q-timer-fill"></div></div>
+      <span id="q-timer-txt">1:30</span>
+    </div>
     <div class="q-text" id="q-text">Question</div>
     <div class="q-fb hidden" id="q-fb"></div>
     <div id="num-area">
@@ -397,6 +446,17 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <button class="yn-btn yn-no" id="yn-no">No ✗</button>
     </div>
   </div>
+</div>
+
+<!-- TIMEOUT SCREEN -->
+<div id="timeout-screen" class="screen">
+  <div id="timeout-dragon-wrap">
+    <div id="timeout-dragon-sprite">🐉</div>
+  </div>
+  <div class="res-title" style="color:#ef4444;margin-top:1rem">Time is up!</div>
+  <div class="res-sub" style="color:#94a3b8;margin:.5rem 0 1.5rem">Dralioster delivers a final crushing blow…<br>You have lost.</div>
+  <button class="again-btn" onclick="location.reload()">Try Again</button>
+  <a class="book-link" href="index.html" style="margin-top:.75rem;display:inline-block" onclick="if(window.parent!==window){event.preventDefault();window.parent.closeMpScene&&window.parent.closeMpScene();}">Return to Book</a>
 </div>
 
 <!-- VICTORY -->
@@ -411,7 +471,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <br>
     <button class="copy-btn" id="copy-btn" onclick="copyCode()">📋 Copy Code</button>
   </div>
-  <a class="book-link" href="index.html" onclick="if(window.parent!==window){event.preventDefault();(_soloMode||_bParams.get('autostart')==='1')?(window.parent.onSoloBattleWin&&window.parent.onSoloBattleWin()):window.parent.closeMpScene();}">📖 Return to Book</a><br>
+  <a class="book-link" href="index.html" onclick="if(window.parent!==window){event.preventDefault();(_soloMode||_bParams.get('autostart')==='1')?(window.parent.onSoloBattleWin&&window.parent.onSoloBattleWin((G.gearItems||[]).map(g=>g.name))):window.parent.closeMpScene();}">Return to Book</a><br>
   <button class="again-btn" onclick="location.reload()">⚔️ Play Again</button>
 </div>
 
@@ -459,6 +519,8 @@ const DRAGON_SUBS = [
 const _bParams = new URLSearchParams(location.search);
 const _soloMode = _bParams.get('solo') === '1';
 const _soloPw   = _bParams.get('pw') || '';
+const _gearsParam = (_bParams.get('gears')||'').split(',').filter(Boolean);
+const _levelParam = _bParams.get('level')||'P3';
 let numP = _soloMode ? 1 : 2;
 const pData = [];  // {playerName, gender, charName}
 
@@ -640,19 +702,34 @@ function startBattle(players){
     charges:0,
     streak:0,
     code,
-    revealed:[false,false,false],
     acted:new Set(),
-    pq:null,   // pending question
-    qt:null,   // question type
+    pq:null,
+    qt:null,
     done:false,
+    gearItems:[],
+    invisibleUntil:0,
+    lampUntil:0,
   };
+  // Apply passive gears (Armor/Helmet) and build active gear inventory
+  const passiveApplied={};
+  _gearsParam.forEach(n=>{
+    if(!GEAR_DATA[n])return;
+    if(n==='Armor'&&!passiveApplied.Armor){passiveApplied.Armor=true;G.players.forEach(p=>{p.hp+=10;p.maxHp+=10;});}
+    else if(n==='Helmet'&&!passiveApplied.Helmet){passiveApplied.Helmet=true;G.players.forEach(p=>{p.hp+=5;p.maxHp+=5;});}
+    else{G.gearItems.push({name:n,...GEAR_DATA[n]});}
+  });
   showScreen('battle-screen');
+  updateCaveLight();
   renderRoster();
   refreshActive();
   refreshDragon();
   renderActions();
-  log('⚔️ The battle begins! Heroes vs Dralioster!','log-imp');
-  log('💡 Math & Pattern Masters: 3 correct in a row = 1 power charge!','');
+  renderGearTray();
+  updateHourglassBtn();
+  startBattleTimer();
+  log('The battle begins! Heroes vs Dralioster!','log-imp');
+  log('Math & Pattern Masters: 3 correct in a row = 1 power charge!','');
+  if(_gearsParam.length)log('Gears equipped: '+_gearsParam.join(', '),'log-pwr');
 }
 
 // ── SCREENS ───────────────────────────────────────────────────────
@@ -678,19 +755,13 @@ function refreshActive(){
   const st=document.getElementById('a-status');st.innerHTML='';
   if(p.shielded)st.innerHTML+='<span class="stag stag-shield">🛡️ Shielded</span>';
   if(!p.isAlive)st.innerHTML+='<span class="stag stag-ko">💀 KO\'d</span>';
-  document.getElementById('turn-ind').textContent='⚡ '+p.playerName+'\'s Turn  ('+ch.name+')';
-  refreshPower();
+  document.getElementById('turn-ind').textContent=p.playerName+'\'s Turn  ('+ch.name+')';
+  renderStreak();
 }
 
-function refreshPower(){
-  for(let i=0;i<3;i++){
-    document.getElementById('orb'+i).classList.toggle('on',G.charges>i);
-    document.getElementById('sd'+i).classList.toggle('on',G.streak>i);
-    const dg=document.getElementById('dg'+i);
-    if(G.revealed[i]){dg.textContent=G.code[i];dg.classList.add('on');}
-    else{dg.textContent='_';dg.classList.remove('on');}
-  }
-  document.getElementById('streak-hint').textContent='('+G.streak+'/3 streak → '+G.charges+'/3 charges)';
+function renderStreak(){
+  for(let i=0;i<3;i++) document.getElementById('sd'+i).classList.toggle('on',G.streak>i);
+  document.getElementById('streak-charges').textContent=G.charges+'/3 charges';
 }
 
 function refreshDragon(){
@@ -728,19 +799,18 @@ function renderActions(){
   const c=document.getElementById('act-btns');c.innerHTML='';
   const p=G.players[G.curIdx];if(!p)return;
   const role=p.character.role;
+  // Math/Pattern masters: auto-open question, no button needed
+  if(role==='math_master'){setTimeout(()=>{if(!G.done)openQ('math');},350);return;}
+  if(role==='pattern_master'){setTimeout(()=>{if(!G.done)openQ('pattern');},350);return;}
   const defs=[];
   if(role==='fighter'){
-    defs.push({l:'⚔️ Attack',cls:'b-atk',a:'attack'});
-    const ultLbl=G.charges>=3?'💥 ULTIMATE! ('+G.code.join('')+')':'💥 Ultimate Attack';
+    defs.push({l:'Attack',cls:'b-atk',a:'attack'});
+    const ultLbl=G.charges>=3?'ULTIMATE!':'Ultimate Attack';
     defs.push({l:ultLbl,cls:'b-ult',a:'ultimate',dis:G.charges<3});
   }else if(role==='defender'){
-    defs.push({l:'🛡️ Raise Shield',cls:'b-shld',a:'shield'});
+    defs.push({l:'Raise Shield',cls:'b-shld',a:'shield'});
   }else if(role==='healer'){
-    defs.push({l:'💚 Heal Ally',cls:'b-heal',a:'heal'});
-  }else if(role==='math_master'){
-    defs.push({l:'🔢 Solve Math Question',cls:'b-math',a:'math'});
-  }else if(role==='pattern_master'){
-    defs.push({l:'🔮 Solve Pattern / Palindrome',cls:'b-pat',a:'pattern'});
+    defs.push({l:'Heal Ally',cls:'b-heal',a:'heal'});
   }
   defs.forEach(d=>{
     const b=document.createElement('button');b.className='abtn '+d.cls;b.textContent=d.l;
@@ -748,6 +818,8 @@ function renderActions(){
     b.onclick=()=>doAction(d.a);
     c.appendChild(b);
   });
+  renderGearTray();
+  updateHourglassBtn();
 }
 
 // ── ACTIONS ───────────────────────────────────────────────────────
@@ -763,9 +835,9 @@ function doAction(a){
     if(G.charges<3)return;
     const dmg=r(180,260);
     G.dragon.hp=Math.max(0,G.dragon.hp-dmg);
-    G.charges=0;G.streak=0;G.revealed=[false,false,false];
-    log('💥 '+ch.name+' ULTIMATE ATTACK! '+dmg+' damage!!!','log-pwr');
-    shakeDragon();refreshDragon();refreshPower();endTurn();
+    G.charges=0;G.streak=0;
+    log(ch.name+' ULTIMATE ATTACK! '+dmg+' damage!!!','log-pwr');
+    playGearFx('ultimate');shakeDragon();refreshDragon();renderStreak();endTurn();
   }else if(a==='shield'){
     p.shielded=true;
     log('🛡️ '+ch.name+' raises a Power Shield! Dragon\'s next attack -60%.','log-imp');
@@ -820,6 +892,13 @@ function endTurn(){
 
 function dragonTurn(){
   if(G.done)return;
+  // Invisible gear — dragon misses
+  if(G.invisibleUntil&&Date.now()<G.invisibleUntil){
+    G.round++;
+    log('The dragon searches but cannot find the heroes — attack missed! Round '+G.round,'log-pwr');
+    const first=G.players.findIndex(p=>p.isAlive);if(first===-1){loseGame();return;}
+    G.curIdx=first;refreshActive();renderRoster();renderActions();return;
+  }
   G.round++;
   log('🐉 ── Round '+G.round+': Dralioster attacks! ──','log-dmg');
   const alive=G.players.filter(p=>p.isAlive);
@@ -873,6 +952,7 @@ function openQ(type){
     setTimeout(()=>inp.focus(),120);
   }
   document.getElementById('q-modal').classList.remove('hidden');
+  startQTimer();
 }
 
 function renderQProg(){
@@ -885,32 +965,38 @@ function renderQProg(){
 }
 
 function submitAns(given){
-  const correct=String(G.pq.answer).trim().toLowerCase()===String(given).trim().toLowerCase();
+  clearInterval(_qTimerInterval);
+  const isTimeout=(given==='__timeout__');
+  const correct=!isTimeout&&String(G.pq.answer).trim().toLowerCase()===String(given).trim().toLowerCase();
   const fb=document.getElementById('q-fb');
   fb.className='q-fb '+(correct?'fb-ok':'fb-no');
   const ch=G.players[G.curIdx].character;
 
-  if(correct){
+  if(isTimeout){
+    G.streak=0;
+    fb.textContent='Time up! Answer was '+G.pq.answer+'. Streak reset.';
+    fb.classList.remove('hidden');
+    log(ch.name+' ran out of time. Streak reset.','');
+  }else if(correct){
     G.streak++;
-    fb.textContent='✅ Correct! Streak: '+G.streak+'/3';
+    fb.textContent='Correct! Streak: '+G.streak+'/3';
     if(G.streak>=3&&G.charges<3){
-      G.streak=0;G.charges++;G.revealed[G.charges-1]=true;
-      fb.textContent='🌟 Streak complete! Charge '+G.charges+'/3 unlocked! Digit: '+G.code[G.charges-1];
-      log('⚡ Power charge '+G.charges+'/3! Code digit '+G.charges+' revealed: '+G.code[G.charges-1],'log-pwr');
-      if(G.charges===3)log('💥 FULL POWER! Fighter can now use Ultimate Attack!','log-pwr');
+      G.streak=0;G.charges++;
+      fb.textContent='Streak complete! Power charge '+G.charges+'/3 unlocked!';
+      log('Power charge '+G.charges+'/3! '+(G.charges===3?'Fighter can now use Ultimate!':'Keep the streak going!'),'log-pwr');
     }else if(G.streak>=3){
       G.streak=0;
-      fb.textContent='✅ Correct! (Power already fully charged — keep it up!)';
+      fb.textContent='Correct! (Power already fully charged — keep it up!)';
     }else{
-      log('✅ '+ch.name+' answered correctly! Streak: '+G.streak+'/3','log-ok');
+      log(ch.name+' answered correctly! Streak: '+G.streak+'/3','log-ok');
     }
   }else{
     G.streak=0;
-    fb.textContent='❌ Wrong! Answer was '+G.pq.answer+'. Streak reset.';
-    log('❌ '+ch.name+' missed the question. Streak reset.','');
+    fb.textContent='Wrong! Answer was '+G.pq.answer+'. Streak reset.';
+    log(ch.name+' missed the question. Streak reset.','');
   }
 
-  refreshPower();renderQProg();
+  renderStreak();renderQProg();
 
   setTimeout(()=>{
     document.getElementById('q-modal').classList.add('hidden');
@@ -920,13 +1006,22 @@ function submitAns(given){
 }
 
 // ── QUESTION GENERATORS ───────────────────────────────────────────
+const _LVL_RANGES={
+  P1:{add:[1,20],sub:[5,20],mulA:[1,5],mulB:[1,5],divD:[1,5],divQ:[1,5]},
+  P2:{add:[10,50],sub:[10,50],mulA:[2,9],mulB:[2,9],divD:[2,9],divQ:[2,9]},
+  P3:{add:[10,100],sub:[20,100],mulA:[2,12],mulB:[2,12],divD:[2,12],divQ:[2,12]},
+  P4:{add:[50,500],sub:[50,500],mulA:[10,99],mulB:[2,9],divD:[2,12],divQ:[10,200]},
+  P5:{add:[100,2000],sub:[100,2000],mulA:[10,999],mulB:[2,12],divD:[2,9],divQ:[100,999]},
+  P6:{add:[500,9999],sub:[500,9999],mulA:[100,9999],mulB:[10,99],divD:[2,9],divQ:[500,9999]},
+};
 function genMath(){
+  const lvl=_LVL_RANGES[_levelParam]||_LVL_RANGES.P3;
   const ops=['+','-','×','÷'];const op=ops[r(0,3)];
   let a,b,ans;
-  if(op==='+'){a=r(10,99);b=r(10,99);ans=a+b;}
-  else if(op==='-'){a=r(20,99);b=r(1,a-1);ans=a-b;}
-  else if(op==='×'){a=r(2,12);b=r(2,12);ans=a*b;}
-  else{b=r(2,12);ans=r(2,12);a=b*ans;}
+  if(op==='+'){a=r(lvl.add[0],lvl.add[1]);b=r(lvl.add[0],lvl.add[1]);ans=a+b;}
+  else if(op==='-'){a=r(lvl.sub[0],lvl.sub[1]);b=r(Math.floor(a*.1+1),Math.floor(a*.9));ans=a-b;}
+  else if(op==='×'){a=r(lvl.mulA[0],lvl.mulA[1]);b=r(lvl.mulB[0],lvl.mulB[1]);ans=a*b;}
+  else{b=r(lvl.divD[0],lvl.divD[1]);ans=r(2,lvl.divQ[1]<50?12:Math.min(50,Math.floor(lvl.divQ[1]/b)));a=b*ans;}
   return{question:a+' '+op+' '+b+' = ?',answer:String(ans)};
 }
 
@@ -969,23 +1064,204 @@ function genPattern(){
   }
 }
 
+// ── TIMERS ────────────────────────────────────────────────────────
+var _btInterval=null,_btSecs=210;
+var _qTimerInterval=null,_qTimerSecs=0;
+
+function startBattleTimer(){
+  clearInterval(_btInterval);_btSecs=210;updateBattleTimerUI();
+  _btInterval=setInterval(function(){
+    _btSecs--;updateBattleTimerUI();
+    if(_btSecs<=0){clearInterval(_btInterval);triggerTimeUp();}
+  },1000);
+}
+function updateBattleTimerUI(){
+  const m=Math.floor(_btSecs/60),s=_btSecs%60;
+  const el=document.getElementById('battle-timer-txt');
+  if(!el)return;
+  el.textContent=m+':'+(s<10?'0':'')+s;
+  el.style.color=_btSecs<=30?'#ef4444':'var(--gold)';
+  document.getElementById('battle-timer-fill').style.width=Math.max(0,(_btSecs/210)*100)+'%';
+}
+function triggerTimeUp(){
+  if(G.done)return;G.done=true;
+  clearInterval(_qTimerInterval);
+  document.getElementById('q-modal').classList.add('hidden');
+  updateCaveLight(true);
+  showScreen('timeout-screen');
+  setTimeout(function(){
+    if(window.parent!==window)window.parent.closeMpScene&&window.parent.closeMpScene();
+  },5000);
+}
+
+function startQTimer(){
+  clearInterval(_qTimerInterval);_qTimerSecs=90;updateQTimerUI();
+  _qTimerInterval=setInterval(function(){
+    _qTimerSecs--;updateQTimerUI();
+    if(_qTimerSecs<=0){clearInterval(_qTimerInterval);submitAns('__timeout__');}
+  },1000);
+}
+function updateQTimerUI(){
+  const m=Math.floor(_qTimerSecs/60),s=_qTimerSecs%60;
+  const el=document.getElementById('q-timer-txt');if(!el)return;
+  el.textContent=m+':'+(s<10?'0':'')+s;
+  el.style.color=_qTimerSecs<=20?'#ef4444':'var(--muted)';
+  document.getElementById('q-timer-fill').style.width=Math.max(0,(_qTimerSecs/90)*100)+'%';
+}
+function addQTime(secs){
+  _qTimerSecs=Math.min(_qTimerSecs+secs,180);updateQTimerUI();
+}
+
+// ── GEAR SYSTEM ───────────────────────────────────────────────────
+const GEAR_DATA={
+  Sword:    {img:'gears/sword.jpg',    type:3,effect:'40 damage to dragon'},
+  Fire:     {img:null,                 type:3,effect:'30 fire damage to dragon'},
+  Water:    {img:null,                 type:3,effect:'Heals weakest ally 30 HP'},
+  Shield:   {img:'gears/shield.jpg',   type:2,effect:'Shield all heroes'},
+  Armor:    {img:'gears/armor.jpg',    type:2,effect:'Passive: +10 max HP'},
+  Helmet:   {img:'gears/helmet.jpg',   type:2,effect:'Passive: +5 max HP'},
+  Immunity: {img:null,                 type:1,effect:'Purple barrier protects team'},
+  Hourglass:{img:'gears/hourglass.webp',type:1,effect:'+30s to question timer'},
+  Lamp:     {img:'gears/lamp.jpg',     type:1,effect:'Brightens cave 1 min'},
+  Invisible:{img:null,                 type:1,effect:'Team invisible 35s'},
+};
+const ROLE_GEAR_TYPE={fighter:3,defender:2,healer:1,math_master:null,pattern_master:null};
+const ALL_GEAR_NAMES=['Immunity','Hourglass','Lamp','Invisible','Shield','Armor','Helmet','Sword','Fire','Water'];
+
+function renderGearTray(){
+  const tray=document.getElementById('gear-tray');
+  if(!tray)return;
+  tray.innerHTML='';
+  const curRole=G.players[G.curIdx]?G.players[G.curIdx].character.role:null;
+  const myType=ROLE_GEAR_TYPE[curRole];
+  ALL_GEAR_NAMES.forEach(name=>{
+    const data=GEAR_DATA[name];if(!data)return;
+    const inInventory=G.gearItems.some(g=>g.name===name);
+    const isPassive=(name==='Armor'||name==='Helmet');
+    const canUse=myType===data.type&&inInventory&&!isPassive;
+    const card=document.createElement('div');
+    card.className='gear-card'+(canUse?' usable':inInventory&&!isPassive?' disabled':' locked');
+    // Image or CSS icon
+    if(data.img){
+      const im=document.createElement('img');
+      im.src=data.img;im.alt=name;
+      im.className=name==='Hourglass'?'gear-img-no-face':'gear-img';
+      im.onerror=()=>{im.style.display='none'};
+      card.appendChild(im);
+    }else{
+      const ic=document.createElement('div');ic.className='gear-css';
+      if(name==='Fire')ic.style.background='linear-gradient(180deg,#fca5a5,#dc2626,#7f1d1d)';
+      else if(name==='Water')ic.style.background='linear-gradient(180deg,#bfdbfe,#3b82f6,#1e3a8a)';
+      else if(name==='Immunity')ic.style.cssText='background:radial-gradient(circle,rgba(196,181,253,.8),rgba(109,40,217,.6));border:2px solid #a78bfa';
+      else if(name==='Invisible')ic.style.cssText='background:linear-gradient(135deg,rgba(255,255,255,.15),rgba(255,255,255,.05));border:1px dashed rgba(255,255,255,.4)';
+      ic.textContent=name==='Fire'?'🔥':name==='Water'?'💧':name==='Immunity'?'✨':'👻';
+      card.appendChild(ic);
+    }
+    const nm=document.createElement('div');nm.className='gear-nm';nm.textContent=name;
+    card.appendChild(nm);
+    if(canUse)card.onclick=()=>useGear(name);
+    tray.appendChild(card);
+  });
+}
+
+function updateHourglassBtn(){
+  const btn=document.getElementById('hourglass-btn');if(!btn)return;
+  const curRole=G.players[G.curIdx]?G.players[G.curIdx].character.role:null;
+  const healerHasHG=G.gearItems.some(g=>g.name==='Hourglass');
+  // Show if current player is healer AND hourglass is available
+  const show=curRole==='healer'&&healerHasHG&&!G.done;
+  btn.classList.toggle('hidden',!show);
+}
+
+function useGear(name){
+  if(G.done)return;
+  const idx=G.gearItems.findIndex(g=>g.name===name);
+  if(idx===-1)return;
+  G.gearItems.splice(idx,1);
+  const p=G.players[G.curIdx];
+  let isFreeAction=false;
+  if(name==='Sword'){
+    G.dragon.hp=Math.max(0,G.dragon.hp-40);
+    log('SWORD! 40 damage to Dralioster!','log-pwr');
+    playGearFx('sword');shakeDragon();refreshDragon();
+  }else if(name==='Fire'){
+    G.dragon.hp=Math.max(0,G.dragon.hp-30);
+    log('FIRE! 30 fire damage!','log-pwr');
+    playGearFx('fire');shakeDragon();refreshDragon();
+  }else if(name==='Water'){
+    const t=lowestAlive();
+    if(t){t.hp=Math.min(t.maxHp,t.hp+30);log('WATER! '+t.character.name+' healed 30 HP!','log-ok');}
+    playGearFx('water');
+  }else if(name==='Shield'){
+    G.players.forEach(p2=>{if(p2.isAlive)p2.shielded=true;});
+    log('SHIELD! All heroes protected!','log-pwr');
+  }else if(name==='Immunity'){
+    G.players.forEach(p2=>{if(p2.isAlive)p2.shielded=true;});
+    log('IMMUNITY! Purple barrier shields all heroes!','log-pwr');
+    playGearFx('immunity');
+  }else if(name==='Invisible'){
+    G.invisibleUntil=Date.now()+35000;
+    log('INVISIBLE! Team hidden for 35 seconds — dragon cannot see you!','log-pwr');
+    document.getElementById('roster').classList.add('invisible-active');
+    setTimeout(function(){G.invisibleUntil=0;document.getElementById('roster').classList.remove('invisible-active');log('Invisible wore off.','');},35000);
+  }else if(name==='Hourglass'){
+    addQTime(30);
+    log('HOURGLASS! +30 seconds added to the question clock!','log-pwr');
+    isFreeAction=true;
+  }else if(name==='Lamp'){
+    G.lampUntil=Date.now()+60000;
+    log('LAMP! The cave brightens for 1 minute!','log-ok');
+    updateCaveLight();
+    setTimeout(function(){G.lampUntil=0;updateCaveLight();log('Lamp faded.','');},60000);
+  }
+  renderGearTray();renderRoster();refreshActive();updateHourglassBtn();
+  if(G.dragon.hp<=0){setTimeout(winGame,500);return;}
+  if(!isFreeAction)endTurn();
+}
+
+function playGearFx(type){
+  if(type==='ultimate'||type==='fire'||type==='water'){
+    const hero=document.querySelector('#rc'+G.curIdx)||document.querySelector('.active-card');
+    if(!hero)return;
+    const el=document.createElement('div');el.className='fx-'+type;
+    hero.style.position='relative';hero.style.overflow='visible';
+    hero.appendChild(el);setTimeout(()=>el.remove(),800);
+  }else if(type==='immunity'){
+    const el=document.createElement('div');el.className='fx-immunity-overlay';
+    document.body.appendChild(el);setTimeout(()=>el.remove(),1300);
+  }else if(type==='sword'){
+    shakeDragon();
+  }
+}
+
+function updateCaveLight(reset){
+  const bs=document.getElementById('battle-screen');if(!bs)return;
+  if(reset){bs.style.filter='';return;}
+  bs.style.filter=(G.lampUntil&&Date.now()<G.lampUntil)?'brightness(1.5)':'brightness(0.78)';
+}
+
 // ── WIN / LOSE ────────────────────────────────────────────────────
 function winGame(){
   if(G.done)return;G.done=true;
-  log('🏆 DRALIOSTER DEFEATED! Heroes WIN!','log-pwr');
+  clearInterval(_btInterval);clearInterval(_qTimerInterval);
+  updateCaveLight(true);
+  log('DRALIOSTER DEFEATED! Heroes WIN!','log-pwr');
   const alive=G.players.filter(p=>p.isAlive).length;
   document.getElementById('v-sub').textContent='The Dralioster falls! '+alive+' hero'+(alive!==1?'es':'')+' survived.';
   const displayCode=_soloPw||_bParams.get('pw')||G.code.join('');
-  document.getElementById('v-code').textContent='Power Code: '+displayCode+' ⚡';
+  document.getElementById('v-code').textContent='Power Code: '+displayCode;
   showScreen('victory-screen');
+  const leftoverGears=(G.gearItems||[]).map(g=>g.name);
   if(window.parent!==window&&(_soloMode||_bParams.get('autostart')==='1')){
-    setTimeout(()=>{if(window.parent.onSoloBattleWin)window.parent.onSoloBattleWin();},2800);
+    setTimeout(()=>{if(window.parent.onSoloBattleWin)window.parent.onSoloBattleWin(leftoverGears);},2800);
   }
 }
 
 function loseGame(){
   if(G.done)return;G.done=true;
-  log('💀 All heroes have fallen…','log-dmg');
+  clearInterval(_btInterval);clearInterval(_qTimerInterval);
+  updateCaveLight(true);
+  log('All heroes have fallen…','log-dmg');
   showScreen('defeat-screen');
 }
 

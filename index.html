@@ -896,6 +896,7 @@ const G = {
   dragon:{hp:0,maxHp:0},
   defending:false, immunityUsed:false,
   allGears:[], // all gears ever earned (for gear base)
+  carryoverGears:[], // unused gears from previous battle
   dialogCb:null,
   mpGame:null, mpStreak:0, mpQ:null,
   machineInput:'',
@@ -949,19 +950,19 @@ const QQ = {
     hard:()=>{const a=rnd(3,9),b=rnd(3,9),c=rnd(2,10);return{q:`${a} × ${b} + ${c} = ?`,a:a*b+c,h:'Multiply first!'}}
   },
   P4:{
-    easy:()=>{const b=rnd(3,8),a=rnd(1,b-1);return{q:`${a}/${b} + ${a}/${b} = ?`,a:parseFloat((2*a/b).toFixed(2)),h:'Add numerators'}},
-    medium:()=>{const d=rnd(3,8),n1=rnd(1,d-2),n2=rnd(1,d-n1-1);return{q:`${n1}/${d} + ${n2}/${d} = ?`,a:parseFloat(((n1+n2)/d).toFixed(2)),h:'Same denominator'}},
-    hard:()=>{const a=rnd(1,8),b=rnd(a+1,9);return{q:`${a}/10 + ${b}/10 = ? (decimal)`,a:(a+b)/10,h:'Add tenths'}}
+    easy:()=>{const a=rnd(100,500),b=rnd(100,500);return pick([{q:`${a} + ${b} = ?`,a:a+b,h:'Add hundreds'},{q:`${a+b} − ${b} = ?`,a:a,h:'Subtract hundreds'}])},
+    medium:()=>{const a=rnd(10,99),b=rnd(2,9);return pick([{q:`${a} × ${b} = ?`,a:a*b,h:'Multiply'},{q:`${a*b} ÷ ${b} = ?`,a:a,h:'Divide'}])},
+    hard:()=>{const a=rnd(100,999),b=rnd(2,9),prod=a*b;return pick([{q:`${a} × ${b} = ?`,a:prod,h:'Multiply'},{q:`${prod} ÷ ${b} = ?`,a:a,h:'Divide'}])}
   },
   P5:{
-    easy:()=>{const w=rnd(20,80),p=pick([10,20,25,50]);return{q:`${p}% of ${w} = ?`,a:(p/100)*w,h:`÷100 × ${p}`}},
-    medium:()=>{const a=rnd(1,4),b=rnd(a+2,9),c=rnd(1,b-a-1);return{q:`${a}/${b} + ${c}/${b} = ?`,a:parseFloat(((a+c)/b).toFixed(2)),h:'Add numerators'}},
-    hard:()=>{const d=rnd(10,100),s=pick([2,4,5,10]);return{q:`Distance:${d}km Speed:${s}km/h Time=?hrs`,a:d/s,h:'T=D÷S'}}
+    easy:()=>{const a=rnd(1000,5000),b=rnd(1000,5000);return pick([{q:`${a} + ${b} = ?`,a:a+b,h:'Add thousands'},{q:`${a+b} − ${b} = ?`,a:a,h:'Subtract'}])},
+    medium:()=>{const a=rnd(100,999),b=rnd(2,12),prod=a*b;return pick([{q:`${a} × ${b} = ?`,a:prod,h:'Multiply'},{q:`${prod} ÷ ${b} = ?`,a:a,h:'Divide'}])},
+    hard:()=>{const a=rnd(1000,9999),b=rnd(2,9),prod=a*b;return pick([{q:`${a} × ${b} = ?`,a:prod,h:'Multiply'},{q:`${prod} ÷ ${b} = ?`,a:a,h:'Divide'}])}
   },
   P6:{
-    easy:()=>{const x=rnd(2,15),c=rnd(1,20);return{q:`x + ${c} = ${x+c}. Find x.`,a:x,h:`Subtract ${c}`}},
-    medium:()=>{const r=rnd(2,10);return{q:`Circle r=${r}. Circumference=? (π≈3.14, 2dp)`,a:parseFloat((2*3.14*r).toFixed(2)),h:'C=2πr'}},
-    hard:()=>{const o=rnd(40,200),p=pick([10,20,25]);return{q:`$${o} increased by ${p}%. New price=$?`,a:parseFloat((o*(1+p/100)).toFixed(2)),h:'×(1+p/100)'}}
+    easy:()=>{const a=rnd(1000,9999),b=rnd(1000,9999);return pick([{q:`${a} + ${b} = ?`,a:a+b,h:'Add'},{q:`${a+b} − ${b} = ?`,a:a,h:'Subtract'}])},
+    medium:()=>{const a=rnd(1000,9999),b=rnd(10,99),prod=a*b;return{q:`${a} × ${b} = ?`,a:prod,h:'Multiply'}},
+    hard:()=>{const a=rnd(10000,99999),b=rnd(2,9);return pick([{q:`${a} × ${b} = ?`,a:a*b,h:'Multiply'},{q:`${a*b} ÷ ${b} = ?`,a:a,h:'Divide'}])}
   },
   S1:{
     easy:()=>{const a=rnd(2,8),b=rnd(1,15),c=rnd(b+1,30);return{q:`${a}x + ${b} = ${c}. Solve x.`,a:parseFloat(((c-b)/a).toFixed(2)),h:`−${b} then ÷${a}`}},
@@ -1196,16 +1197,20 @@ function awardGear(){
 // ═══════════════════════════════════════
 function goToBattlePage(){
   const pw=G.password.join('');
+  const allGears=[...G.gears,...(G.carryoverGears||[])];
+  const gearsParam=encodeURIComponent(allGears.map(g=>g.name).join(','));
+  const lvl=encodeURIComponent(G.level||'P3');
+  G.carryoverGears=[];
   let src;
   if(_mpCode&&G.mpPlayers&&G.mpPlayers.length>=2){
-    src='battle.html?invite='+_mpCode+'&pw='+pw+'&autostart=1';
+    src='battle.html?invite='+_mpCode+'&pw='+pw+'&autostart=1&gears='+gearsParam+'&level='+lvl;
     G.mpPlayers.forEach((p,i)=>{
       src+='&p'+(i+1)+'n='+encodeURIComponent(p.playerName)
           +'&p'+(i+1)+'g='+p.gender
           +'&p'+(i+1)+'c='+encodeURIComponent(p.charName);
     });
   } else {
-    src='battle.html?solo=1&pw='+pw;
+    src='battle.html?solo=1&pw='+pw+'&gears='+gearsParam+'&level='+lvl;
   }
   $id('mp-iframe').src=src;
   doFlip(()=>{
@@ -1214,7 +1219,8 @@ function goToBattlePage(){
     $id('mp-scene').style.display='block';
   });
 }
-function onSoloBattleWin(){
+function onSoloBattleWin(leftoverGears){
+  G.carryoverGears=(leftoverGears||[]).filter(n=>n);
   doFlip(()=>{
     $id('mp-scene').style.display='none';
     $id('mp-iframe').src='';
@@ -1617,20 +1623,22 @@ var _mpCode=null;
 var _myPlayer=0;        // 1=host, 2+= joiner
 var _p2Joined=false;    // at least one other player is connected
 var _maxPlayers=2;      // total expected players (set by host)
-var _lobby={};          // {playerNum: {sid}} — who's in the lobby
+var _lobby={};          // {playerNum: {ts}} — who's in the lobby
 var _nextPlayerNum=2;   // host assigns numbers starting from 2
 var _pendingJoin=[];    // playerNums queued to join at next chapter end
 var _isMidGame=false;   // true when this device joins while game is in progress
 var _joinTimeout=null;
+var _presenceInterval=null;
 function openMpOverlay(){$id('mp-overlay').classList.add('open');$id('mp-code-disp').textContent='——';$id('mp-cnt-row').style.display='none';_mpCode=null;_myPlayer=0;_p2Joined=false;_lobby={};_nextPlayerNum=2;$id('mp-join-inp').value='';}
 function mpSetCount(el,n){_maxPlayers=n;document.querySelectorAll('.mp-cnt-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderLobby();}
 function mpGenerate(){
   _mpCode=Math.floor(100000+Math.random()*900000).toString();
   _myPlayer=1; _p2Joined=false; _nextPlayerNum=2;
-  _lobby={1:{sid:_cSID}};
+  _lobby={1:{ts:Date.now()}};
   $id('mp-code-disp').textContent=_mpCode;
   $id('mp-cnt-row').style.display='block';
   initChat(_mpCode);
+  _startLobbyHeartbeat();
 }
 function mpCopyAndOpen(){
   if(!_mpCode)mpGenerate();
@@ -1642,19 +1650,13 @@ function mpCopyAndOpen(){
 function mpJoin(){
   var code=$id('mp-join-inp').value.trim();
   if(!code){alert('Enter the code your friend gave you!');return;}
-  _mpCode=code; _myPlayer=0; _isMidGame=false;
+  _mpCode=code; _myPlayer=2; _isMidGame=false;
+  _lobby[2]={ts:Date.now()};
+  _p2Joined=true;
   initChat(code);
   $id('mp-overlay').classList.remove('open');
-  // Open char panel immediately; player number assigned by host
   openCharPanel();
-  $id('pc-turn').textContent='⏳ Connecting to host…';
-  // Fallback if host doesn't respond in 4s
-  clearTimeout(_joinTimeout);
-  _joinTimeout=setTimeout(()=>{
-    if(_myPlayer===0){_myPlayer=2;_p2Joined=true;renderPcGrid();renderLobby();}
-  },4000);
-  // Request join (with slight delay so EventSource is ready)
-  setTimeout(()=>_cSendGame({type:'join',reqSid:_cSID}),700);
+  _startLobbyHeartbeat();
 }
 function openMpBattle(inviteCode){
   $id('scroll-menu').classList.remove('open');
@@ -1980,7 +1982,9 @@ function initChat(code){
       }
     }catch(err){}
   };
-  _cEvt.onerror = function(){};
+  _cEvt.onerror = function(){
+    setTimeout(function(){ if(_cCode) initChat(_cCode); }, 2000);
+  };
 }
 
 function toggleChat(){
@@ -2025,6 +2029,14 @@ function _cAppend(name, text, mine){
 }
 
 // ── GAME SYNC OVER NTFY ──────────────────────────────────────────
+function _startLobbyHeartbeat(){
+  clearInterval(_presenceInterval);
+  _presenceInterval = setInterval(function(){
+    if(!_cCode || !_myPlayer) return;
+    _cSendGame({type:'here', player:_myPlayer, maxPlayers:(_myPlayer===1?_maxPlayers:0)});
+  }, 2500);
+}
+
 function _cSendGame(data){
   if(!_cCode) return;
   fetch('https://ntfy.sh/mathpower-'+_cCode, {
@@ -2107,6 +2119,15 @@ function _cHandleGame(msg){
     }
   } else if(msg.type==='start'){
     if($id('panel-chars').classList.contains('active')) doMpBattle(true);
+  } else if(msg.type==='here'){
+    const n = msg.player;
+    const isNew = !_lobby[n];
+    _lobby[n] = {ts:Date.now()};
+    if(msg.maxPlayers && _myPlayer!==1) _maxPlayers = msg.maxPlayers;
+    if(isNew && _myPlayer) _cSendGame({type:'here', player:_myPlayer, maxPlayers:(_myPlayer===1?_maxPlayers:0)});
+    _p2Joined = Object.keys(_lobby).length >= 2;
+    renderLobby();
+    renderPcGrid();
   }
 }
 </script>
