@@ -992,7 +992,10 @@ function adapt(ok){
 // ═══════════════════════════════════════
 // SAVE / LOAD
 // ═══════════════════════════════════════
-const SAVE_KEY='mathIsPower_save';
+const SAVE_VERSION='20260603';
+const SAVE_KEY='mathIsPower_save_'+SAVE_VERSION;
+// Wipe all old game saves from previous versions
+(function(){Object.keys(localStorage).filter(k=>k.startsWith('mathIsPower_')&&k!==SAVE_KEY).forEach(k=>localStorage.removeItem(k));})();
 function saveGame(){
   const data={
     chapter:G.chapter,
@@ -1547,6 +1550,8 @@ function closeDialog(){
 .mp-code-display{background:#fdf5e6;border:2px solid #8b4513;border-radius:8px;padding:10px;font-size:26px;font-weight:bold;letter-spacing:6px;text-align:center;color:#2d0000;min-height:48px;line-height:1.2;cursor:pointer}
 .mp-smb{padding:5px 8px;border:1px solid #8b4513;border-radius:5px;background:#8b4513;color:#f6e8cc;font-size:11px;font-family:Georgia,serif;cursor:pointer;width:100%;margin-top:5px}
 .mp-smb.light{background:#fdf5e6;color:#5a2d00}
+.mp-smb:disabled{opacity:.4;cursor:not-allowed;pointer-events:none}
+#mp-lobby-status{font-size:10px;text-align:center;color:#9ca3af;margin:-1px 0 4px;min-height:14px}
 .mp-divider{text-align:center;color:#8b4513;font-size:11px;font-weight:bold;margin:12px 0;letter-spacing:2px}
 .mp-input{padding:6px 8px;border:2px solid #8b4513;border-radius:5px;background:#fdf5e6;color:#2d0000;font-size:13px;font-family:Georgia,serif;width:100%;box-sizing:border-box;letter-spacing:3px}
 .mp-close{margin-top:14px;background:none;border:1px solid #8b4513;color:#8b4513;border-radius:8px;padding:5px;font-size:11px;cursor:pointer;font-family:Georgia,serif;width:100%}
@@ -1588,7 +1593,8 @@ function closeDialog(){
         <button class="mp-cnt-btn" onclick="mpSetCount(this,5)">5</button>
       </div>
     </div>
-    <button class="mp-smb light" id="mp-copy-btn" onclick="mpCopyAndOpen()">📋 Copy &amp; Open Battle</button>
+    <button class="mp-smb light" id="mp-copy-btn" onclick="mpCopyAndOpen()" disabled>📋 Copy &amp; Open Battle</button>
+    <div id="mp-lobby-status">Generate a code first</div>
     <div class="mp-divider">── OR ──</div>
     <div class="mp-side-lbl">🎮 You are Player 2</div>
     <div class="mp-side-hint">Enter the code your friend gave you</div>
@@ -1609,7 +1615,8 @@ var _pendingJoin=[];    // playerNums queued to join at next chapter end
 var _isMidGame=false;   // true when this device joins while game is in progress
 var _joinTimeout=null;
 var _presenceInterval=null;
-function openMpOverlay(){$id('mp-overlay').classList.add('open');$id('mp-code-disp').textContent='——';$id('mp-cnt-row').style.display='none';_mpCode=null;_myPlayer=0;_p2Joined=false;_lobby={};_nextPlayerNum=2;$id('mp-join-inp').value='';}
+var _pollInterval=null;
+function openMpOverlay(){clearInterval(_presenceInterval);clearInterval(_pollInterval);if(_cEvt){_cEvt.close();_cEvt=null;}_cCode=null;$id('mp-overlay').classList.add('open');$id('mp-code-disp').textContent='——';$id('mp-cnt-row').style.display='none';_mpCode=null;_myPlayer=0;_p2Joined=false;_lobby={};_nextPlayerNum=2;$id('mp-join-inp').value='';renderLobby();}
 function mpSetCount(el,n){_maxPlayers=n;document.querySelectorAll('.mp-cnt-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderLobby();}
 function mpGenerate(){
   _mpCode=Math.floor(100000+Math.random()*900000).toString();
@@ -1619,9 +1626,11 @@ function mpGenerate(){
   $id('mp-cnt-row').style.display='block';
   initChat(_mpCode);
   _startLobbyHeartbeat();
+  _startLobbyPoll();
+  renderLobby();
 }
 function mpCopyAndOpen(){
-  if(!_mpCode)mpGenerate();
+  if(!_mpCode)return;
   var btn=$id('mp-copy-btn');
   if(navigator.clipboard){navigator.clipboard.writeText(_mpCode).then(()=>{btn.textContent='✓ Code Copied!';setTimeout(()=>{btn.textContent='📋 Copy & Open Battle';},2000);});}
   $id('mp-overlay').classList.remove('open');
@@ -1637,6 +1646,11 @@ function mpJoin(){
   $id('mp-overlay').classList.remove('open');
   openCharPanel();
   _startLobbyHeartbeat();
+  _startLobbyPoll();
+  // Burst of rapid pings so Player 1 sees us even if ntfy drops the first one
+  for(var _i=1;_i<=4;_i++)(function(i){setTimeout(function(){
+    if(_cCode&&_myPlayer) _cSendGame({type:'here',player:_myPlayer,maxPlayers:0});
+  },i*900);}(_i));
 }
 function openMpBattle(inviteCode){
   $id('scroll-menu').classList.remove('open');
@@ -1872,6 +1886,17 @@ function renderLobby(){
     d.className='lob-dot'+(_lobby[i]?' here':'')+( i===_myPlayer?' me':'');
     dots.appendChild(d);
   }
+  // Copy & Open Battle button: enabled as soon as code is generated
+  const copyBtn=$id('mp-copy-btn');
+  const statusEl=$id('mp-lobby-status');
+  if(copyBtn){
+    copyBtn.disabled=!_mpCode;
+    if(statusEl){
+      if(!_mpCode) statusEl.textContent='Generate a code first';
+      else if(Object.keys(_lobby).length<2) statusEl.textContent='Share the code — waiting for a player to join…';
+      else statusEl.textContent='Player joined! Opening character select…';
+    }
+  }
 }
 
 function showJoinNotif(playerNum, name){
@@ -1967,6 +1992,9 @@ function initChat(code){
   _cEvt.onerror = function(){
     setTimeout(function(){ if(_cCode) initChat(_cCode); }, 2000);
   };
+  _cEvt.onopen = function(){
+    if(_cCode && _myPlayer) _cSendGame({type:'here', player:_myPlayer, maxPlayers:(_myPlayer===1?_maxPlayers:0)});
+  };
 }
 
 function toggleChat(){
@@ -2013,10 +2041,31 @@ function _cAppend(name, text, mine){
 // ── GAME SYNC OVER NTFY ──────────────────────────────────────────
 function _startLobbyHeartbeat(){
   clearInterval(_presenceInterval);
-  _presenceInterval = setInterval(function(){
+  function _beat(){
     if(!_cCode || !_myPlayer) return;
     _cSendGame({type:'here', player:_myPlayer, maxPlayers:(_myPlayer===1?_maxPlayers:0)});
-  }, 2500);
+  }
+  _beat(); // fire immediately so the other device sees us without waiting
+  _presenceInterval = setInterval(_beat, 8000);
+}
+function _startLobbyPoll(){
+  clearInterval(_pollInterval);
+  var _pollSince=Math.floor((Date.now()-600000)/1000); // 10 min ago as Unix timestamp
+  _pollInterval=setInterval(function(){
+    // Stop only when we can see ALL expected players in our own lobby
+    if(!_cCode||Object.keys(_lobby).length>=_maxPlayers){clearInterval(_pollInterval);return;}
+    fetch('https://ntfy.sh/mathpower-'+_cCode+'/json?poll=1&since='+_pollSince)
+      .then(function(r){return r.text();})
+      .then(function(text){
+        text.split('\n').filter(Boolean).forEach(function(line){
+          try{
+            var d=JSON.parse(line);
+            var msg=JSON.parse(d.message||d.body||'{}');
+            if(msg.sid&&msg.sid!==_cSID&&msg._game&&msg.type==='here') _cHandleGame(msg);
+          }catch(e){}
+        });
+      }).catch(function(){});
+  },4000);
 }
 
 function _cSendGame(data){
@@ -2110,8 +2159,14 @@ function _cHandleGame(msg){
     if(msg.maxPlayers && _myPlayer!==1) _maxPlayers = msg.maxPlayers;
     if(isNew && _myPlayer) _cSendGame({type:'here', player:_myPlayer, maxPlayers:(_myPlayer===1?_maxPlayers:0)});
     _p2Joined = Object.keys(_lobby).length >= 2;
+    if(_p2Joined) clearInterval(_pollInterval);
     renderLobby();
     renderPcGrid();
+    // Auto-advance Player 1 out of the overlay as soon as any second player joins
+    if(_myPlayer===1 && Object.keys(_lobby).length>=2 && $id('mp-overlay').classList.contains('open')){
+      $id('mp-overlay').classList.remove('open');
+      openCharPanel();
+    }
   }
 }
 </script>
