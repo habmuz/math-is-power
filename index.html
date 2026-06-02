@@ -394,8 +394,10 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 .pc-badge.p1{background:#2d6a00;color:#fff}
 .pc-badge.p2{background:#004488;color:#fff}
 .pc-x{position:absolute;inset:0;border-radius:8px;background:rgba(0,0,0,.35);display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:#cc3333;font-weight:900;pointer-events:none}
-#pc-fight{margin-top:6px;padding:9px;width:100%;background:linear-gradient(#8b4513,#5a2d00);color:#f6e8cc;border:none;border-radius:12px;font-size:14px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3);flex-shrink:0}
+#pc-fight{position:sticky;bottom:0;z-index:5;margin-top:6px;padding:11px;width:100%;background:linear-gradient(#8b4513,#5a2d00);color:#f6e8cc;border:none;border-radius:12px;font-size:14px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3);flex-shrink:0}
 #pc-fight:hover{filter:brightness(1.2)}
+#pc-fight.ready{animation:fightPulse 1s ease-in-out infinite}
+@keyframes fightPulse{0%,100%{box-shadow:0 3px 10px rgba(0,0,0,.3)}50%{box-shadow:0 0 18px 5px rgba(200,120,30,.7)}}
 /* character profile overlay — full-bleed hero card */
 #pc-profile{display:none;position:absolute;inset:0;border-radius:9px;z-index:10;flex-direction:column;overflow:hidden;animation:pcpIn .15s ease}
 #pc-profile.show{display:flex}
@@ -577,8 +579,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="inst">🔐 Enter the 3-digit password → unlock next Chapter</div>
       <div class="inst">🎮 Mini Games unlocked after Chapter 1!</div>
       <select id="level-select" onchange="G.level=this.value;if(G.phase==='questions'&&curQ)nextQ()">
-        <optgroup label="Primary"><option value="P1">P1 – Primary 1</option><option value="P2">P2 – Primary 2</option><option value="P3" selected>P3 – Primary 3</option><option value="P4">P4 – Primary 4</option><option value="P5">P5 – Primary 5</option><option value="P6">P6 – Primary 6</option></optgroup>
-        <optgroup label="Secondary"><option value="S1">S1 – Secondary 1</option><option value="S2">S2 – Secondary 2</option><option value="S3">S3 – Secondary 3</option><option value="S4">S4 – Secondary 4</option></optgroup>
+        <option value="P1">P1 – Primary 1</option><option value="P2">P2 – Primary 2</option><option value="P3" selected>P3 – Primary 3</option><option value="P4">P4 – Primary 4</option><option value="P5">P5 – Primary 5</option><option value="P6">P6 – Primary 6</option>
       </select>
       <button id="start-btn" onclick="startGame()">Begin Adventure ✨</button>
       <button id="friend-btn" onclick="openMpOverlay()">🔗 Play with Friend</button>
@@ -686,8 +687,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <h3>🔖 BOOKMARK</h3>
       <div class="si"><label>Level</label>
         <select onchange="G.level=this.value;document.getElementById('level-select').value=this.value;updateBadge();if(G.phase==='questions'&&curQ)nextQ()">
-          <optgroup label="Primary"><option value="P1">P1</option><option value="P2">P2</option><option value="P3" selected>P3</option><option value="P4">P4</option><option value="P5">P5</option><option value="P6">P6</option></optgroup>
-          <optgroup label="Secondary"><option value="S1">S1</option><option value="S2">S2</option><option value="S3">S3</option><option value="S4">S4</option></optgroup>
+          <option value="P1">P1</option><option value="P2">P2</option><option value="P3" selected>P3</option><option value="P4">P4</option><option value="P5">P5</option><option value="P6">P6</option>
         </select>
       </div>
       <div class="si"><label>Narrator</label><button class="smb act" id="narr-btn" onclick="toggleNarr()">ON</button></div>
@@ -963,26 +963,6 @@ const QQ = {
     easy:()=>{const a=rnd(1000,9999),b=rnd(1000,9999);return pick([{q:`${a} + ${b} = ?`,a:a+b,h:'Add'},{q:`${a+b} − ${b} = ?`,a:a,h:'Subtract'}])},
     medium:()=>{const a=rnd(1000,9999),b=rnd(10,99),prod=a*b;return{q:`${a} × ${b} = ?`,a:prod,h:'Multiply'}},
     hard:()=>{const a=rnd(10000,99999),b=rnd(2,9);return pick([{q:`${a} × ${b} = ?`,a:a*b,h:'Multiply'},{q:`${a*b} ÷ ${b} = ?`,a:a,h:'Divide'}])}
-  },
-  S1:{
-    easy:()=>{const a=rnd(2,8),b=rnd(1,15),c=rnd(b+1,30);return{q:`${a}x + ${b} = ${c}. Solve x.`,a:parseFloat(((c-b)/a).toFixed(2)),h:`−${b} then ÷${a}`}},
-    medium:()=>{const a=rnd(20,60),b=rnd(20,60-a);return{q:`Triangle angles:${a}°,${b}°,x. Find x.`,a:180-a-b,h:'Sum=180°'}},
-    hard:()=>{const l=rnd(3,10),w=rnd(2,8),h2=rnd(2,6);return{q:`Volume cuboid ${l}×${w}×${h2}=?`,a:l*w*h2,h:'V=l×w×h'}}
-  },
-  S2:{
-    easy:()=>{const x=rnd(2,12),y=rnd(1,8);return{q:`x+y=${x+y}, x−y=${x-y}. Find x.`,a:x,h:'Add equations ÷2'}},
-    medium:()=>{const a=rnd(3,12),b=rnd(4,12);return{q:`Right triangle: ${a} and ${b}. Hypotenuse=?(2dp)`,a:parseFloat(Math.sqrt(a*a+b*b).toFixed(2)),h:'a²+b²=c²'}},
-    hard:()=>{const n=rnd(4,8),sum=rnd(20,80);return{q:`${n} numbers, sum=${sum}. Mean=?(2dp)`,a:parseFloat((sum/n).toFixed(2)),h:`÷${n}`}}
-  },
-  S3:{
-    easy:()=>{const c=pick([4,9,16,25,36,49]);return{q:`√${c} = ?`,a:Math.sqrt(c),h:'Square root'}},
-    medium:()=>{const ang=pick([30,45,60]);const v={30:.5,45:.71,60:.87};return{q:`sin(${ang}°) = ? (2dp)`,a:v[ang],h:'Trig table'}},
-    hard:()=>{const p=rnd(2,6),q=rnd(1,5);return{q:`x²+${p+q}x+${p*q}=0. One root=−${p}. Other root=?`,a:-q,h:'Product of roots=c'}}
-  },
-  S4:{
-    easy:()=>{const a=rnd(2,9);return{q:`Simplify √${a*a} = ?`,a:a,h:'Square root'}},
-    medium:()=>{const f=rnd(5,20),t=rnd(f+5,50);return{q:`${f} of ${t} like maths. P(like)=?(2dp)`,a:parseFloat((f/t).toFixed(2)),h:'P=fav÷total'}},
-    hard:()=>{const ang=pick([30,45,60]);const v={30:.87,45:.71,60:.5};return{q:`cos(${ang}°) = ? (2dp)`,a:v[ang],h:'Trig table'}}
   }
 };
 function genQ(){return(QQ[G.level]?.[G.tier]||QQ.P3.easy)()}
@@ -1874,8 +1854,10 @@ function pcPick(gender,name,c){
   if(!(_myPlayer>0)) _pcTurn++;
   renderPcGrid();
   if(Object.keys(_pcSel).length>=2){
-    $id('pc-fight').style.display='block';
-    $id('pc-fight').textContent='▶ Start Adventure!';
+    const btn=$id('pc-fight');
+    btn.style.display='block';
+    btn.textContent='📖 Flip Page to Battle!';
+    btn.classList.add('ready');
   }
 }
 
@@ -2114,8 +2096,10 @@ function _cHandleGame(msg){
     G.mpPlayers[msg.player-1]={playerName:'Player '+msg.player,gender:msg.gender,charName:msg.charName};
     renderPcGrid();
     if(Object.keys(_pcSel).length>=2){
-      $id('pc-fight').style.display='block';
-      $id('pc-fight').textContent='▶ Start Adventure!';
+      const btn=$id('pc-fight');
+      btn.style.display='block';
+      btn.textContent='📖 Flip Page to Battle!';
+      btn.classList.add('ready');
     }
   } else if(msg.type==='start'){
     if($id('panel-chars').classList.contains('active')) doMpBattle(true);
