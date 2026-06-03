@@ -1654,6 +1654,7 @@ function closeDialog(){
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <script>
 var _mpCode=null;
 var _myPlayer=0;        // 1=host, 2+= joiner
@@ -1666,7 +1667,9 @@ var _isMidGame=false;   // true when this device joins while game is in progress
 var _joinTimeout=null;
 var _presenceInterval=null;
 var _pollInterval=null;
-function openMpOverlay(){clearInterval(_presenceInterval);clearInterval(_pollInterval);if(_cEvt){_cEvt.close();_cEvt=null;}_cCode=null;$id('mp-overlay').classList.add('open');$id('mp-code-disp').textContent='——';$id('mp-cnt-row').style.display='none';_mpCode=null;_myPlayer=0;_p2Joined=false;_lobby={};_nextPlayerNum=2;$id('mp-join-inp').value='';renderLobby();}
+var _myPeer=null;
+var _peerConns={};
+function openMpOverlay(){if(_myPeer){try{_myPeer.destroy();}catch(e){}_myPeer=null;}_peerConns={};clearInterval(_presenceInterval);clearInterval(_pollInterval);if(_cEvt){_cEvt.close();_cEvt=null;}_cCode=null;$id('mp-overlay').classList.add('open');$id('mp-code-disp').textContent='——';$id('mp-cnt-row').style.display='none';_mpCode=null;_myPlayer=0;_p2Joined=false;_lobby={};_nextPlayerNum=2;$id('mp-join-inp').value='';renderLobby();}
 function mpSetCount(el,n){_maxPlayers=n;document.querySelectorAll('.mp-cnt-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderLobby();}
 function mpGenerate(){
   _mpCode=Math.floor(100000+Math.random()*900000).toString();
@@ -1675,8 +1678,7 @@ function mpGenerate(){
   $id('mp-code-disp').textContent=_mpCode;
   $id('mp-cnt-row').style.display='block';
   initChat(_mpCode);
-  _startLobbyHeartbeat();
-  _startLobbyPoll();
+  initPeer(_mpCode);
   renderLobby();
 }
 function mpCopyAndOpen(){
@@ -1690,17 +1692,79 @@ function mpJoin(){
   var code=$id('mp-join-inp').value.trim();
   if(!code){alert('Enter the code your friend gave you!');return;}
   _mpCode=code; _myPlayer=2; _isMidGame=false;
-  _lobby[2]={ts:Date.now()};
-  _p2Joined=true;
+  _lobby={2:{ts:Date.now()}};
+  _p2Joined=false;
   initChat(code);
   $id('mp-overlay').classList.remove('open');
   openCharPanel();
-  _startLobbyHeartbeat();
-  _startLobbyPoll();
-  // Burst of pings over 20s so Player 1 sees us even if ntfy drops several
-  for(var _i=1;_i<=12;_i++)(function(i){setTimeout(function(){
-    if(_cCode&&_myPlayer) _cSendGame({type:'here',player:_myPlayer,maxPlayers:0});
-  },i*1800);}(_i));
+  initPeer(code);
+}
+function initPeer(code){
+  if(_myPeer){try{_myPeer.destroy();}catch(e){}_myPeer=null;}
+  _peerConns={};
+  if(_myPlayer===1){
+    _myPeer=new Peer('mathpower-'+code);
+    _myPeer.on('error',function(err){
+      if(err.type==='unavailable-id') $id('mp-lobby-status').textContent='Code busy — generate a new code';
+    });
+    _myPeer.on('connection',function(conn){
+      conn.on('open',function(){
+        var n=_nextPlayerNum++;
+        _peerConns[n]=conn;
+        _lobby[n]={ts:Date.now()};
+        conn.send({type:'welcome',player:n,maxPlayers:_maxPlayers,
+                   presentPlayers:Object.keys(_lobby).map(Number),_game:true});
+        Object.keys(_peerConns).forEach(function(pn){
+          if(parseInt(pn)!==n&&_peerConns[pn].open)
+            try{_peerConns[pn].send({type:'here',player:n,maxPlayers:_maxPlayers,_game:true});}catch(e){}
+        });
+        if(G.chapter>0){
+          _pendingJoin.push(n); showJoinNotif(n);
+          conn.send({type:'game_status',inGame:true,chapter:G.chapter,_game:true});
+        } else {
+          _p2Joined=true; renderPcGrid();
+        }
+        renderLobby();
+        if($id('mp-overlay').classList.contains('open')){
+          $id('mp-overlay').classList.remove('open'); openCharPanel();
+        }
+      });
+      conn.on('data',function(data){
+        if(!data._game)return;
+        _cHandleGame(data);
+        Object.keys(_peerConns).forEach(function(pn){
+          if(_peerConns[pn]!==conn&&_peerConns[pn].open)
+            try{_peerConns[pn].send(data);}catch(e){}
+        });
+      });
+      conn.on('close',function(){
+        Object.keys(_peerConns).forEach(function(pn){
+          if(_peerConns[pn]===conn)delete _peerConns[pn];
+        });
+        _p2Joined=Object.keys(_peerConns).length>0;
+        renderLobby(); renderPcGrid();
+      });
+    });
+  } else {
+    _myPeer=new Peer();
+    _myPeer.on('open',function(){
+      var conn=_myPeer.connect('mathpower-'+code);
+      _peerConns[1]=conn;
+      conn.on('data',function(data){if(data._game)_cHandleGame(data);});
+      conn.on('close',function(){
+        setTimeout(function(){
+          if(!_myPeer||!_mpCode)return;
+          var nc=_myPeer.connect('mathpower-'+code);
+          _peerConns[1]=nc;
+          nc.on('data',function(d){if(d._game)_cHandleGame(d);});
+          nc.on('open',function(){
+            if(_myPlayer) nc.send({type:'here',player:_myPlayer,maxPlayers:0,_game:true});
+          });
+        },1500);
+      });
+    });
+    _myPeer.on('error',function(err){console.warn('PeerJS joiner error:',err.type);});
+  }
 }
 function openMpBattle(inviteCode){
   $id('scroll-menu').classList.remove('open');
@@ -2027,33 +2091,26 @@ let _cCode = null, _cEvt = null, _cOpen = false, _cUnread = 0;
 
 function initChat(code){
   if(_cEvt){_cEvt.close();}
-  _cCode = code;
-  $id('chat-bubble').style.display = 'flex';
-  _cEvt = new EventSource('https://ntfy.sh/mathpower-'+code+'/sse');
-  _cEvt.onmessage = function(e){
+  _cCode=code;
+  $id('chat-bubble').style.display='flex';
+  _cEvt=new EventSource('https://ntfy.sh/mathpower-'+code+'/sse');
+  _cEvt.onmessage=function(e){
     try{
-      const d = JSON.parse(e.data);
-      if(d.event === 'keepalive') return;
-      const msg = JSON.parse(d.message || d.body || '{}');
-      if(!msg.sid || msg.sid === _cSID) return;
-      if(msg._game){
-        _cHandleGame(msg);
-      } else {
-        _cAppend(msg.name, msg.text, false);
-        if(!_cOpen){
-          _cUnread++;
-          const b = $id('chat-badge');
-          b.textContent = _cUnread > 9 ? '9+' : _cUnread;
-          b.style.display = 'flex';
-        }
+      const d=JSON.parse(e.data);
+      if(d.event==='keepalive')return;
+      const msg=JSON.parse(d.message||d.body||'{}');
+      if(!msg.sid||msg.sid===_cSID||msg._game)return;
+      _cAppend(msg.name,msg.text,false);
+      if(!_cOpen){
+        _cUnread++;
+        const b=$id('chat-badge');
+        b.textContent=_cUnread>9?'9+':_cUnread;
+        b.style.display='flex';
       }
     }catch(err){}
   };
-  _cEvt.onerror = function(){
-    setTimeout(function(){ if(_cCode) initChat(_cCode); }, 2000);
-  };
-  _cEvt.onopen = function(){
-    if(_cCode && _myPlayer) _cSendGame({type:'here', player:_myPlayer, maxPlayers:(_myPlayer===1?_maxPlayers:0)});
+  _cEvt.onerror=function(){
+    setTimeout(function(){if(_cCode)initChat(_cCode);},3000);
   };
 }
 
@@ -2098,65 +2155,24 @@ function _cAppend(name, text, mine){
   msgs.scrollTop = msgs.scrollHeight;
 }
 
-// ── GAME SYNC OVER NTFY ──────────────────────────────────────────
-var _fastTimer=null;
-function _startLobbyHeartbeat(){
-  clearInterval(_presenceInterval); clearInterval(_fastTimer);
-  function _beat(){
-    if(!_cCode||!_myPlayer)return;
-    _cSendGame({type:'here',player:_myPlayer,maxPlayers:(_myPlayer===1?_maxPlayers:0)});
-  }
-  _beat();
-  var _fc=0;
-  _fastTimer=setInterval(function(){
-    _beat(); _fc++;
-    if(_fc>=20){clearInterval(_fastTimer);_presenceInterval=setInterval(_beat,8000);}
-  },2000);
-}
-var _pollSince=0;
-function _startLobbyPoll(){
-  clearInterval(_pollInterval);
-  _pollSince=Math.floor((Date.now()-120000)/1000); // 2 min back
-  _pollInterval=setInterval(function(){
-    if(!_cCode)return;
-    fetch('https://ntfy.sh/mathpower-'+_cCode+'/json?poll=1&since='+_pollSince)
-      .then(function(r){return r.text();})
-      .then(function(text){
-        var newest=_pollSince;
-        text.split('\n').filter(Boolean).forEach(function(line){
-          try{
-            var d=JSON.parse(line);
-            if(d.time&&d.time>newest) newest=d.time;
-            var msg=JSON.parse(d.message||d.body||'{}');
-            // handle ALL game messages (not just 'here') so poll is a full fallback for SSE
-            if(msg.sid&&msg.sid!==_cSID&&msg._game) _cHandleGame(msg);
-          }catch(e){}
-        });
-        // slide window forward so we don't re-process old messages
-        if(newest>_pollSince) _pollSince=newest;
-      }).catch(function(){});
-  },1500); // poll every 1.5s
-}
 function retryConnection(){
-  if(!_cCode||!_myPlayer)return;
-  // restart SSE in case it dropped
-  if(_cEvt){_cEvt.close();_cEvt=null;}
-  initChat(_cCode);
-  // burst 8 pings
-  for(var i=0;i<=8;i++)(function(n){setTimeout(function(){
-    if(_cCode&&_myPlayer)_cSendGame({type:'here',player:_myPlayer,maxPlayers:(_myPlayer===1?_maxPlayers:0)});
-  },n*800);}(i));
+  if(!_mpCode||!_myPlayer)return;
+  initPeer(_mpCode);
   var btn=$id('pc-retry-btn');
-  if(btn){btn.textContent='🔄 Retrying…';btn.disabled=true;setTimeout(function(){btn.textContent='🔄 Retry Connection';btn.disabled=false;},8000);}
+  if(btn){btn.textContent='🔄 Retrying…';btn.disabled=true;
+    setTimeout(function(){btn.textContent='🔄 Retry Connection';btn.disabled=false;},5000);}
 }
 
 function _cSendGame(data){
-  if(!_cCode) return;
-  fetch('https://ntfy.sh/mathpower-'+_cCode, {
-    method:'POST',
-    headers:{'Content-Type':'text/plain'},
-    body:JSON.stringify(Object.assign({sid:_cSID,_game:true}, data))
-  }).catch(()=>{});
+  var msg=Object.assign({_game:true},data);
+  if(_myPlayer===1){
+    Object.values(_peerConns).forEach(function(conn){
+      if(conn&&conn.open)try{conn.send(msg);}catch(e){}
+    });
+  } else {
+    var hc=_peerConns[1];
+    if(hc&&hc.open)try{hc.send(msg);}catch(e){}
+  }
 }
 
 function _cHandleGame(msg){
@@ -2184,22 +2200,17 @@ function _cHandleGame(msg){
       renderLobby();
     }
   } else if(msg.type==='welcome'){
-    // Update lobby for everyone (host broadcasts this for all to see)
-    _lobby[msg.player]={};
-    if(msg.forSid===_cSID){
-      // This welcome is addressed to me
-      clearTimeout(_joinTimeout);
-      _myPlayer=msg.player; _maxPlayers=msg.maxPlayers;
-      // Rebuild lobby from presentPlayers list
-      _lobby={};
-      (msg.presentPlayers||[]).forEach(n=>_lobby[n]={});
-      _p2Joined=true;
-      renderPcGrid();
-    }
+    // Received directly via PeerJS — always for this device
+    clearTimeout(_joinTimeout);
+    _myPlayer=msg.player; _maxPlayers=msg.maxPlayers;
+    _lobby={};
+    (msg.presentPlayers||[]).forEach(n=>_lobby[n]={});
+    _lobby[_myPlayer]={ts:Date.now()};
+    _p2Joined=true;
+    renderPcGrid();
     renderLobby();
   } else if(msg.type==='game_status'){
-    // Host tells us the game is already in progress
-    if(msg.forSid===_cSID && msg.inGame){
+    if(msg.inGame){
       _isMidGame=true;
       $id('mid-wait').style.display='block';
       $id('pc-turn').textContent='Pick your hero and wait ⏳';
