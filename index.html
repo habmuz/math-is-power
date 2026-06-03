@@ -55,10 +55,28 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 /* ── PAGE FLIP ── */
 #flipper{position:absolute;top:0;right:0;width:450px;height:600px;transform-origin:left center;transform-style:preserve-3d;pointer-events:none;z-index:20;display:none}
 .flip-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
-.flip-front{background:linear-gradient(160deg,#f6e8cc,#ede0b0,#e8d89a);border-radius:0 8px 8px 0;overflow:hidden}
+.flip-front{background:linear-gradient(160deg,#f6e8cc,#ede0b0,#e8d89a);border-radius:0 8px 8px 0;overflow:hidden;position:relative}
 .flip-back{background:linear-gradient(160deg,#0a0a18,#150a28,#080810);border-radius:8px 0 0 8px;transform:rotateY(180deg);overflow:hidden}
+/* Shadow on the page face that sweeps as the page curls */
+.flip-front::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;
+  background:linear-gradient(to left,rgba(0,0,0,.45) 0%,rgba(0,0,0,.25) 30%,transparent 75%);
+  opacity:0}
+#flipper.flipping .flip-front::after{animation:pageFaceShadow .7s ease-in-out forwards}
+@keyframes pageFaceShadow{0%{opacity:0}35%{opacity:1}100%{opacity:0}}
+/* Spine crease highlight */
+.flip-front::before{content:'';position:absolute;top:0;left:0;width:18px;bottom:0;pointer-events:none;
+  background:linear-gradient(to right,rgba(0,0,0,.18),transparent);z-index:2;border-radius:0}
+/* Shadow cast on left page as right page sweeps over it */
+#flip-cast-shadow{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:4;
+  display:none;opacity:0;
+  background:linear-gradient(to right,rgba(0,0,0,.0) 0%,rgba(0,0,0,.22) 40%,rgba(0,0,0,.35) 65%,rgba(0,0,0,.15) 85%,transparent 100%)}
 @keyframes flipForward{0%{transform:rotateY(0)}100%{transform:rotateY(-180deg)}}
 @keyframes flipBack{0%{transform:rotateY(-180deg)}100%{transform:rotateY(0)}}
+/* Manual flip button on questions panel (appears when 3 gears collected) */
+#q-flip-btn{display:none;width:100%;padding:10px;background:linear-gradient(#b84400,#7a2a00);color:#f6e8cc;
+  border:none;border-radius:8px;font-size:14px;font-family:Georgia,serif;cursor:pointer;margin-top:4px;
+  box-shadow:0 3px 12px rgba(0,0,0,.4);animation:fightPulse 1s ease-in-out infinite}
+#q-flip-btn:hover{filter:brightness(1.2)}
 
 /* ═══ LEFT PAGE CONTENT ═══ */
 /* Cave scene */
@@ -468,6 +486,8 @@ body.sharp-off #pcp-img-wrap img{filter:none}
 <div id="book">
   <!-- LEFT PAGE -->
   <div id="page-l" class="page">
+    <!-- cast shadow during page flip -->
+    <div id="flip-cast-shadow"></div>
     <!-- Cave scene (default) -->
     <div id="cave-scene">
       <div id="stalactites">▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼</div>
@@ -617,6 +637,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
           <div class="pdig" id="p2">—</div>
         </div>
       </div>
+      <button id="q-flip-btn" onclick="manualFlipToBattle()">🐉 FLIP PAGE — Face the Dragon!</button>
     </div>
 
     <!-- Battle controls panel -->
@@ -1085,13 +1106,28 @@ function showPanel(id){
 function doFlip(onMid, onDone){
   sfx('flip');
   const fl=$id('flipper');
+  const cs=$id('flip-cast-shadow');
+  fl.classList.remove('flipping');
   fl.style.display='block';
   fl.style.animation='none'; fl.style.transform='rotateY(0)';
   void fl.offsetWidth; // reflow
-  fl.style.transition='transform .7s ease-in-out';
+  fl.classList.add('flipping');
+  // cubic-bezier gives a natural "pick up page then sweep" feel
+  fl.style.transition='transform .75s cubic-bezier(.4,0,.25,1)';
   fl.style.transform='rotateY(-180deg)';
-  setTimeout(()=>{if(onMid)onMid()},350);
-  setTimeout(()=>{fl.style.display='none';fl.style.transition='';fl.style.transform='rotateY(0)';if(onDone)onDone()},720);
+  // Cast shadow grows on left page then fades
+  if(cs){
+    cs.style.display='block'; cs.style.opacity='0'; cs.style.transition='opacity .3s';
+    setTimeout(()=>{cs.style.opacity='1'},40);
+    setTimeout(()=>{cs.style.transition='opacity .3s'; cs.style.opacity='0'},390);
+    setTimeout(()=>{cs.style.display='none'},730);
+  }
+  setTimeout(()=>{if(onMid)onMid()},370);
+  setTimeout(()=>{
+    fl.style.display='none'; fl.style.transition=''; fl.style.transform='rotateY(0)';
+    fl.classList.remove('flipping');
+    if(onDone)onDone()
+  },750);
 }
 
 // ═══════════════════════════════════════
@@ -1113,6 +1149,7 @@ function startChapter(){
   G.phase='questions'; G.streak=0; G.gears=[]; G.password=[];
   G.consC=0; G.consW=0; G.immunityUsed=false; G.defending=false;
   G.machineAttempts=0; $id('torn-paper').style.display='none'; $id('flip-zone').style.display='none';
+  $id('q-flip-btn').style.display='none';
   $id('bm-chapter').textContent='CH '+G.chapter;
   G.tier=G.chapter<=4?'easy':G.chapter<=8?'medium':'hard';
   // Reset gear display and password digits
@@ -1179,6 +1216,18 @@ function awardGear(){
 // PAGE FLIP TO BATTLE
 // ═══════════════════════════════════════
 function goToBattlePage(){
+  if(G.flipMode==='manual'){
+    // show flip button on question panel instead of auto-flipping
+    $id('q-flip-btn').style.display='block';
+    return;
+  }
+  _execFlipToBattle();
+}
+function manualFlipToBattle(){
+  $id('q-flip-btn').style.display='none';
+  _execFlipToBattle();
+}
+function _execFlipToBattle(){
   const pw=G.password.join('');
   const allGears=[...G.gears,...(G.carryoverGears||[])];
   const gearsParam=encodeURIComponent(allGears.map(g=>g.name).join(','));
@@ -1867,11 +1916,21 @@ function pcPick(gender,name,c){
 
   if(!(_myPlayer>0)) _pcTurn++;
   renderPcGrid();
-  if(Object.keys(_pcSel).length>=2){
-    const btn=$id('pc-fight');
+  const bothPicked=Object.keys(_pcSel).length>=2;
+  const myPickDone=_myPlayer>0 ? Object.values(_pcSel).includes(_myPlayer) : _pcTurn>1;
+  const btn=$id('pc-fight');
+  if(myPickDone){
     btn.style.display='block';
-    btn.textContent='📖 Flip Page to Battle!';
-    btn.classList.add('ready');
+    if(bothPicked){
+      btn.textContent='📖 Flip Page to Battle!';
+      btn.classList.add('ready');
+      btn.disabled=false;
+      if(G.flipMode==='auto') setTimeout(()=>doMpBattle(),1400);
+    } else {
+      btn.textContent='📖 Flip Page (or wait for friend)';
+      btn.classList.remove('ready');
+      btn.disabled=false;
+    }
   }
 }
 
@@ -2149,6 +2208,8 @@ function _cHandleGame(msg){
       btn.style.display='block';
       btn.textContent='📖 Flip Page to Battle!';
       btn.classList.add('ready');
+      btn.disabled=false;
+      if(G.flipMode==='auto') setTimeout(()=>doMpBattle(),1400);
     }
   } else if(msg.type==='start'){
     if($id('panel-chars').classList.contains('active')) doMpBattle(true);
