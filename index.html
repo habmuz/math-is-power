@@ -677,6 +677,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
           <span id="pc-lobby-count">1 player connected</span>
           <span id="pc-lobby-dots"></span>
         </div>
+        <button id="pc-retry-btn" onclick="retryConnection()" style="margin-top:4px;padding:4px 10px;background:#8b4513;color:#f6e8cc;border:none;border-radius:6px;font-size:10px;font-family:Georgia,serif;cursor:pointer;width:100%">🔄 Retry Connection</button>
       </div>
       <!-- Waiting message for mid-game joiners -->
       <div id="mid-wait"><b>⏳ Game in progress!</b>Pick your hero below, then wait — you'll join at the next chapter.</div>
@@ -1696,10 +1697,10 @@ function mpJoin(){
   openCharPanel();
   _startLobbyHeartbeat();
   _startLobbyPoll();
-  // Burst of rapid pings so Player 1 sees us even if ntfy drops the first one
-  for(var _i=1;_i<=4;_i++)(function(i){setTimeout(function(){
+  // Burst of pings over 20s so Player 1 sees us even if ntfy drops several
+  for(var _i=1;_i<=12;_i++)(function(i){setTimeout(function(){
     if(_cCode&&_myPlayer) _cSendGame({type:'here',player:_myPlayer,maxPlayers:0});
-  },i*900);}(_i));
+  },i*1800);}(_i));
 }
 function openMpBattle(inviteCode){
   $id('scroll-menu').classList.remove('open');
@@ -2098,33 +2099,55 @@ function _cAppend(name, text, mine){
 }
 
 // ── GAME SYNC OVER NTFY ──────────────────────────────────────────
+var _fastTimer=null;
 function _startLobbyHeartbeat(){
-  clearInterval(_presenceInterval);
+  clearInterval(_presenceInterval); clearInterval(_fastTimer);
   function _beat(){
-    if(!_cCode || !_myPlayer) return;
-    _cSendGame({type:'here', player:_myPlayer, maxPlayers:(_myPlayer===1?_maxPlayers:0)});
+    if(!_cCode||!_myPlayer)return;
+    _cSendGame({type:'here',player:_myPlayer,maxPlayers:(_myPlayer===1?_maxPlayers:0)});
   }
-  _beat(); // fire immediately so the other device sees us without waiting
-  _presenceInterval = setInterval(_beat, 8000);
+  _beat();
+  var _fc=0;
+  _fastTimer=setInterval(function(){
+    _beat(); _fc++;
+    if(_fc>=20){clearInterval(_fastTimer);_presenceInterval=setInterval(_beat,8000);}
+  },2000);
 }
+var _pollSince=0;
 function _startLobbyPoll(){
   clearInterval(_pollInterval);
-  var _pollSince=Math.floor((Date.now()-600000)/1000); // 10 min ago as Unix timestamp
+  _pollSince=Math.floor((Date.now()-120000)/1000); // 2 min back
   _pollInterval=setInterval(function(){
-    // Stop only when we can see ALL expected players in our own lobby
-    if(!_cCode||Object.keys(_lobby).length>=_maxPlayers){clearInterval(_pollInterval);return;}
+    if(!_cCode)return;
     fetch('https://ntfy.sh/mathpower-'+_cCode+'/json?poll=1&since='+_pollSince)
       .then(function(r){return r.text();})
       .then(function(text){
+        var newest=_pollSince;
         text.split('\n').filter(Boolean).forEach(function(line){
           try{
             var d=JSON.parse(line);
+            if(d.time&&d.time>newest) newest=d.time;
             var msg=JSON.parse(d.message||d.body||'{}');
-            if(msg.sid&&msg.sid!==_cSID&&msg._game&&msg.type==='here') _cHandleGame(msg);
+            // handle ALL game messages (not just 'here') so poll is a full fallback for SSE
+            if(msg.sid&&msg.sid!==_cSID&&msg._game) _cHandleGame(msg);
           }catch(e){}
         });
+        // slide window forward so we don't re-process old messages
+        if(newest>_pollSince) _pollSince=newest;
       }).catch(function(){});
-  },4000);
+  },1500); // poll every 1.5s
+}
+function retryConnection(){
+  if(!_cCode||!_myPlayer)return;
+  // restart SSE in case it dropped
+  if(_cEvt){_cEvt.close();_cEvt=null;}
+  initChat(_cCode);
+  // burst 8 pings
+  for(var i=0;i<=8;i++)(function(n){setTimeout(function(){
+    if(_cCode&&_myPlayer)_cSendGame({type:'here',player:_myPlayer,maxPlayers:(_myPlayer===1?_maxPlayers:0)});
+  },n*800);}(i));
+  var btn=$id('pc-retry-btn');
+  if(btn){btn.textContent='🔄 Retrying…';btn.disabled=true;setTimeout(function(){btn.textContent='🔄 Retry Connection';btn.disabled=false;},8000);}
 }
 
 function _cSendGame(data){
