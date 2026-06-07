@@ -199,26 +199,57 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 #timeout-screen{align-items:center;justify-content:center;text-align:center;padding:2rem;
   background:radial-gradient(ellipse at center,#350a0a 0%,var(--bg) 60%)}
 #timeout-dragon-sprite{font-size:6rem;animation:dfloat 1.5s ease-in-out infinite}
-/* Visual FX */
-@keyframes blastFx{
-  0%{opacity:0;transform:scaleX(0) translateX(0)}
-  30%{opacity:1;transform:scaleX(1) translateX(15px)}
-  80%{opacity:.85;transform:scaleX(1.2) translateX(90px)}
-  100%{opacity:0;transform:scaleX(1.4) translateX(160px)}
+/* ── Visual FX — shoot from hero card toward dragon ── */
+@keyframes shootRight{
+  0%  {transform-origin:left;transform:scaleX(0) scaleY(1.6);opacity:1}
+  40% {transform:scaleX(1) scaleY(1.2);opacity:.9}
+  100%{transform:scaleX(.85) scaleY(1);opacity:0}
 }
-.fx-ultimate{position:absolute;top:50%;left:70%;margin-top:-12px;height:24px;width:80px;
-  background:linear-gradient(90deg,#065f46,#059669,#34d399,#6ee7b7);
-  border-radius:50%;filter:blur(5px);animation:blastFx .75s ease-out forwards;pointer-events:none;z-index:10}
-.fx-fire{position:absolute;top:50%;left:70%;margin-top:-10px;height:20px;width:65px;
-  background:linear-gradient(90deg,#7f1d1d,#dc2626,#f97316,#fca5a5);
-  border-radius:50%;filter:blur(4px);animation:blastFx .65s ease-out forwards;pointer-events:none;z-index:10}
-.fx-water{position:absolute;top:50%;left:70%;margin-top:-10px;height:20px;width:65px;
-  background:linear-gradient(90deg,#1e3a8a,#3b82f6,#93c5fd,#bfdbfe);
-  border-radius:50%;filter:blur(4px);animation:blastFx .65s ease-out forwards;pointer-events:none;z-index:10}
-@keyframes immunityFlash{0%{opacity:0}30%{opacity:.55}70%{opacity:.45}100%{opacity:0}}
-.fx-immunity-overlay{position:fixed;inset:0;background:rgba(139,92,246,.22);
-  border:3px solid #a78bfa;animation:immunityFlash 1.3s ease forwards;pointer-events:none;z-index:500}
-.roster.invisible-active .rcard{opacity:.22;filter:blur(1px);transition:all .6s}
+/* Fire — red gradient flames from hands */
+.fx-fire{position:absolute;top:18%;right:-98px;width:118px;height:58px;
+  background:linear-gradient(to right,#fca5a5,#ef4444,#7f1d1d,transparent);
+  border-radius:0 60% 60% 0;filter:blur(4px);
+  animation:shootRight 1.2s ease-out forwards;pointer-events:none;z-index:10}
+/* Water gush */
+.fx-water{position:absolute;top:26%;right:-118px;width:138px;height:36px;
+  background:linear-gradient(to right,#bfdbfe,#3b82f6,#1e3a8a,transparent);
+  border-radius:0 99px 99px 0;filter:blur(3px);
+  animation:shootRight 1.2s ease-out forwards;pointer-events:none;z-index:10}
+/* Power attack — purple flame that flows like water */
+.fx-power{position:absolute;top:8%;right:-138px;width:168px;height:70px;
+  background:linear-gradient(to right,#f0abfc,#a855f7,#581c87,transparent);
+  border-radius:0 50% 60% 0;filter:blur(5px);
+  animation:shootRight 1.5s ease-out forwards;pointer-events:none;z-index:10}
+/* Sword flash */
+.fx-sword{position:absolute;top:30%;right:-80px;width:90px;height:20px;
+  background:linear-gradient(to right,rgba(255,255,255,.9),rgba(255,255,200,.6),transparent);
+  border-radius:0 99px 99px 0;filter:blur(2px);
+  animation:shootRight .5s ease-out forwards;pointer-events:none;z-index:10}
+/* Immunity — persistent translucent purple bubble on roster cards */
+.roster.immunity-active .rcard{position:relative}
+.roster.immunity-active .rcard::after{
+  content:'';position:absolute;inset:-6px;border-radius:14px;
+  background:rgba(196,181,253,.20);border:2px solid rgba(167,139,250,.65);
+  box-shadow:0 0 18px rgba(167,139,250,.45);
+  pointer-events:none;z-index:5;
+  animation:immunityPulse 2.5s ease-in-out infinite;
+}
+@keyframes immunityPulse{
+  0%,100%{box-shadow:0 0 10px rgba(167,139,250,.3)}
+  50%    {box-shadow:0 0 30px rgba(167,139,250,.75)}
+}
+/* Invisibility */
+.roster.invisible-active .rcard{opacity:.25;filter:blur(.8px) brightness(1.5);transition:all .6s}
+/* Wearing overlays (armor/helmet/shield SVGs on character cards) */
+.wear-overlay{position:absolute;pointer-events:none;z-index:4;
+  animation:wearFadeIn .4s cubic-bezier(.34,1.56,.64,1)}
+.wear-shield {bottom:10%;left:5%;width:55%}
+.wear-armor  {top:30%;left:15%;width:70%}
+.wear-helmet {top:2%;left:20%;width:60%}
+@keyframes wearFadeIn{
+  0%  {opacity:0;transform:scale(.5)}
+  100%{opacity:1;transform:scale(1)}
+}
 
 /* Battle log */
 .b-log{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:.7rem;
@@ -329,6 +360,49 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   .roster{flex-direction:row;flex-wrap:wrap;overflow:visible}
   .rcard{flex:1;min-width:130px}
 }
+
+/* ── GEAR SELECT SCREEN ── */
+#gear-select-screen{align-items:center;justify-content:flex-start;padding:1.5rem 1rem;
+  background:radial-gradient(ellipse at top,#1a0a35 0%,var(--bg) 60%);overflow-y:auto}
+.gs-title{text-align:center;margin-bottom:1.25rem}
+.gs-title h1{font-size:clamp(1.4rem,4vw,2rem);font-weight:900;
+  background:linear-gradient(135deg,var(--gold),var(--orange));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.gs-title p{color:var(--muted);font-size:.8rem;margin-top:.25rem}
+.gs-columns{display:flex;gap:.75rem;width:100%;max-width:680px;align-items:flex-start}
+.gs-col{flex:1;background:rgba(255,255,255,.04);border:1px solid var(--border);
+  border-radius:.85rem;padding:.85rem .65rem;display:flex;flex-direction:column;gap:.5rem}
+.gs-col-title{font-size:.65rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;
+  text-align:center;padding:.3rem .5rem;border-radius:.4rem;margin-bottom:.25rem}
+.gs-col-t1 .gs-col-title{background:rgba(34,197,94,.15);color:#22c55e;border:1px solid rgba(34,197,94,.3)}
+.gs-col-t2 .gs-col-title{background:rgba(59,130,246,.15);color:#3b82f6;border:1px solid rgba(59,130,246,.3)}
+.gs-col-t3 .gs-col-title{background:rgba(239,68,68,.15);color:#ef4444;border:1px solid rgba(239,68,68,.3)}
+.gs-col-sub{font-size:.6rem;color:var(--muted);text-align:center;margin-bottom:.4rem}
+.gs-gear-card{display:flex;flex-direction:column;align-items:center;gap:.25rem;padding:.5rem .3rem;
+  border-radius:.65rem;border:2px solid transparent;cursor:pointer;transition:all .2s;
+  background:rgba(255,255,255,.04);position:relative}
+.gs-gear-card img{width:3rem;height:3rem;object-fit:contain}
+.gs-gear-card .gs-gname{font-size:.6rem;font-weight:700;color:var(--text);text-align:center}
+.gs-gear-card .gs-geffect{font-size:.52rem;color:var(--muted);text-align:center}
+.gs-gear-card .gs-count{position:absolute;top:-5px;right:-5px;background:var(--gold);
+  color:#000;font-size:.6rem;font-weight:900;border-radius:50%;width:16px;height:16px;
+  display:flex;align-items:center;justify-content:center}
+.gs-gear-card.gs-selected{border-color:var(--gold);background:rgba(255,215,0,.12);
+  box-shadow:0 0 12px rgba(255,215,0,.3)}
+.gs-gear-card.gs-locked{opacity:.3;cursor:not-allowed;filter:grayscale(.7)}
+.gs-gear-card.gs-usable:hover{border-color:var(--gold);background:rgba(255,215,0,.08);
+  transform:translateY(-2px)}
+.gs-lock-badge{font-size:.55rem;color:var(--muted);text-align:center;
+  padding:.2rem .4rem;border-radius:.3rem;background:rgba(255,255,255,.05);
+  border:1px solid var(--border);margin-top:.2rem}
+.gs-start-btn{width:100%;max-width:680px;padding:.9rem;border-radius:.85rem;border:none;
+  background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;
+  font-size:1rem;font-weight:700;cursor:pointer;transition:all .2s;letter-spacing:.5px;
+  margin-top:1rem}
+.gs-start-btn:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(124,58,237,.5)}
+.gs-start-btn:disabled{opacity:.45;cursor:not-allowed;transform:none;box-shadow:none}
+.gs-sel-summary{width:100%;max-width:680px;font-size:.7rem;color:var(--muted);
+  text-align:center;margin-top:.4rem}
 </style>
 </head>
 <body>
@@ -355,8 +429,19 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     </div>
     <div class="section-label">Choose Your Heroes</div>
     <div class="player-rows" id="player-rows"></div>
-    <button class="start-btn" id="start-btn">⚔️ Start Battle!</button>
+    <button class="start-btn" id="start-btn">Choose Gears →</button>
   </div>
+</div>
+
+<!-- GEAR SELECT -->
+<div id="gear-select-screen" class="screen">
+  <div class="gs-title">
+    <h1>Choose Your Gears</h1>
+    <p>Each role picks from their gear type — multiple picks = multiple uses</p>
+  </div>
+  <div class="gs-columns" id="gs-columns"></div>
+  <div class="gs-sel-summary" id="gs-summary">No gears selected yet</div>
+  <button class="gs-start-btn" id="gs-start-btn" onclick="beginBattleWithGears()" disabled>Enter Battle!</button>
 </div>
 
 <!-- BATTLE -->
@@ -430,6 +515,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 <div class="modal-overlay hidden" id="q-modal">
   <div class="modal-card">
     <div class="modal-hdr" id="m-hdr">Math Challenge!</div>
+    <div id="q-pass-banner" style="display:none;font-size:.72rem;color:var(--gold);text-align:center;margin-bottom:.5rem;font-weight:700;letter-spacing:.5px"></div>
     <div class="q-progress" id="q-prog"></div>
     <div id="q-timer-wrap">
       <div id="q-timer-bar"><div id="q-timer-fill"></div></div>
@@ -642,9 +728,9 @@ function renderSetup(){
       if(ch) players.push({playerName:pn,character:ch});
     }
     if(players.length>0){
-      // Hide setup, go straight to battle after a brief moment
+      // Skip setup, go to gear select (or directly battle if gears already in URL)
       document.getElementById('setup-screen').style.display='none';
-      setTimeout(()=>startBattle(players),200);
+      setTimeout(()=>showGearSelect(players),200);
     }
   }
 })();
@@ -666,7 +752,7 @@ document.getElementById('start-btn').onclick=()=>{
       if(ch)roles.push(ch.role);
     }
     if(!roles.includes('fighter')){
-      alert('⚔️ Your team needs at least 1 Fighter!\nA Fighter deals heavy damage and uses the Ultimate Attack.');return;
+      alert('Your team needs at least 1 Fighter!\nA Fighter deals heavy damage and triggers Power Attacks.');return;
     }
     const hasSupport=roles.some(r=>r==='healer'||r==='pattern_master'||r==='math_master'||r==='defender');
     if(!hasSupport){
@@ -684,7 +770,7 @@ document.getElementById('start-btn').onclick=()=>{
     const ch=(CHARS[d.gender+'s']||CHARS.boys).find(c=>c.name===d.charName);
     players.push({playerName:d.playerName.trim(),character:ch});
   }
-  startBattle(players);
+  showGearSelect(players);
 };
 
 initSetupData();renderSetup();
@@ -699,7 +785,6 @@ function startBattle(players){
     dragon:{hp:500,maxHp:500},
     round:1,
     curIdx:0,
-    charges:0,
     streak:0,
     code,
     acted:new Set(),
@@ -709,14 +794,10 @@ function startBattle(players){
     gearItems:[],
     invisibleUntil:0,
     lampUntil:0,
+    immunityUntil:0,
   };
-  // Apply passive gears (Armor/Helmet) and build active gear inventory
-  const passiveApplied={};
   _gearsParam.forEach(n=>{
-    if(!GEAR_DATA[n])return;
-    if(n==='Armor'&&!passiveApplied.Armor){passiveApplied.Armor=true;G.players.forEach(p=>{p.hp+=10;p.maxHp+=10;});}
-    else if(n==='Helmet'&&!passiveApplied.Helmet){passiveApplied.Helmet=true;G.players.forEach(p=>{p.hp+=5;p.maxHp+=5;});}
-    else{G.gearItems.push({name:n,...GEAR_DATA[n]});}
+    if(GEAR_DATA[n])G.gearItems.push({name:n,...GEAR_DATA[n]});
   });
   showScreen('battle-screen');
   updateCaveLight();
@@ -728,7 +809,7 @@ function startBattle(players){
   updateHourglassBtn();
   startBattleTimer();
   log('The battle begins! Heroes vs Dralioster!','log-imp');
-  log('Math & Pattern Masters: 3 correct in a row = 1 power charge!','');
+  log('3 correct answers in a row = POWER ATTACK + 1 min!','');
   if(_gearsParam.length)log('Gears equipped: '+_gearsParam.join(', '),'log-pwr');
 }
 
@@ -761,7 +842,7 @@ function refreshActive(){
 
 function renderStreak(){
   for(let i=0;i<3;i++) document.getElementById('sd'+i).classList.toggle('on',G.streak>i);
-  document.getElementById('streak-charges').textContent=G.charges+'/3 charges';
+  document.getElementById('streak-charges').textContent='3-streak = Power Attack!';
 }
 
 function refreshDragon(){
@@ -796,28 +877,27 @@ function renderRoster(){
 }
 
 function renderActions(){
+  // Every player first gets a question (random math or pattern)
+  const qType=Math.random()<0.5?'math':'pattern';
+  setTimeout(()=>{if(!G.done)openQ(qType);},350);
+}
+
+function showRoleActions(){
   const c=document.getElementById('act-btns');c.innerHTML='';
   const p=G.players[G.curIdx];if(!p)return;
   const role=p.character.role;
-  // Math/Pattern masters: auto-open question, no button needed
-  if(role==='math_master'){setTimeout(()=>{if(!G.done)openQ('math');},350);return;}
-  if(role==='pattern_master'){setTimeout(()=>{if(!G.done)openQ('pattern');},350);return;}
-  const defs=[];
   if(role==='fighter'){
-    defs.push({l:'Attack',cls:'b-atk',a:'attack'});
-    const ultLbl=G.charges>=3?'ULTIMATE!':'Ultimate Attack';
-    defs.push({l:ultLbl,cls:'b-ult',a:'ultimate',dis:G.charges<3});
+    const b=document.createElement('button');b.className='abtn b-atk';b.textContent='Attack';
+    b.onclick=()=>doAction('attack');c.appendChild(b);
   }else if(role==='defender'){
-    defs.push({l:'Raise Shield',cls:'b-shld',a:'shield'});
+    const b=document.createElement('button');b.className='abtn b-shld';b.textContent='Raise Shield';
+    b.onclick=()=>doAction('shield');c.appendChild(b);
   }else if(role==='healer'){
-    defs.push({l:'Heal Ally',cls:'b-heal',a:'heal'});
+    const b=document.createElement('button');b.className='abtn b-heal';b.textContent='Heal Ally';
+    b.onclick=()=>doAction('heal');c.appendChild(b);
+  }else{
+    setTimeout(endTurn,300);return;
   }
-  defs.forEach(d=>{
-    const b=document.createElement('button');b.className='abtn '+d.cls;b.textContent=d.l;
-    if(d.dis)b.disabled=true;
-    b.onclick=()=>doAction(d.a);
-    c.appendChild(b);
-  });
   renderGearTray();
   updateHourglassBtn();
 }
@@ -829,18 +909,15 @@ function doAction(a){
   if(a==='attack'){
     const dmg=r(18,38);
     G.dragon.hp=Math.max(0,G.dragon.hp-dmg);
-    log('⚔️ '+ch.name+' attacks! '+dmg+' damage to Dralioster.','log-imp');
+    log(ch.name+' attacks! '+dmg+' damage to Dralioster.','log-imp');
+    const el=document.createElement('div');el.className='fx-sword';
+    const hero=document.getElementById('rc'+G.curIdx);
+    if(hero){hero.style.position='relative';hero.style.overflow='visible';hero.appendChild(el);setTimeout(()=>el.remove(),1200);}
     shakeDragon();refreshDragon();endTurn();
-  }else if(a==='ultimate'){
-    if(G.charges<3)return;
-    const dmg=r(180,260);
-    G.dragon.hp=Math.max(0,G.dragon.hp-dmg);
-    G.charges=0;G.streak=0;
-    log(ch.name+' ULTIMATE ATTACK! '+dmg+' damage!!!','log-pwr');
-    playGearFx('ultimate');shakeDragon();refreshDragon();renderStreak();endTurn();
   }else if(a==='shield'){
-    p.shielded=true;
-    log('🛡️ '+ch.name+' raises a Power Shield! Dragon\'s next attack -60%.','log-imp');
+    G.players.forEach(p2=>{if(p2.isAlive)p2.shielded=true;});
+    log(ch.name+' raises a Power Shield! All heroes protected for this round.','log-imp');
+    applyWearOverlay('Shield',60000);
     endTurn();
   }else if(a==='heal'){
     const t=lowestAlive();
@@ -938,7 +1015,7 @@ function openQ(type){
   G.qt=type;
   const qd=type==='math'?genMath():genPattern();
   G.pq=qd;
-  document.getElementById('m-hdr').textContent=type==='math'?'🔢 Math Challenge!':'🔮 Pattern Challenge!';
+  document.getElementById('m-hdr').textContent=type==='math'?'Math Challenge!':'Pattern Challenge!';
   document.getElementById('q-text').textContent=qd.question;
   renderQProg();
   const fb=document.getElementById('q-fb');fb.className='q-fb hidden';fb.textContent='';
@@ -948,10 +1025,25 @@ function openQ(type){
   }else{
     document.getElementById('yn-area').classList.add('hidden');
     document.getElementById('num-area').classList.remove('hidden');
-    const inp=document.getElementById('ans-inp');inp.value='';
-    setTimeout(()=>inp.focus(),120);
+    document.getElementById('ans-inp').value='';
+  }
+  // Specialist locking
+  const specialist=G.players.find(p=>p.isAlive&&
+    (type==='math'?p.character.role==='math_master':p.character.role==='pattern_master'));
+  const canAnswer=!!specialist;
+  document.getElementById('ans-inp').disabled=!canAnswer;
+  document.getElementById('sub-btn').disabled=!canAnswer;
+  document.querySelectorAll('.yn-btn').forEach(b=>b.disabled=!canAnswer);
+  const banner=document.getElementById('q-pass-banner');
+  if(canAnswer){
+    banner.textContent='Pass device to '+specialist.playerName+' ('+specialist.character.name+')!';
+    banner.style.display='block';
+  }else{
+    banner.textContent='No specialist alive — question will time out.';
+    banner.style.display='block';
   }
   document.getElementById('q-modal').classList.remove('hidden');
+  if(canAnswer&&qd.type!=='palindrome')setTimeout(()=>document.getElementById('ans-inp').focus(),120);
   startQTimer();
 }
 
@@ -961,7 +1053,7 @@ function renderQProg(){
     const d=document.createElement('div');d.className='qd'+(G.streak>i?' on':'');c.appendChild(d);
   }
   const h=document.createElement('span');h.className='q-hint';
-  h.textContent='('+G.streak+'/3 → '+G.charges+'/3 charges)';c.appendChild(h);
+  h.textContent='('+G.streak+'/3 → Power Attack!)';c.appendChild(h);
 }
 
 function submitAns(given){
@@ -980,13 +1072,12 @@ function submitAns(given){
   }else if(correct){
     G.streak++;
     fb.textContent='Correct! Streak: '+G.streak+'/3';
-    if(G.streak>=3&&G.charges<3){
-      G.streak=0;G.charges++;
-      fb.textContent='Streak complete! Power charge '+G.charges+'/3 unlocked!';
-      log('Power charge '+G.charges+'/3! '+(G.charges===3?'Fighter can now use Ultimate!':'Keep the streak going!'),'log-pwr');
-    }else if(G.streak>=3){
+    if(G.streak>=3){
       G.streak=0;
-      fb.textContent='Correct! (Power already fully charged — keep it up!)';
+      _btSecs+=60;updateBattleTimerUI();
+      fb.textContent='3-STREAK POWER ATTACK! +1 min added!';
+      log('3-STREAK POWER ATTACK! +1 min added!','log-pwr');
+      triggerPowerAttack();
     }else{
       log(ch.name+' answered correctly! Streak: '+G.streak+'/3','log-ok');
     }
@@ -997,11 +1088,15 @@ function submitAns(given){
   }
 
   renderStreak();renderQProg();
+  document.getElementById('q-pass-banner').style.display='none';
 
   setTimeout(()=>{
     document.getElementById('q-modal').classList.add('hidden');
     document.getElementById('ans-inp').value='';
-    endTurn();
+    document.getElementById('ans-inp').disabled=false;
+    document.getElementById('sub-btn').disabled=false;
+    document.querySelectorAll('.yn-btn').forEach(b=>b.disabled=false);
+    showRoleActions();
   },1900);
 }
 
@@ -1114,16 +1209,16 @@ function addQTime(secs){
 
 // ── GEAR SYSTEM ───────────────────────────────────────────────────
 const GEAR_DATA={
-  Sword:    {img:'gears/sword.jpg',    type:3,effect:'40 damage to dragon'},
-  Fire:     {img:null,                 type:3,effect:'30 fire damage to dragon'},
-  Water:    {img:null,                 type:3,effect:'Heals weakest ally 30 HP'},
-  Shield:   {img:'gears/shield.jpg',   type:2,effect:'Shield all heroes'},
-  Armor:    {img:'gears/armor.jpg',    type:2,effect:'Passive: +10 max HP'},
-  Helmet:   {img:'gears/helmet.jpg',   type:2,effect:'Passive: +5 max HP'},
-  Immunity: {img:null,                 type:1,effect:'Purple barrier protects team'},
-  Hourglass:{img:'gears/hourglass.webp',type:1,effect:'+30s to question timer'},
-  Lamp:     {img:'gears/lamp.jpg',     type:1,effect:'Brightens cave 1 min'},
-  Invisible:{img:null,                 type:1,effect:'Team invisible 35s'},
+  Sword:    {img:'gears/sword.jpg',       type:3,effect:'40 damage to dragon'},
+  Fire:     {img:'gears/fire.svg',        type:3,effect:'Red flames from hands — 30 damage'},
+  Water:    {img:'gears/water.svg',       type:3,effect:'Water gush — heal weakest ally 30 HP'},
+  Shield:   {img:'gears/shield-wear.svg',  type:2,effect:'All heroes shielded + overlay for 60s'},
+  Armor:    {img:'gears/armor-wear.svg',  type:2,effect:'+15 HP + armour overlay for 60s'},
+  Helmet:   {img:'gears/helmet-wear.svg', type:2,effect:'+10 HP + helmet overlay for 60s'},
+  Immunity: {img:'gears/immunity.svg',    type:1,effect:'Purple bubble protects team for 60s'},
+  Hourglass:{img:'gears/hourglass.svg',   type:1,effect:'+30s to question timer'},
+  Lamp:     {img:'gears/lamp.svg',        type:1,effect:'Brightens cave — see clearly for 60s'},
+  Invisible:{img:'gears/invisible.svg',   type:1,effect:'Team invisible 35s — dragon cannot attack'},
 };
 const ROLE_GEAR_TYPE={fighter:3,defender:2,healer:1,math_master:null,pattern_master:null};
 const ALL_GEAR_NAMES=['Immunity','Hourglass','Lamp','Invisible','Shield','Armor','Helmet','Sword','Fire','Water'];
@@ -1136,26 +1231,20 @@ function renderGearTray(){
   const myType=ROLE_GEAR_TYPE[curRole];
   ALL_GEAR_NAMES.forEach(name=>{
     const data=GEAR_DATA[name];if(!data)return;
-    const inInventory=G.gearItems.some(g=>g.name===name);
-    const isPassive=(name==='Armor'||name==='Helmet');
+    const isPassive=false;
+    const count=G.gearItems.filter(g=>g.name===name).length;
+    const inInventory=count>0;
     const canUse=myType===data.type&&inInventory&&!isPassive;
     const card=document.createElement('div');
     card.className='gear-card'+(canUse?' usable':inInventory&&!isPassive?' disabled':' locked');
-    // Image or CSS icon
-    if(data.img){
-      const im=document.createElement('img');
-      im.src=data.img;im.alt=name;
-      im.className=name==='Hourglass'?'gear-img-no-face':'gear-img';
-      im.onerror=()=>{im.style.display='none'};
-      card.appendChild(im);
-    }else{
-      const ic=document.createElement('div');ic.className='gear-css';
-      if(name==='Fire')ic.style.background='linear-gradient(180deg,#fca5a5,#dc2626,#7f1d1d)';
-      else if(name==='Water')ic.style.background='linear-gradient(180deg,#bfdbfe,#3b82f6,#1e3a8a)';
-      else if(name==='Immunity')ic.style.cssText='background:radial-gradient(circle,rgba(196,181,253,.8),rgba(109,40,217,.6));border:2px solid #a78bfa';
-      else if(name==='Invisible')ic.style.cssText='background:linear-gradient(135deg,rgba(255,255,255,.15),rgba(255,255,255,.05));border:1px dashed rgba(255,255,255,.4)';
-      ic.textContent=name==='Fire'?'🔥':name==='Water'?'💧':name==='Immunity'?'✨':'👻';
-      card.appendChild(ic);
+    const im=document.createElement('img');
+    im.src=data.img;im.alt=name;im.className='gear-img';
+    im.onerror=()=>{im.style.display='none'};
+    card.appendChild(im);
+    if(count>1){
+      const badge=document.createElement('div');badge.className='gear-count';
+      badge.textContent=count;badge.style.cssText='position:absolute;top:-5px;right:-5px;background:var(--gold);color:#000;font-size:.58rem;font-weight:900;border-radius:50%;width:15px;height:15px;display:flex;align-items:center;justify-content:center';
+      card.appendChild(badge);
     }
     const nm=document.createElement('div');nm.className='gear-nm';nm.textContent=name;
     card.appendChild(nm);
@@ -1194,11 +1283,22 @@ function useGear(name){
     playGearFx('water');
   }else if(name==='Shield'){
     G.players.forEach(p2=>{if(p2.isAlive)p2.shielded=true;});
-    log('SHIELD! All heroes protected!','log-pwr');
+    log('SHIELD! All heroes protected for 60 seconds!','log-pwr');
+    applyWearOverlay('Shield',60000);
+  }else if(name==='Armor'){
+    G.players.forEach(p2=>{if(p2.isAlive){p2.hp=Math.min(p2.maxHp,p2.hp+15);}});
+    log('ARMOR! All heroes gain 15 HP and armour protection!','log-pwr');
+    applyWearOverlay('Armor',60000);
+  }else if(name==='Helmet'){
+    G.players.forEach(p2=>{if(p2.isAlive){p2.hp=Math.min(p2.maxHp,p2.hp+10);}});
+    log('HELMET! All heroes gain 10 HP and helmet protection!','log-pwr');
+    applyWearOverlay('Helmet',60000);
   }else if(name==='Immunity'){
+    G.immunityUntil=Date.now()+60000;
     G.players.forEach(p2=>{if(p2.isAlive)p2.shielded=true;});
-    log('IMMUNITY! Purple barrier shields all heroes!','log-pwr');
-    playGearFx('immunity');
+    log('IMMUNITY! Purple barrier surrounds all heroes for 60s!','log-pwr');
+    document.getElementById('roster').classList.add('immunity-active');
+    setTimeout(()=>{G.immunityUntil=0;document.getElementById('roster').classList.remove('immunity-active');log('Immunity faded.','');},60000);
   }else if(name==='Invisible'){
     G.invisibleUntil=Date.now()+35000;
     log('INVISIBLE! Team hidden for 35 seconds — dragon cannot see you!','log-pwr');
@@ -1220,18 +1320,120 @@ function useGear(name){
 }
 
 function playGearFx(type){
-  if(type==='ultimate'||type==='fire'||type==='water'){
-    const hero=document.querySelector('#rc'+G.curIdx)||document.querySelector('.active-card');
-    if(!hero)return;
-    const el=document.createElement('div');el.className='fx-'+type;
+  const hero=document.getElementById('rc'+G.curIdx)||document.querySelector('.active-card');
+  if(!hero)return;
+  const el=document.createElement('div');el.className='fx-'+type;
+  hero.style.position='relative';hero.style.overflow='visible';
+  hero.appendChild(el);
+  const dur=type==='sword'?1200:type==='power'?1500:1200;
+  setTimeout(()=>el.remove(),dur);
+}
+
+function applyWearOverlay(gearName,durationMs){
+  const cls={Shield:'wear-shield',Armor:'wear-armor',Helmet:'wear-helmet'}[gearName];
+  const svgSrc={Shield:'gears/shield-wear.svg',Armor:'gears/armor-wear.svg',Helmet:'gears/helmet-wear.svg'}[gearName];
+  if(!cls)return;
+  const overlays=[];
+  G.players.forEach((_,i)=>{
+    const card=document.getElementById('rc'+i);if(!card)return;
+    card.style.position='relative';
+    const img=document.createElement('img');
+    img.className='wear-overlay '+cls;img.src=svgSrc;img.alt='';
+    card.appendChild(img);overlays.push(img);
+  });
+  setTimeout(()=>overlays.forEach(el=>el.remove()),durationMs);
+}
+
+function triggerPowerAttack(){
+  const hero=document.getElementById('rc'+G.curIdx)||document.querySelector('.rcard.cur');
+  if(hero){
+    const el=document.createElement('div');el.className='fx-power';
     hero.style.position='relative';hero.style.overflow='visible';
-    hero.appendChild(el);setTimeout(()=>el.remove(),800);
-  }else if(type==='immunity'){
-    const el=document.createElement('div');el.className='fx-immunity-overlay';
-    document.body.appendChild(el);setTimeout(()=>el.remove(),1300);
-  }else if(type==='sword'){
-    shakeDragon();
+    hero.appendChild(el);setTimeout(()=>el.remove(),1500);
   }
+  const dmg=r(80,145);
+  G.dragon.hp=Math.max(0,G.dragon.hp-dmg);
+  log('POWER ATTACK! '+dmg+' damage!','log-pwr');
+  shakeDragon();refreshDragon();
+  if(G.dragon.hp<=0)setTimeout(winGame,500);
+}
+
+// ── GEAR SELECT SCREEN ────────────────────────────────────────────
+const GEAR_SELECT_COLS=[
+  {type:1,title:'TYPE 1 — HEALER',sub:'Healer only',gears:['Immunity','Hourglass','Lamp','Invisible']},
+  {type:2,title:'TYPE 2 — DEFENDER',sub:'Defender only',gears:['Shield','Armor','Helmet']},
+  {type:3,title:'TYPE 3 — FIGHTER',sub:'Fighter only',gears:['Sword','Fire','Water']},
+];
+let _gsPending=null; // players waiting to start
+let _gsSelected=[]; // array of gear names chosen
+
+function showGearSelect(players){
+  _gsPending=players;_gsSelected=[];
+  // Determine which types the team has
+  const teamTypes=new Set(players.map(p=>ROLE_GEAR_TYPE[p.character.role]).filter(Boolean));
+  const cols=document.getElementById('gs-columns');cols.innerHTML='';
+  GEAR_SELECT_COLS.forEach(col=>{
+    const colDiv=document.createElement('div');
+    colDiv.className='gs-col gs-col-t'+col.type+(teamTypes.has(col.type)?'':' gs-locked');
+    const titleDiv=document.createElement('div');
+    titleDiv.className='gs-col-title';titleDiv.textContent=col.title;
+    const subDiv=document.createElement('div');
+    subDiv.className='gs-col-sub';subDiv.textContent=col.sub;
+    colDiv.appendChild(titleDiv);colDiv.appendChild(subDiv);
+    col.gears.forEach(name=>{
+      const data=GEAR_DATA[name];if(!data)return;
+      const canPick=teamTypes.has(col.type);
+      const card=document.createElement('div');
+      card.className='gs-gear-card'+(canPick?' gs-usable':' gs-locked');
+      card.id='gsc-'+name;card.style.position='relative';
+      const img=document.createElement('img');img.src=data.img;img.alt=name;
+      img.onerror=()=>{img.style.display='none';};
+      const nm=document.createElement('div');nm.className='gs-gname';nm.textContent=name;
+      const eff=document.createElement('div');eff.className='gs-geffect';eff.textContent=data.effect||'';
+      card.appendChild(img);card.appendChild(nm);card.appendChild(eff);
+      if(canPick){
+        card.onclick=()=>gsPickGear(name);
+      }
+      colDiv.appendChild(card);
+    });
+    cols.appendChild(colDiv);
+  });
+  gsUpdateSummary();
+  showScreen('gear-select-screen');
+}
+
+function gsPickGear(name){
+  _gsSelected.push(name);
+  const card=document.getElementById('gsc-'+name);
+  if(card){
+    const cnt=_gsSelected.filter(n=>n===name).length;
+    let badge=card.querySelector('.gs-count');
+    if(!badge){badge=document.createElement('div');badge.className='gs-count';card.appendChild(badge);}
+    badge.textContent=cnt;
+    card.classList.add('gs-selected');
+  }
+  gsUpdateSummary();
+}
+
+function gsUpdateSummary(){
+  const btn=document.getElementById('gs-start-btn');
+  const sum=document.getElementById('gs-summary');
+  if(_gsSelected.length===0){
+    sum.textContent='No gears selected yet';
+    btn.disabled=true;
+  }else{
+    const counts={};_gsSelected.forEach(n=>{counts[n]=(counts[n]||0)+1;});
+    sum.textContent='Selected: '+Object.entries(counts).map(([n,c])=>c>1?n+'×'+c:n).join(', ');
+    btn.disabled=false;
+  }
+}
+
+function beginBattleWithGears(){
+  if(!_gsPending)return;
+  // Merge URL gears with gear-screen picks
+  const combined=[..._gearsParam,..._gsSelected];
+  _gearsParam.length=0;combined.forEach(g=>_gearsParam.push(g));
+  startBattle(_gsPending);
 }
 
 function updateCaveLight(reset){

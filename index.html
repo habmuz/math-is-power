@@ -70,8 +70,40 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 #flip-cast-shadow{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:4;
   display:none;opacity:0;
   background:linear-gradient(to right,rgba(0,0,0,.0) 0%,rgba(0,0,0,.22) 40%,rgba(0,0,0,.35) 65%,rgba(0,0,0,.15) 85%,transparent 100%)}
-@keyframes flipForward{0%{transform:rotateY(0)}100%{transform:rotateY(-180deg)}}
+@keyframes flipForward{
+  0%  {transform:rotateY(0deg) translateZ(0)}
+  20% {transform:rotateY(-25deg) translateZ(12px)}
+  50% {transform:rotateY(-95deg) translateZ(26px) skewY(1.8deg)}
+  80% {transform:rotateY(-158deg) translateZ(10px) skewY(-0.5deg)}
+  100%{transform:rotateY(-180deg) translateZ(0)}
+}
 @keyframes flipBack{0%{transform:rotateY(-180deg)}100%{transform:rotateY(0)}}
+@keyframes shadowSweep{
+  0%  {opacity:0;background:linear-gradient(to right,rgba(0,0,0,.0) 0%,rgba(0,0,0,.1) 100%)}
+  30% {opacity:1;background:linear-gradient(to right,rgba(0,0,0,.0) 0%,rgba(0,0,0,.35) 55%,rgba(0,0,0,.5) 100%)}
+  65% {opacity:.7;background:linear-gradient(to right,rgba(0,0,0,.0) 0%,rgba(0,0,0,.25) 45%,rgba(0,0,0,.4) 100%)}
+  100%{opacity:0}
+}
+/* Manual page-flip strip (spine tab on right page) */
+#page-flip-strip{
+  position:absolute;left:-14px;top:8%;bottom:8%;width:14px;
+  border-radius:4px 0 0 4px;
+  background:linear-gradient(to left,#d4a96a,#c08040,#a86830);
+  box-shadow:-3px 0 8px rgba(0,0,0,.35),inset -2px 0 4px rgba(255,255,255,.15);
+  cursor:pointer;z-index:25;display:none;
+  transition:width .2s,box-shadow .2s;
+}
+#page-flip-strip:hover{
+  width:20px;
+  box-shadow:-5px 0 16px rgba(0,0,0,.5),inset -2px 0 6px rgba(255,255,255,.25);
+}
+#page-flip-strip::after{
+  content:'';position:absolute;top:50%;left:50%;
+  width:6px;height:30px;margin:-15px 0 0 -3px;
+  border-left:2px solid rgba(255,255,255,.5);
+  border-right:2px solid rgba(255,255,255,.5);
+  border-radius:1px;
+}
 /* Manual flip button on questions panel (appears when 3 gears collected) */
 #q-flip-btn{display:none;width:100%;padding:10px;background:linear-gradient(#b84400,#7a2a00);color:#f6e8cc;
   border:none;border-radius:8px;font-size:14px;font-family:Georgia,serif;cursor:pointer;margin-top:4px;
@@ -584,6 +616,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
 
   <!-- RIGHT PAGE -->
   <div id="page-r" class="page">
+    <div id="page-flip-strip" onclick="onFlipStripClick()"></div>
     <div id="rp-header">
       <div id="chapter-title">📖 Math Is Power</div>
       <div id="level-badge">Choose your level</div>
@@ -1110,25 +1143,25 @@ function doFlip(onMid, onDone){
   const cs=$id('flip-cast-shadow');
   fl.classList.remove('flipping');
   fl.style.display='block';
-  fl.style.animation='none'; fl.style.transform='rotateY(0)';
+  fl.style.animation='none'; fl.style.transform='';
   void fl.offsetWidth; // reflow
   fl.classList.add('flipping');
-  // cubic-bezier gives a natural "pick up page then sweep" feel
-  fl.style.transition='transform .75s cubic-bezier(.4,0,.25,1)';
-  fl.style.transform='rotateY(-180deg)';
-  // Cast shadow grows on left page then fades
+  fl.style.transition='';
+  fl.style.animation='flipForward 0.82s cubic-bezier(.38,.01,.18,1) forwards';
+  // Cast shadow uses keyframe animation
   if(cs){
-    cs.style.display='block'; cs.style.opacity='0'; cs.style.transition='opacity .3s';
-    setTimeout(()=>{cs.style.opacity='1'},40);
-    setTimeout(()=>{cs.style.transition='opacity .3s'; cs.style.opacity='0'},390);
-    setTimeout(()=>{cs.style.display='none'},730);
+    cs.style.display='block';
+    cs.style.animation='none';
+    void cs.offsetWidth;
+    cs.style.animation='shadowSweep 0.82s ease forwards';
+    setTimeout(()=>{cs.style.display='none'; cs.style.animation='none';},830);
   }
-  setTimeout(()=>{if(onMid)onMid()},370);
+  setTimeout(()=>{if(onMid)onMid()},410);
   setTimeout(()=>{
-    fl.style.display='none'; fl.style.transition=''; fl.style.transform='rotateY(0)';
+    fl.style.display='none'; fl.style.animation='none'; fl.style.transform='';
     fl.classList.remove('flipping');
-    if(onDone)onDone()
-  },750);
+    if(onDone)onDone();
+  },820);
 }
 
 // ═══════════════════════════════════════
@@ -1211,29 +1244,45 @@ function awardGear(){
   sfx('gear');
   setFb(`🎉 ${gear.emoji} ${gear.name} earned! Digit ${d} revealed!`,'#8b4513');
   narrate('gear');
+  updateFlipStrip();
 }
 
 // ═══════════════════════════════════════
 // PAGE FLIP TO BATTLE
 // ═══════════════════════════════════════
 function goToBattlePage(){
+  // After 3 gears: go straight to password machine (fight scene launches after correct code)
   if(G.flipMode==='manual'){
-    // show flip button on question panel instead of auto-flipping
     $id('q-flip-btn').style.display='block';
+    updateFlipStrip();
     return;
   }
-  _execFlipToBattle();
+  _execFlipToMachine();
 }
 function manualFlipToBattle(){
   $id('q-flip-btn').style.display='none';
-  _execFlipToBattle();
+  $id('page-flip-strip').style.display='none';
+  _execFlipToMachine();
 }
-function _execFlipToBattle(){
+function _execFlipToMachine(){
+  doFlip(()=>{
+    $id('cave-scene').style.display='none';
+    $id('battle-scene').style.display='none';
+    $id('mp-scene').style.display='none';
+    $id('machine').classList.add('visible');
+    showPanel('battle');
+  },()=>{
+    G.phase='machine';
+    resetMachineDisplay();
+    G.machineInput='';
+  });
+}
+
+function launchFightScene(){
   const pw=G.password.join('');
   const allGears=[...G.gears,...(G.carryoverGears||[])];
   const gearsParam=encodeURIComponent(allGears.map(g=>g.name).join(','));
   const lvl=encodeURIComponent(G.level||'P3');
-  G.carryoverGears=[];
   let src;
   if(_mpCode&&G.mpPlayers&&G.mpPlayers.length>=2){
     src='battle.html?invite='+_mpCode+'&pw='+pw+'&autostart=1&gears='+gearsParam+'&level='+lvl;
@@ -1247,6 +1296,7 @@ function _execFlipToBattle(){
   }
   $id('mp-iframe').src=src;
   doFlip(()=>{
+    $id('machine').classList.remove('visible');
     $id('cave-scene').style.display='none';
     $id('battle-scene').style.display='none';
     $id('mp-scene').style.display='block';
@@ -1257,17 +1307,15 @@ function onSoloBattleWin(leftoverGears){
   doFlip(()=>{
     $id('mp-scene').style.display='none';
     $id('mp-iframe').src='';
-    $id('battle-scene').style.display='flex';
-    $id('machine').classList.add('visible');
-    $id('battle-dragon').style.display='none';
-    $id('stickman').style.display='none';
-    $id('b-log').innerHTML='';
-    showPanel('battle');
+    $id('cave-scene').style.display='flex';
+    showPanel('q');
   },()=>{
-    G.phase='machine';
-    resetMachineDisplay();
-    G.machineInput='';
-    sfx('victory');
+    G.chapter++;
+    $id('chapter-title').textContent=`📖 Chapter ${G.chapter} of 12`;
+    saveGame();
+    showDialog(`🔓 Chapter ${G.chapter} Unlocked!`,`Great work! The dragon grows stronger…\nReady for Chapter ${G.chapter}?`,`Start Chapter ${G.chapter}!`,()=>{
+      startChapter();
+    });
   });
 }
 
@@ -1399,22 +1447,12 @@ function mClear(){G.machineInput='';resetMachineDisplay();$id('m-msg').textConte
 function mEnter(){
   if(G.machineInput.length<3){$id('m-msg').textContent='Need 3 digits!';return}
   if(G.machineInput===G.password.join('')){
-    sfx('victory'); $id('m-msg').textContent='✅ ACCEPTED! Chapter unlocked!';
+    sfx('victory'); $id('m-msg').textContent='✅ CODE ACCEPTED! Now face the dragon!';
     for(let i=0;i<3;i++)$id('ms-'+i).style.background='#003300';
     if(G.chapter===1){G.miniUnlocked=true;$id('mini-btn').disabled=false;$id('mini-btn').textContent='🎮 Play'}
     setTimeout(()=>{
       if(G.chapter>=12){clearSave();endGame();return}
-      G.chapter++;
-      $id('chapter-title').textContent=`📖 Chapter ${G.chapter} of 12`;
-      saveGame();
-      showDialog(`🔓 Chapter ${G.chapter} Unlocked!`,`Great work! The dragon grows stronger…\nReady for Chapter ${G.chapter}?`,`Start Chapter ${G.chapter}!`,()=>{
-        doFlip(()=>{
-          $id('battle-scene').style.display='none';
-          $id('machine').classList.remove('visible');
-          $id('cave-scene').style.display='flex';
-          showPanel('q');
-        },()=>startChapter());
-      });
+      launchFightScene();
     },1000);
   } else {
     sfx('wrong');
@@ -1437,7 +1475,18 @@ function toggleScroll(){
   $id('bookmark').classList.toggle('hidden', isOpen);
 }
 function toggleNarr(){G.narrator=!G.narrator;const b=$id('narr-btn');b.textContent=G.narrator?'ON':'OFF';b.classList.toggle('act',G.narrator);$id('narrator').style.display=G.narrator?'':'none'}
-function toggleFlip(){G.flipMode=G.flipMode==='manual'?'auto':'manual';$id('flip-btn').textContent=G.flipMode==='manual'?'Manual':'Auto'}
+function toggleFlip(){
+  G.flipMode=G.flipMode==='manual'?'auto':'manual';
+  $id('flip-btn').textContent=G.flipMode==='manual'?'Manual':'Auto';
+  updateFlipStrip();
+}
+function updateFlipStrip(){
+  const show=G.flipMode==='manual'&&G.phase==='questions'&&G.gears.length>=3;
+  $id('page-flip-strip').style.display=show?'block':'none';
+}
+function onFlipStripClick(){
+  if(G.phase==='questions'&&G.gears.length>=3)manualFlipToBattle();
+}
 function adminLogin(){
   const pw=prompt('🔐 Admin Password:');
   if(!pw)return;

@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 80">
+  <!-- Left shoulder guard -->
+  <path d="M4 18 C4 10 14 6 22 8 L34 14 L30 34 C22 32 8 30 4 24 Z"
+        fill="#94a3b8" stroke="#1e293b" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Right shoulder guard -->
+  <path d="M96 18 C96 10 86 6 78 8 L66 14 L70 34 C78 32 92 30 96 24 Z"
+        fill="#94a3b8" stroke="#1e293b" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Chest plate main -->
+  <path d="M30 12 C36 8 44 6 50 6 C56 6 64 8 70 12 L76 36 C76 56 63 74 50 76 C37 74 24 56 24 36 Z"
+        fill="#94a3b8" stroke="#1e293b" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Chest inner highlight -->
+  <path d="M36 18 C40 14 45 12 50 12 C55 12 60 14 64 18 L68 36 C68 52 60 66 50 68 C40 66 32 52 32 36 Z"
+        fill="#cbd5e1" stroke="#334155" stroke-width="1.5"/>
+  <!-- Centre ridge -->
+  <line x1="50" y1="14" x2="50" y2="70" stroke="#475569" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- Rivet row -->
+  <circle cx="40" cy="26" r="3" fill="#64748b" stroke="#1e293b" stroke-width="1.5"/>
+  <circle cx="60" cy="26" r="3" fill="#64748b" stroke="#1e293b" stroke-width="1.5"/>
+  <circle cx="38" cy="42" r="3" fill="#64748b" stroke="#1e293b" stroke-width="1.5"/>
+  <circle cx="62" cy="42" r="3" fill="#64748b" stroke="#1e293b" stroke-width="1.5"/>
+  <!-- Gorget (neck guard) -->
+  <path d="M38 10 L50 6 L62 10 L60 16 L50 13 L40 16 Z"
+        fill="#b0bec5" stroke="#1e293b" stroke-width="2"/>
+</svg>

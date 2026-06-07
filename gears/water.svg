@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 100">
+  <!-- Drop body -->
+  <path d="M40 6 C40 6 12 46 12 64 C12 81 25 94 40 94 C55 94 68 81 68 64 C68 46 40 6 40 6 Z"
+        fill="url(#waterGrad)" stroke="#1e3a8a" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Gradient -->
+  <defs>
+    <linearGradient id="waterGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#bfdbfe"/>
+      <stop offset="55%"  stop-color="#3b82f6"/>
+      <stop offset="100%" stop-color="#1e3a8a"/>
+    </linearGradient>
+  </defs>
+  <!-- Shine -->
+  <ellipse cx="32" cy="50" rx="6" ry="14" fill="rgba(255,255,255,0.35)" transform="rotate(-15,32,50)"/>
+  <!-- Ripple arcs -->
+  <path d="M26 88 Q40 82 54 88" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round"/>
+  <path d="M30 94 Q40 89 50 94" fill="none" stroke="rgba(255,255,255,0.4)" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

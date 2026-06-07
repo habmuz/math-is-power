@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 140">
+  <!-- Top bar -->
+  <rect x="12" y="4" width="76" height="10" rx="5" fill="#8B4513" stroke="#3d1a00" stroke-width="2"/>
+  <!-- Bottom bar -->
+  <rect x="12" y="126" width="76" height="10" rx="5" fill="#8B4513" stroke="#3d1a00" stroke-width="2"/>
+  <!-- Left post -->
+  <rect x="16" y="14" width="9" height="112" rx="4" fill="#A0522D" stroke="#3d1a00" stroke-width="1.5"/>
+  <!-- Right post -->
+  <rect x="75" y="14" width="9" height="112" rx="4" fill="#A0522D" stroke="#3d1a00" stroke-width="1.5"/>
+  <!-- Glass body top half -->
+  <path d="M25 14 L75 14 L52 70 L48 70 Z" fill="rgba(200,235,255,0.55)" stroke="#3d1a00" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Sand top half -->
+  <path d="M25 14 L75 14 L58 52 L42 52 Z" fill="#F4A460"/>
+  <!-- Glass body bottom half -->
+  <path d="M48 70 L52 70 L75 126 L25 126 Z" fill="rgba(200,235,255,0.55)" stroke="#3d1a00" stroke-width="2" stroke-linejoin="round"/>
+  <!-- Sand pile bottom -->
+  <ellipse cx="50" cy="120" rx="20" ry="6" fill="#F4A460"/>
+  <!-- Sand trickle -->
+  <line x1="50" y1="70" x2="50" y2="85" stroke="#F4A460" stroke-width="3" stroke-linecap="round"/>
+  <!-- Glass shine -->
+  <line x1="32" y1="22" x2="28" y2="55" stroke="rgba(255,255,255,0.35)" stroke-width="2" stroke-linecap="round"/>
+</svg>

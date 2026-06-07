@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 90">
+  <!-- Helmet dome -->
+  <path d="M50 4 C26 4 10 22 10 46 L10 62 C10 66 14 68 18 66 L18 52 C18 30 32 16 50 16 C68 16 82 30 82 52 L82 66 C86 68 90 66 90 62 L90 46 C90 22 74 4 50 4 Z"
+        fill="#94a3b8" stroke="#1e293b" stroke-width="3" stroke-linejoin="round"/>
+  <!-- Cheek guards -->
+  <path d="M10 56 L10 72 C10 78 16 82 22 80 L30 76 L30 52 Z"
+        fill="#94a3b8" stroke="#1e293b" stroke-width="2.5"/>
+  <path d="M90 56 L90 72 C90 78 84 82 78 80 L70 76 L70 52 Z"
+        fill="#94a3b8" stroke="#1e293b" stroke-width="2.5"/>
+  <!-- Visor slit -->
+  <rect x="22" y="46" width="56" height="10" rx="5" fill="#1e293b" stroke="#0f172a" stroke-width="1.5"/>
+  <!-- Visor bars -->
+  <line x1="30" y1="46" x2="30" y2="56" stroke="#0f172a" stroke-width="1.5"/>
+  <line x1="40" y1="46" x2="40" y2="56" stroke="#0f172a" stroke-width="1.5"/>
+  <line x1="50" y1="46" x2="50" y2="56" stroke="#0f172a" stroke-width="1.5"/>
+  <line x1="60" y1="46" x2="60" y2="56" stroke="#0f172a" stroke-width="1.5"/>
+  <line x1="70" y1="46" x2="70" y2="56" stroke="#0f172a" stroke-width="1.5"/>
+  <!-- Crest ridge -->
+  <path d="M50 4 L50 44" stroke="#cbd5e1" stroke-width="4" stroke-linecap="round" opacity="0.6"/>
+  <!-- Highlight -->
+  <path d="M22 18 C28 10 38 7 46 8" fill="none" stroke="rgba(255,255,255,0.35)" stroke-width="3" stroke-linecap="round"/>
+</svg>

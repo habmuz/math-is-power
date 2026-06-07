@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 120">
+  <!-- Light rays -->
+  <line x1="50" y1="36" x2="50" y2="8"  stroke="#FFD700" stroke-width="3" stroke-linecap="round" opacity="0.85"/>
+  <line x1="50" y1="36" x2="73" y2="16" stroke="#FFD700" stroke-width="3" stroke-linecap="round" opacity="0.75"/>
+  <line x1="50" y1="36" x2="27" y2="16" stroke="#FFD700" stroke-width="3" stroke-linecap="round" opacity="0.75"/>
+  <line x1="50" y1="36" x2="88" y2="38" stroke="#FFD700" stroke-width="3" stroke-linecap="round" opacity="0.65"/>
+  <line x1="50" y1="36" x2="12" y2="38" stroke="#FFD700" stroke-width="3" stroke-linecap="round" opacity="0.65"/>
+  <!-- Glow halo -->
+  <circle cx="50" cy="60" r="32" fill="rgba(255,220,80,0.15)"/>
+  <!-- Lantern body -->
+  <ellipse cx="50" cy="62" rx="28" ry="32" fill="#F59E0B" stroke="#92400E" stroke-width="3"/>
+  <!-- Inner glow -->
+  <ellipse cx="50" cy="58" rx="16" ry="19" fill="#FDE68A" opacity="0.85"/>
+  <!-- Flame shape inside -->
+  <ellipse cx="50" cy="52" rx="7" ry="11" fill="#FBBF24"/>
+  <ellipse cx="50" cy="48" rx="4" ry="7"  fill="#FEF3C7"/>
+  <!-- Bottom handle -->
+  <rect x="44" y="92" width="12" height="16" rx="6" fill="#D97706" stroke="#92400E" stroke-width="2"/>
+  <rect x="35" y="106" width="30" height="8"  rx="4" fill="#92400E" stroke="#3d1a00" stroke-width="1.5"/>
+  <!-- Lantern frame lines -->
+  <line x1="22" y1="44" x2="22" y2="82" stroke="#92400E" stroke-width="2" stroke-linecap="round"/>
+  <line x1="78" y1="44" x2="78" y2="82" stroke="#92400E" stroke-width="2" stroke-linecap="round"/>
+  <line x1="22" y1="62" x2="78" y2="62" stroke="#92400E" stroke-width="1.5" stroke-linecap="round"/>
+</svg>
