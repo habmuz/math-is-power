@@ -1027,15 +1027,17 @@ function openQ(type){
     document.getElementById('num-area').classList.remove('hidden');
     document.getElementById('ans-inp').value='';
   }
-  // Specialist locking
-  const specialist=G.players.find(p=>p.isAlive&&
+  // Specialist locking (solo: anyone can answer)
+  const specialist=_soloMode?G.players[0]:G.players.find(p=>p.isAlive&&
     (type==='math'?p.character.role==='math_master':p.character.role==='pattern_master'));
-  const canAnswer=!!specialist;
+  const canAnswer=_soloMode||!!specialist;
   document.getElementById('ans-inp').disabled=!canAnswer;
   document.getElementById('sub-btn').disabled=!canAnswer;
   document.querySelectorAll('.yn-btn').forEach(b=>b.disabled=!canAnswer);
   const banner=document.getElementById('q-pass-banner');
-  if(canAnswer){
+  if(_soloMode){
+    banner.style.display='none';
+  }else if(canAnswer){
     banner.textContent='Pass device to '+specialist.playerName+' ('+specialist.character.name+')!';
     banner.style.display='block';
   }else{
