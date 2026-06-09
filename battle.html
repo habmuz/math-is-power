@@ -137,9 +137,22 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .hero-status{display:flex;gap:.3rem;flex-wrap:wrap;justify-content:center;margin-top:.2rem}
 .dragon-side{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.25rem;
   position:relative}
-.dragon-emoji{font-size:5.5rem;
-  filter:drop-shadow(0 0 18px #ff4444) drop-shadow(0 0 38px #ff0000) drop-shadow(0 0 6px #ffaa00);
-  animation:dfloat 3s ease-in-out infinite;user-select:none}
+/* SVG dragon */
+#d-sprite{overflow:visible;animation:dfloat 3s ease-in-out infinite;
+  filter:drop-shadow(0 0 12px #ff4444) drop-shadow(0 0 28px #ff0000);user-select:none}
+#d-breath{opacity:0;transform-box:fill-box;transform-origin:right center}
+@keyframes dragonLunge{
+  0%  {transform:translateX(0) rotate(0deg)}
+  28% {transform:translateX(-22px) rotate(-6deg)}
+  55% {transform:translateX(-14px) rotate(-3deg)}
+  100%{transform:translateX(0) rotate(0deg)}
+}
+@keyframes breathePulse{
+  0%,100%{opacity:0;transform:scaleX(.4)}
+  25%,70%{opacity:1;transform:scaleX(1)}
+}
+.dragon-attacking{animation:dragonLunge .85s ease forwards!important}
+.dragon-attacking #d-breath{animation:breathePulse .85s ease forwards}
 .dragon-flames{display:flex;gap:2px;font-size:1.4rem}
 .dflame{animation:dflicker .55s ease-in-out infinite alternate}
 .dflame:nth-child(2){animation-delay:.18s}.dflame:nth-child(3){animation-delay:.36s}.dflame:nth-child(4){animation-delay:.52s}
@@ -526,7 +539,74 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
       <!-- Dragon side -->
       <div class="dragon-side">
-        <div class="dragon-emoji" id="d-sprite">🐉</div>
+        <svg id="d-sprite" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 160" width="170" height="136">
+          <defs>
+            <linearGradient id="dg1" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#991b1b"/><stop offset="100%" stop-color="#450a0a"/>
+            </linearGradient>
+            <linearGradient id="dg2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#fca5a5"/><stop offset="100%" stop-color="#dc2626"/>
+            </linearGradient>
+            <linearGradient id="dg3" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#b91c1c" stop-opacity="0.9"/><stop offset="100%" stop-color="#3d0000" stop-opacity="0.6"/>
+            </linearGradient>
+          </defs>
+          <!-- Tail -->
+          <path d="M168 102 Q194 92 195 68 Q195 50 178 50 Q166 50 170 65 Q174 80 156 90 Z"
+                fill="url(#dg1)" stroke="#3d0000" stroke-width="2.5" stroke-linejoin="round"/>
+          <!-- Back wing -->
+          <path d="M122 82 Q152 20 176 8 Q160 40 156 60 Q138 54 122 82 Z"
+                fill="url(#dg3)" stroke="#3d0000" stroke-width="2" stroke-linejoin="round"/>
+          <line x1="152" y1="24" x2="138" y2="63" stroke="#3d0000" stroke-width="1" opacity="0.55"/>
+          <line x1="166" y1="18" x2="150" y2="61" stroke="#3d0000" stroke-width="1" opacity="0.55"/>
+          <!-- Front wing -->
+          <path d="M112 80 Q136 18 157 6 Q142 38 140 58 Q124 53 112 80 Z"
+                fill="url(#dg3)" stroke="#3d0000" stroke-width="2" stroke-linejoin="round"/>
+          <line x1="138" y1="22" x2="126" y2="60" stroke="#3d0000" stroke-width="1" opacity="0.45"/>
+          <!-- Body -->
+          <ellipse cx="126" cy="108" rx="50" ry="30" fill="url(#dg1)" stroke="#3d0000" stroke-width="2.5"/>
+          <!-- Belly -->
+          <ellipse cx="116" cy="113" rx="26" ry="15" fill="url(#dg2)" opacity="0.5"/>
+          <!-- Back ridges -->
+          <path d="M90 88 Q98 82 106 88 M106 86 Q114 80 122 86 M122 84 Q130 78 138 84"
+                fill="none" stroke="#3d0000" stroke-width="1.8" stroke-linecap="round"/>
+          <!-- Neck -->
+          <path d="M80 94 Q74 74 64 66 Q76 60 88 76 Q94 86 90 96 Z"
+                fill="url(#dg1)" stroke="#3d0000" stroke-width="2" stroke-linejoin="round"/>
+          <!-- Head (facing LEFT) -->
+          <path d="M26 74 Q24 52 40 45 Q56 38 73 52 Q83 62 79 81 Q75 97 58 99 Q38 101 26 87 Z"
+                fill="url(#dg1)" stroke="#3d0000" stroke-width="2.5" stroke-linejoin="round"/>
+          <!-- Upper snout -->
+          <path d="M30 76 Q14 73 8 78 Q12 84 30 83 Z"
+                fill="url(#dg1)" stroke="#3d0000" stroke-width="2" stroke-linejoin="round"/>
+          <!-- Lower jaw -->
+          <path d="M30 86 Q14 83 10 89 Q14 95 30 93 Z"
+                fill="url(#dg1)" stroke="#3d0000" stroke-width="2" stroke-linejoin="round"/>
+          <!-- Horns -->
+          <path d="M46 45 Q38 26 34 14 Q46 28 50 43 Z" fill="#7f1d1d" stroke="#3d0000" stroke-width="2"/>
+          <path d="M60 41 Q58 22 55 11 Q65 25 65 40 Z" fill="#7f1d1d" stroke="#3d0000" stroke-width="2"/>
+          <!-- Eye -->
+          <circle cx="53" cy="64" r="7.5" fill="#fef08a" stroke="#3d0000" stroke-width="2"/>
+          <circle cx="51" cy="64" r="4" fill="#0f0f0f"/>
+          <circle cx="49.5" cy="62.5" r="1.3" fill="#fff" opacity="0.9"/>
+          <!-- Teeth -->
+          <path d="M16 83 L18 88 L21 83 M21 83 L24 88 L27 83" fill="#fef9c3" stroke="#3d0000" stroke-width="1.2" stroke-linejoin="round"/>
+          <!-- Legs -->
+          <path d="M100 134 L95 150 M103 138 L103 150 L97 156 M103 150 L109 156 M109 150 L113 156"
+                fill="none" stroke="#3d0000" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M148 135 L144 150 L150 156 M150 150 L156 156 M156 150 L160 156"
+                fill="none" stroke="#3d0000" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/>
+          <!-- Fire breath (extends LEFT from snout, animated) -->
+          <g id="d-breath">
+            <path d="M10 80 Q-12 72 -42 68 Q-28 57 -44 47 Q-20 51 -14 40 Q-8 57 0 50 Q4 66 10 80 Z"
+                  fill="#dc2626"/>
+            <path d="M10 82 Q-10 86 -36 92 Q-20 82 -40 93 Q-14 96 -4 102 Q4 91 10 82 Z"
+                  fill="#ef4444"/>
+            <path d="M10 80 Q-4 74 -20 70 Q-8 68 -12 57 Q-2 65 2 55 Q6 68 10 80 Z"
+                  fill="#fca5a5" opacity="0.9"/>
+            <ellipse cx="-4" cy="77" rx="10" ry="6" fill="#fef08a" opacity="0.72"/>
+          </g>
+        </svg>
         <div class="dragon-flames">🔥🔥🔥🔥</div>
         <div class="dragon-name">☠ DRALIOSTER</div>
         <div class="dragon-sub" id="d-sub">The Dralioster watches with ancient, hungry eyes…</div>
@@ -1056,6 +1136,9 @@ function dragonTurn(){
   if(!alive.length){loseGame();return;}
 
   const special=G.round%3===0;
+  // Dragon lunge + breath animation
+  const dSpr=document.getElementById('d-sprite');
+  if(dSpr){dSpr.classList.remove('dragon-attacking');void dSpr.offsetWidth;dSpr.classList.add('dragon-attacking');setTimeout(()=>dSpr.classList.remove('dragon-attacking'),920);}
   // screen shake when dragon attacks
   const arena=document.querySelector('.battle-arena');
   if(arena){arena.classList.remove('arena-shake');void arena.offsetWidth;arena.classList.add('arena-shake');setTimeout(()=>arena.classList.remove('arena-shake'),500);}
@@ -1290,9 +1373,9 @@ function addQTime(secs){
 
 // ── GEAR SYSTEM ───────────────────────────────────────────────────
 const GEAR_DATA={
-  Sword:    {img:'gears/sword.jpg',       type:3,effect:'40 damage to dragon'},
-  Fire:     {img:'gears/fire.svg',        type:3,effect:'Red flames from hands — 30 damage'},
-  Water:    {img:'gears/water.svg',       type:3,effect:'Water gush — heal weakest ally 30 HP'},
+  Sword:    {img:'gears/sword.jpg',       type:3,effect:'100 damage to dragon'},
+  Fire:     {img:'gears/fire.svg',        type:3,effect:'Red flames — 100 damage to dragon'},
+  Water:    {img:'gears/water.svg',       type:3,effect:'Water blast — 100 damage to dragon'},
   Shield:   {img:'gears/shield-wear.svg',  type:2,effect:'All heroes shielded + overlay for 60s'},
   Armor:    {img:'gears/armor-wear.svg',  type:2,effect:'+15 HP + armour overlay for 60s'},
   Helmet:   {img:'gears/helmet-wear.svg', type:2,effect:'+10 HP + helmet overlay for 60s'},
@@ -1352,16 +1435,16 @@ function useGear(name){
   let isFreeAction=false;
   if(name==='Sword'){
     log('⚔️ SWORD!','log-pwr');
-    playGearFx('sword',()=>{G.dragon.hp=Math.max(0,G.dragon.hp-40);showDmg(40,document.querySelector('.dragon-side'),'red');shakeDragon();refreshDragon();if(G.dragon.hp<=0)setTimeout(winGame,300);});
+    playGearFx('sword',()=>{G.dragon.hp=Math.max(0,G.dragon.hp-100);showDmg(100,document.querySelector('.dragon-side'),'red');shakeDragon();refreshDragon();if(G.dragon.hp<=0)setTimeout(winGame,300);});
     renderGearTray();renderRoster();refreshActive();updateHourglassBtn();return;
   }else if(name==='Fire'){
     log('🔥 FIRE!','log-pwr');
-    playGearFx('fire',()=>{G.dragon.hp=Math.max(0,G.dragon.hp-30);showDmg(30,document.querySelector('.dragon-side'),'red');shakeDragon();refreshDragon();if(G.dragon.hp<=0)setTimeout(winGame,300);});
+    playGearFx('fire',()=>{G.dragon.hp=Math.max(0,G.dragon.hp-100);showDmg(100,document.querySelector('.dragon-side'),'red');shakeDragon();refreshDragon();if(G.dragon.hp<=0)setTimeout(winGame,300);});
     renderGearTray();renderRoster();refreshActive();updateHourglassBtn();return;
   }else if(name==='Water'){
-    const t=lowestAlive();
-    if(t){t.hp=Math.min(t.maxHp,t.hp+30);log('💧 WATER! '+t.character.name+' healed 30 HP!','log-ok');}
-    playGearFx('water');
+    log('💧 WATER!','log-pwr');
+    playGearFx('water',()=>{G.dragon.hp=Math.max(0,G.dragon.hp-100);showDmg(100,document.querySelector('.dragon-side'),'red');shakeDragon();refreshDragon();if(G.dragon.hp<=0)setTimeout(winGame,300);});
+    renderGearTray();renderRoster();refreshActive();updateHourglassBtn();return;
   }else if(name==='Shield'){
     G.players.forEach(p2=>{if(p2.isAlive)p2.shielded=true;});
     log('SHIELD! All heroes protected for 60 seconds!','log-pwr');
