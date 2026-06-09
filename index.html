@@ -1267,7 +1267,7 @@ function manualFlipToBattle(){
 function _execFlipToMachine(){
   doFlip(()=>{
     $id('cave-scene').style.display='none';
-    $id('battle-scene').style.display='none';
+    $id('battle-scene').style.display='flex'; // must stay visible — machine is a child of it
     $id('mp-scene').style.display='none';
     $id('machine').classList.add('visible');
     showPanel('battle');
