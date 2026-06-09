@@ -205,26 +205,26 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   40% {transform:scaleX(1) scaleY(1.2);opacity:.9}
   100%{transform:scaleX(.85) scaleY(1);opacity:0}
 }
-/* Fire — red gradient flames from hands */
-.fx-fire{position:absolute;top:18%;right:-98px;width:118px;height:58px;
+/* Fire — red gradient flames from hands (position:fixed set by JS) */
+.fx-fire{width:118px;height:58px;
   background:linear-gradient(to right,#fca5a5,#ef4444,#7f1d1d,transparent);
   border-radius:0 60% 60% 0;filter:blur(4px);
-  animation:shootRight 1.2s ease-out forwards;pointer-events:none;z-index:10}
+  animation:shootRight 1.2s ease-out forwards;pointer-events:none}
 /* Water gush */
-.fx-water{position:absolute;top:26%;right:-118px;width:138px;height:36px;
+.fx-water{width:138px;height:36px;
   background:linear-gradient(to right,#bfdbfe,#3b82f6,#1e3a8a,transparent);
   border-radius:0 99px 99px 0;filter:blur(3px);
-  animation:shootRight 1.2s ease-out forwards;pointer-events:none;z-index:10}
+  animation:shootRight 1.2s ease-out forwards;pointer-events:none}
 /* Power attack — purple flame that flows like water */
-.fx-power{position:absolute;top:8%;right:-138px;width:168px;height:70px;
+.fx-power{width:168px;height:70px;
   background:linear-gradient(to right,#f0abfc,#a855f7,#581c87,transparent);
   border-radius:0 50% 60% 0;filter:blur(5px);
-  animation:shootRight 1.5s ease-out forwards;pointer-events:none;z-index:10}
+  animation:shootRight 1.5s ease-out forwards;pointer-events:none}
 /* Sword flash */
-.fx-sword{position:absolute;top:30%;right:-80px;width:90px;height:20px;
+.fx-sword{width:90px;height:20px;
   background:linear-gradient(to right,rgba(255,255,255,.9),rgba(255,255,200,.6),transparent);
   border-radius:0 99px 99px 0;filter:blur(2px);
-  animation:shootRight .5s ease-out forwards;pointer-events:none;z-index:10}
+  animation:shootRight .5s ease-out forwards;pointer-events:none}
 /* Immunity — persistent translucent purple bubble on roster cards */
 .roster.immunity-active .rcard{position:relative}
 .roster.immunity-active .rcard::after{
@@ -910,9 +910,8 @@ function doAction(a){
     const dmg=r(18,38);
     G.dragon.hp=Math.max(0,G.dragon.hp-dmg);
     log(ch.name+' attacks! '+dmg+' damage to Dralioster.','log-imp');
-    const el=document.createElement('div');el.className='fx-sword';
     const hero=document.getElementById('rc'+G.curIdx);
-    if(hero){hero.style.position='relative';hero.style.overflow='visible';hero.appendChild(el);setTimeout(()=>el.remove(),1200);}
+    if(hero){const r=hero.getBoundingClientRect();const el=document.createElement('div');el.className='fx-sword';el.style.cssText='position:fixed;left:'+r.right+'px;top:'+(r.top+r.height*.3)+'px;pointer-events:none;z-index:9999';document.body.appendChild(el);setTimeout(()=>el.remove(),600);}
     shakeDragon();refreshDragon();endTurn();
   }else if(a==='shield'){
     G.players.forEach(p2=>{if(p2.isAlive)p2.shielded=true;});
@@ -1322,12 +1321,13 @@ function useGear(name){
 }
 
 function playGearFx(type){
-  const hero=document.getElementById('rc'+G.curIdx)||document.querySelector('.active-card');
+  const hero=document.getElementById('rc'+G.curIdx)||document.querySelector('.rcard.cur');
   if(!hero)return;
+  const r=hero.getBoundingClientRect();
   const el=document.createElement('div');el.className='fx-'+type;
-  hero.style.position='relative';hero.style.overflow='visible';
-  hero.appendChild(el);
-  const dur=type==='sword'?1200:type==='power'?1500:1200;
+  el.style.cssText='position:fixed;left:'+r.right+'px;top:'+(r.top+r.height*.18)+'px;pointer-events:none;z-index:9999';
+  document.body.appendChild(el);
+  const dur=type==='sword'?600:type==='power'?1500:1200;
   setTimeout(()=>el.remove(),dur);
 }
 
@@ -1349,9 +1349,10 @@ function applyWearOverlay(gearName,durationMs){
 function triggerPowerAttack(){
   const hero=document.getElementById('rc'+G.curIdx)||document.querySelector('.rcard.cur');
   if(hero){
+    const rct=hero.getBoundingClientRect();
     const el=document.createElement('div');el.className='fx-power';
-    hero.style.position='relative';hero.style.overflow='visible';
-    hero.appendChild(el);setTimeout(()=>el.remove(),1500);
+    el.style.cssText='position:fixed;left:'+rct.right+'px;top:'+(rct.top+rct.height*.08)+'px;pointer-events:none;z-index:9999';
+    document.body.appendChild(el);setTimeout(()=>el.remove(),1500);
   }
   const dmg=r(80,145);
   G.dragon.hp=Math.max(0,G.dragon.hp-dmg);
