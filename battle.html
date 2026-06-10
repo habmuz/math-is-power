@@ -328,7 +328,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .roster{display:flex;flex-direction:row;gap:.45rem;overflow-x:auto;padding:.1rem 0}
 .rcard{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:.7rem;
   padding:.45rem .55rem;transition:border-color .2s;flex-shrink:0;min-width:90px}
-.rcard.cur{border-color:var(--gold);background:rgba(255,215,0,.04)}
+.rcard.cur{border-color:var(--gold);background:rgba(255,215,0,.04);order:-1}
+/* ── DRAGON FORMATION ── */
+.rcard.formation-front{order:-3;border-color:#ef4444!important;box-shadow:0 0 18px rgba(239,68,68,.55)!important;transform:scale(1.08);transition:all .35s}
+.rcard.formation-mid{order:-2;border-color:#3b82f6!important;transition:all .35s}
+.rcard.formation-back{order:0;opacity:.42;filter:brightness(.55);transition:all .35s}
 .rcard.ko{opacity:.4}
 .rname-row{display:flex;align-items:center;gap:.35rem;margin-bottom:.3rem}
 .rimg{width:2.2rem;height:2.2rem;border-radius:.35rem;object-fit:cover;flex-shrink:0;border:1px solid rgba(255,255,255,.15)}
@@ -417,6 +421,40 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;margin-top:.5rem}
 .again-btn:hover{transform:translateY(-2px);box-shadow:0 6px 18px rgba(124,58,237,.5)}
 
+/* ── TURN TRANSITION OVERLAY ── */
+#turn-transition{position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:5000;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;text-align:center}
+#turn-transition.hidden{display:none!important}
+@keyframes ttDrift{
+  0%{opacity:0;transform:translateY(70px) scale(.88)}
+  18%,72%{opacity:1;transform:translateY(0) scale(1)}
+  100%{opacity:0;transform:translateY(-35px) scale(.95)}
+}
+#tt-inner{animation:ttDrift 2.8s cubic-bezier(.34,1.3,.64,1) forwards;text-align:center}
+.tt-portrait{width:120px;height:120px;border-radius:50%;object-fit:cover;
+  border:3px solid var(--gold);box-shadow:0 0 30px rgba(255,215,0,.6),0 0 60px rgba(255,107,53,.3);
+  margin-bottom:.85rem;display:block;margin-left:auto;margin-right:auto}
+.tt-name{font-size:2.4rem;font-weight:900;color:var(--gold);
+  text-shadow:0 0 30px rgba(255,215,0,.7);letter-spacing:3px;margin-bottom:.3rem}
+.tt-char{font-size:1rem;color:var(--text);opacity:.8}
+.tt-pass{display:inline-block;margin-top:.8rem;font-size:.78rem;color:#94a3b8;
+  border:1px solid rgba(255,215,0,.3);border-radius:2rem;padding:.3rem 1.2rem}
+/* ── WIN DRAGON SKULL ── */
+@keyframes dragonSkullFloat{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-14px) rotate(4deg)}}
+@keyframes skullGlow{0%,100%{text-shadow:0 0 20px #ffd700,0 0 40px #ff6b35,0 0 80px rgba(255,215,0,.3)}
+  50%{text-shadow:0 0 50px #ffd700,0 0 100px #ff6b35,0 0 150px rgba(255,215,0,.5)}}
+.dragon-skull-wrap{font-size:7rem;line-height:1;margin-bottom:.85rem;display:block;
+  animation:dragonSkullFloat 3s ease-in-out infinite,skullGlow 2s ease-in-out infinite}
+/* ── DEFEAT SKULL ── */
+@keyframes defeatPulse{0%,100%{text-shadow:0 0 20px #ef4444,0 0 40px #991b1b}
+  50%{text-shadow:0 0 50px #ef4444,0 0 100px #dc2626,0 0 20px rgba(255,255,255,.3)}}
+@keyframes defeatFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.defeat-skull-wrap{font-size:7rem;line-height:1;margin-bottom:.6rem;display:block;
+  animation:defeatFloat 2s ease-in-out infinite,defeatPulse 1.5s ease-in-out infinite}
+.defeat-caption{font-size:1.6rem;font-weight:900;color:#ef4444;letter-spacing:2px;
+  text-shadow:0 0 20px rgba(239,68,68,.5);margin-bottom:.3rem}
+.defeat-retry{font-size:.95rem;color:var(--muted);margin-bottom:1.25rem}
 ::-webkit-scrollbar{width:4px}
 ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.15);border-radius:2px}
 @media(max-width:480px){
@@ -659,6 +697,16 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
   </div>
 </div>
 
+<!-- TURN TRANSITION -->
+<div id="turn-transition" class="hidden">
+  <div id="tt-inner">
+    <img id="tt-portrait" class="tt-portrait" src="" alt="" onerror="this.style.display='none'">
+    <div id="tt-name" class="tt-name"></div>
+    <div id="tt-char" class="tt-char"></div>
+    <div class="tt-pass">📱 Pass the device!</div>
+  </div>
+</div>
+
 <!-- QUESTION MODAL -->
 <div class="modal-overlay hidden" id="q-modal">
   <div class="modal-card">
@@ -684,18 +732,16 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 <!-- TIMEOUT SCREEN -->
 <div id="timeout-screen" class="screen">
-  <div id="timeout-dragon-wrap">
-    <div id="timeout-dragon-sprite">🐉</div>
-  </div>
-  <div class="res-title" style="color:#ef4444;margin-top:1rem">Time is up!</div>
-  <div class="res-sub" style="color:#94a3b8;margin:.5rem 0 1.5rem">Dralioster delivers a final crushing blow…<br>You have lost.</div>
+  <div class="defeat-skull-wrap">☠️</div>
+  <div class="defeat-caption">You have lost.</div>
+  <div class="defeat-retry">Time ran out — try again!</div>
   <button class="again-btn" onclick="location.reload()">Try Again</button>
   <a class="book-link" href="index.html" style="margin-top:.75rem;display:inline-block" onclick="if(window.parent!==window){event.preventDefault();window.parent.closeMpScene&&window.parent.closeMpScene();}">Return to Book</a>
 </div>
 
 <!-- VICTORY -->
 <div id="victory-screen" class="screen">
-  <div class="res-emoji">🏆</div>
+  <div class="dragon-skull-wrap">🐉💀</div>
   <div class="res-title res-v">Victory!</div>
   <div class="res-sub" id="v-sub">The Dralioster has been defeated!</div>
   <div class="book-page">
@@ -711,9 +757,9 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 <!-- DEFEAT -->
 <div id="defeat-screen" class="screen">
-  <div class="res-emoji">💀</div>
-  <div class="res-title res-d">Defeated…</div>
-  <div class="res-sub">The Dralioster claims victory. Train harder and try again!</div>
+  <div class="defeat-skull-wrap">☠️</div>
+  <div class="defeat-caption">You have lost.</div>
+  <div class="defeat-retry">Try again!</div>
   <button class="again-btn" onclick="location.reload()">⚔️ Try Again</button>
   <a class="book-link" href="index.html" style="margin-top:.75rem;display:inline-block" onclick="if(window.parent!==window){event.preventDefault();window.parent.closeMpScene();}">📖 Return to Book</a>
 </div>
@@ -952,13 +998,17 @@ function startBattle(players){
   renderRoster();
   refreshActive();
   refreshDragon();
-  renderActions();
   renderGearTray();
   updateHourglassBtn();
   startBattleTimer();
   log('The battle begins! Heroes vs Dralioster!','log-imp');
   log('3 correct answers in a row = POWER ATTACK + 1 min!','');
   if(_gearsParam.length)log('Gears equipped: '+_gearsParam.join(', '),'log-pwr');
+  if(!_soloMode&&G.players.length>1){
+    showTurnTransition(G.players[0],()=>{if(!G.done)renderActions();});
+  }else{
+    renderActions();
+  }
 }
 
 // ── SCREENS ───────────────────────────────────────────────────────
@@ -1128,9 +1178,40 @@ function endTurn(){
     G.acted=new Set();
     setTimeout(dragonTurn,400);
   }else{
+    const prevIdx=G.curIdx;
     G.curIdx=found;
-    refreshActive();renderRoster();renderActions();
+    refreshActive();renderRoster();
+    if(!_soloMode&&G.players.length>1&&found!==prevIdx){
+      showTurnTransition(G.players[found],()=>{if(!G.done)renderActions();});
+    }else{
+      renderActions();
+    }
   }
+}
+
+function showTurnTransition(player,onDone){
+  const ov=document.getElementById('turn-transition');
+  if(!ov){if(onDone)onDone();return;}
+  document.getElementById('tt-portrait').src=player.character.img;
+  document.getElementById('tt-name').textContent=player.playerName+"'s Turn!";
+  document.getElementById('tt-char').textContent=player.character.name+' · '+player.character.desc;
+  const inner=document.getElementById('tt-inner');
+  inner.style.animation='none';void inner.offsetWidth;
+  inner.style.animation='ttDrift 2.8s cubic-bezier(.34,1.3,.64,1) forwards';
+  ov.classList.remove('hidden');
+  setTimeout(()=>{ov.classList.add('hidden');if(onDone)onDone();},2800);
+}
+
+function showDragonFormation(){
+  G.players.forEach((p,i)=>{
+    const card=document.getElementById('rc'+i);if(!card)return;
+    card.classList.remove('formation-front','formation-mid','formation-back');
+    if(!p.isAlive)return;
+    const role=p.character.role;
+    if(role==='fighter')card.classList.add('formation-front');
+    else if(role==='defender')card.classList.add('formation-mid');
+    else card.classList.add('formation-back');
+  });
 }
 
 function dragonTurn(){
@@ -1147,6 +1228,7 @@ function dragonTurn(){
   const alive=G.players.filter(p=>p.isAlive);
   if(!alive.length){loseGame();return;}
 
+  showDragonFormation();
   const special=G.round%3===0;
   // Dragon lunge + breath animation
   const dSpr=document.getElementById('d-sprite');
@@ -1181,7 +1263,12 @@ function dragonTurn(){
   let first=G.players.findIndex(p=>p.isAlive);
   if(first===-1){loseGame();return;}
   G.curIdx=first;
-  refreshActive();renderRoster();renderActions();
+  refreshActive();renderRoster();
+  if(!_soloMode&&G.players.length>1){
+    showTurnTransition(G.players[first],()=>{if(!G.done)renderActions();});
+  }else{
+    renderActions();
+  }
 }
 
 // ── QUESTIONS ─────────────────────────────────────────────────────
@@ -1628,7 +1715,7 @@ function beginBattleWithGears(){
 function updateCaveLight(reset){
   const bs=document.getElementById('battle-screen');if(!bs)return;
   if(reset){bs.style.filter='';return;}
-  bs.style.filter=(G.lampUntil&&Date.now()<G.lampUntil)?'brightness(1.5)':'brightness(0.78)';
+  bs.style.filter=(G.lampUntil&&Date.now()<G.lampUntil)?'brightness(1.35)':'brightness(0.42)';
 }
 
 // ── WIN / LOSE ────────────────────────────────────────────────────
