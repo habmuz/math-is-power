@@ -1503,26 +1503,35 @@ function renderGearTray(){
   tray.innerHTML='';
   const curRole=G.players[G.curIdx]?G.players[G.curIdx].character.role:null;
   const myType=ROLE_GEAR_TYPE[curRole];
-  ALL_GEAR_NAMES.forEach(name=>{
-    const data=GEAR_DATA[name];if(!data)return;
-    const isPassive=false;
+  // Only show gears that were actually earned AND match this player's role type
+  const earnedNames=[...new Set(G.gearItems.map(g=>g.name))];
+  const visibleNames=earnedNames.filter(name=>{
+    const data=GEAR_DATA[name];if(!data)return false;
+    return myType===data.type;
+  });
+  if(!visibleNames.length){
+    tray.style.display='none';return;
+  }
+  tray.style.display='';
+  visibleNames.forEach(name=>{
+    const data=GEAR_DATA[name];
     const count=G.gearItems.filter(g=>g.name===name).length;
-    const inInventory=count>0;
-    const canUse=myType===data.type&&inInventory&&!isPassive;
     const card=document.createElement('div');
-    card.className='gear-card'+(canUse?' usable':inInventory&&!isPassive?' disabled':' locked');
+    card.className='gear-card usable';
+    card.style.position='relative';
     const im=document.createElement('img');
     im.src=data.img;im.alt=name;im.className='gear-img';
     im.onerror=()=>{im.style.display='none'};
     card.appendChild(im);
     if(count>1){
-      const badge=document.createElement('div');badge.className='gear-count';
-      badge.textContent=count;badge.style.cssText='position:absolute;top:-5px;right:-5px;background:var(--gold);color:#000;font-size:.58rem;font-weight:900;border-radius:50%;width:15px;height:15px;display:flex;align-items:center;justify-content:center';
+      const badge=document.createElement('div');
+      badge.textContent=count;
+      badge.style.cssText='position:absolute;top:-5px;right:-5px;background:var(--gold);color:#000;font-size:.58rem;font-weight:900;border-radius:50%;width:15px;height:15px;display:flex;align-items:center;justify-content:center';
       card.appendChild(badge);
     }
     const nm=document.createElement('div');nm.className='gear-nm';nm.textContent=name;
     card.appendChild(nm);
-    if(canUse)card.onclick=()=>useGear(name);
+    card.onclick=()=>useGear(name);
     tray.appendChild(card);
   });
 }
