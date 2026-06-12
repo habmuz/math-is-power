@@ -1292,7 +1292,7 @@ function launchFightScene(){
           +'&p'+(i+1)+'c='+encodeURIComponent(p.charName);
     });
   } else {
-    src='battle.html?solo=1&pw='+pw+'&gears='+gearsParam+'&level='+lvl;
+    src='battle.html?solo=1&pw='+pw+'&gears='+gearsParam+'&level='+lvl+'&p1n=Scholar&p1g=boy&p1c=Zach';
   }
   $id('mp-iframe').src=src;
   doFlip(()=>{

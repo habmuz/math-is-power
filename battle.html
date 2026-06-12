@@ -751,7 +751,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <br>
     <button class="copy-btn" id="copy-btn" onclick="copyCode()">📋 Copy Code</button>
   </div>
-  <a class="book-link" href="index.html" onclick="if(window.parent!==window){event.preventDefault();(_soloMode||_bParams.get('autostart')==='1')?(window.parent.onSoloBattleWin&&window.parent.onSoloBattleWin((G.gearItems||[]).map(g=>g.name))):window.parent.closeMpScene();}">Return to Book</a><br>
+  <a class="book-link" href="index.html" onclick="if(window.parent!==window){event.preventDefault();if(!_winSent){_winSent=true;(_soloMode||_bParams.get('autostart')==='1')?(window.parent.onSoloBattleWin&&window.parent.onSoloBattleWin((G.gearItems||[]).map(g=>g.name))):window.parent.closeMpScene();}}">Return to Book</a><br>
   <button class="again-btn" onclick="location.reload()">⚔️ Play Again</button>
 </div>
 
@@ -893,8 +893,19 @@ function renderSetup(){
 }
 
 // ── INVITE CODE / SOLO MODE / AUTOSTART SETUP ────────────────────
+let _winSent = false;
 (function(){
   if(_soloMode){
+    const _p1n=_bParams.get('p1n');
+    if(_p1n){
+      // Auto-start: skip setup, launch directly with the passed character
+      document.getElementById('setup-screen').style.display='none';
+      const _p1g=_bParams.get('p1g')||'boy';
+      const _p1c=_bParams.get('p1c')||'Zach';
+      const _ch=(CHARS[_p1g+'s']||CHARS.boys).find(c=>c.name===_p1c)||(CHARS[_p1g+'s']||CHARS.boys)[0];
+      setTimeout(()=>startBattle([{playerName:_p1n,character:_ch}]),150);
+      return;
+    }
     document.querySelector('#setup-screen .game-title p').textContent='Solo Dragon Battle · Choose your hero!';
     document.getElementById('btn-down').style.display='none';
     document.getElementById('btn-up').style.display='none';
@@ -1379,7 +1390,7 @@ function genMath(){
   if(op==='+'){a=r(lvl.add[0],lvl.add[1]);b=r(lvl.add[0],lvl.add[1]);ans=a+b;}
   else if(op==='-'){a=r(lvl.sub[0],lvl.sub[1]);b=r(Math.floor(a*.1+1),Math.floor(a*.9));ans=a-b;}
   else if(op==='×'){a=r(lvl.mulA[0],lvl.mulA[1]);b=r(lvl.mulB[0],lvl.mulB[1]);ans=a*b;}
-  else{b=r(lvl.divD[0],lvl.divD[1]);ans=r(2,lvl.divQ[1]<50?12:Math.min(50,Math.floor(lvl.divQ[1]/b)));a=b*ans;}
+  else{b=r(lvl.divD[0],lvl.divD[1]);ans=r(2,lvl.divQ[1]<50?12:Math.max(2,Math.min(50,Math.floor(lvl.divQ[1]/b))));a=b*ans;}
   return{question:a+' '+op+' '+b+' = ?',answer:String(ans)};
 }
 
@@ -1731,7 +1742,7 @@ function winGame(){
   showScreen('victory-screen');
   const leftoverGears=(G.gearItems||[]).map(g=>g.name);
   if(window.parent!==window&&(_soloMode||_bParams.get('autostart')==='1')){
-    setTimeout(()=>{if(window.parent.onSoloBattleWin)window.parent.onSoloBattleWin(leftoverGears);},2800);
+    setTimeout(()=>{if(!_winSent&&window.parent.onSoloBattleWin){_winSent=true;window.parent.onSoloBattleWin(leftoverGears);}},2800);
   }
 }
 
@@ -1760,7 +1771,7 @@ document.getElementById('yn-yes').onclick=()=>submitAns('yes');
 document.getElementById('yn-no').onclick=()=>submitAns('no');
 
 function copyCode(){
-  const code=G.code.join('');
+  const code=_soloPw||G.code.join('');
   const btn=document.getElementById('copy-btn');
   if(navigator.clipboard){
     navigator.clipboard.writeText(code).then(()=>{
