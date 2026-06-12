@@ -1179,7 +1179,7 @@ function startChapter(){
   }
   G.phase='questions'; G.streak=0; G.gears=[]; G.password=[];
   G.consC=0; G.consW=0; G.immunityUsed=false; G.defending=false;
-  G.machineAttempts=0; $id('torn-paper').style.display='none'; $id('flip-zone').style.display='none';
+  G.machineAttempts=0; $id('torn-paper').style.display='none'; $id('flip-zone').style.display='none'; $id('machine').classList.remove('visible');
   $id('q-flip-btn').style.display='none';
   $id('bm-chapter').textContent='CH '+G.chapter;
   G.tier=G.chapter<=4?'easy':G.chapter<=8?'medium':'hard';
@@ -1267,7 +1267,7 @@ function _execFlipToMachine(){
     $id('battle-scene').style.display='flex'; // must stay visible — machine is a child of it
     $id('mp-scene').style.display='none';
     $id('machine').classList.add('visible');
-    showPanel('battle');
+    showPanel('q');
   },()=>{
     G.phase='machine';
     resetMachineDisplay();
