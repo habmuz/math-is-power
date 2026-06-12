@@ -193,8 +193,6 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 #panel-intro{align-items:center;justify-content:center;text-align:center}
 #panel-intro h2{color:#5a2d00;font-size:18px;margin-bottom:8px}
 .inst{background:rgba(139,100,60,.1);border-left:3px solid #8b4513;padding:5px 11px;border-radius:0 6px 6px 0;font-size:12px;color:#4a2000;text-align:left;width:100%}
-#start-btn{margin-top:12px;padding:10px 30px;background:linear-gradient(#8b4513,#5a2d00);color:#f6e8cc;border:none;border-radius:20px;font-size:15px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 4px 14px rgba(0,0,0,.35);transition:transform .2s}
-#start-btn:hover{transform:translateY(-2px)}
 #friend-btn{margin-top:6px;padding:7px 22px;background:linear-gradient(#1a6699,#0d3d5c);color:#e0f4ff;border:none;border-radius:16px;font-size:13px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3);transition:transform .2s}
 #friend-btn:hover{transform:translateY(-2px)}
 #solo-btn{margin-top:3px;padding:5px 18px;background:rgba(139,100,60,.15);color:#5a2d00;border:1px solid rgba(139,100,60,.4);border-radius:14px;font-size:12px;font-family:Georgia,serif;cursor:pointer;transition:background .2s}
@@ -634,7 +632,6 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <select id="level-select" onchange="G.level=this.value;if(G.phase==='questions'&&curQ)nextQ()">
         <option value="P1">P1 – Primary 1</option><option value="P2">P2 – Primary 2</option><option value="P3" selected>P3 – Primary 3</option><option value="P4">P4 – Primary 4</option><option value="P5">P5 – Primary 5</option><option value="P6">P6 – Primary 6</option>
       </select>
-      <button id="start-btn" onclick="startGame()">Begin Adventure ✨</button>
       <button id="friend-btn" onclick="openMpOverlay()">🔗 Play with Friend</button>
       <button id="solo-btn" onclick="startGame()">▶ Play Solo (Skip)</button>
     </div>
