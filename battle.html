@@ -11,9 +11,9 @@
   --green:#22c55e;--red:#ef4444;--blue:#3b82f6;--purple:#a855f7;
   --text:#e2e8f0;--muted:#94a3b8;--border:rgba(255,255,255,0.1)
 }
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);height:100vh;max-height:100vh;overflow:hidden}
 .hidden{display:none!important}
-.screen{display:none;min-height:100vh}
+.screen{display:none;height:100vh;max-height:100vh;overflow:hidden}
 .screen.active{display:flex;flex-direction:column}
 
 /* ── SETUP ── */
@@ -113,7 +113,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 #battle-screen::before{content:'🔥🔥🔥🔥🔥';position:fixed;bottom:-2rem;left:0;width:100%;font-size:1.1rem;
   letter-spacing:18vw;opacity:.18;pointer-events:none;animation:embersRise 6s linear infinite;z-index:0}
 @keyframes embersRise{0%{transform:translateY(0)}100%{transform:translateY(-100vh)}}
-.battle-arena{display:flex;flex-direction:column;min-height:100vh}
+.battle-arena{display:flex;flex-direction:column;height:100vh;max-height:100vh;overflow:hidden}
 
 /* ── Thin HP bars at very top ── */
 .hp-bars-top{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;
@@ -125,12 +125,33 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 /* ── Combat zone: hero LEFT vs dragon RIGHT, side by side ── */
 .combat-zone{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;
-  padding:.6rem .85rem;flex:1;align-items:center;position:relative}
+  padding:.6rem .85rem;flex:1;min-height:0;align-items:center;position:relative}
 .hero-side{display:flex;flex-direction:column;align-items:center;gap:.35rem}
-.hero-portrait{width:100%;max-width:140px;height:168px;
-  border-radius:.8rem;object-fit:cover;
+.hero-portrait{width:100%;max-width:160px;height:210px;
+  border-radius:.8rem;object-fit:cover;object-position:left top;
   border:2px solid rgba(255,215,0,.5);display:block;
-  box-shadow:0 0 24px rgba(255,215,0,.25),0 6px 18px rgba(0,0,0,.7)}
+  box-shadow:0 0 24px rgba(255,215,0,.25),0 6px 18px rgba(0,0,0,.7);
+  transition:filter .3s}
+/* ── Hero action animations ── */
+@keyframes heroAttack{
+  0%{transform:translateX(0) rotate(0)}
+  30%{transform:translateX(70px) rotate(6deg) scale(1.06)}
+  65%{transform:translateX(55px) rotate(4deg)}
+  100%{transform:translateX(0) rotate(0) scale(1)}
+}
+@keyframes heroHeal{
+  0%,100%{filter:drop-shadow(0 0 0px #22c55e) brightness(1)}
+  40%{filter:drop-shadow(0 0 22px #22c55e) brightness(1.5)}
+  70%{filter:drop-shadow(0 0 14px #22c55e) brightness(1.3)}
+}
+@keyframes heroShield{
+  0%,100%{filter:drop-shadow(0 0 0px #3b82f6) brightness(1)}
+  40%{filter:drop-shadow(0 0 28px #3b82f6) brightness(1.4)}
+  70%{filter:drop-shadow(0 0 16px #3b82f6) brightness(1.2)}
+}
+.hero-attacking .hero-portrait{animation:heroAttack .65s ease}
+.hero-healing   .hero-portrait{animation:heroHeal .8s ease}
+.hero-defending .hero-portrait{animation:heroShield .7s ease}
 .hero-info{text-align:center;width:100%}
 .hero-name{font-size:.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .hero-role{font-size:.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:1px}
@@ -180,7 +201,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .hp-low{background:linear-gradient(to right,#ef4444,#dc2626)}
 
 /* Lower section: streak + log + roster stacked */
-.battle-lower{display:flex;flex-direction:column;gap:.5rem;padding:.5rem .85rem}
+.battle-lower{display:flex;flex-direction:column;gap:.3rem;padding:.3rem .85rem;flex-shrink:0}
 .stag{display:inline-block;padding:.1rem .45rem;border-radius:99px;font-size:.6rem;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
 .stag-shield{background:rgba(29,78,216,.3);color:#93c5fd;border:1px solid rgba(29,78,216,.5)}
 .stag-ko{background:rgba(239,68,68,.2);color:#fca5a5;border:1px solid rgba(239,68,68,.3)}
@@ -226,9 +247,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 #q-timer-bar{flex:1;height:6px;background:rgba(255,255,255,.12);border-radius:3px}
 #q-timer-fill{height:100%;background:#f59e0b;border-radius:3px;transition:width 1s linear}
 #q-timer-txt{font-size:.75rem;color:var(--muted);min-width:2.4rem;text-align:right;font-weight:600}
-/* Timeout screen */
+/* Timeout screen — drifts in from right */
 #timeout-screen{align-items:center;justify-content:center;text-align:center;padding:2rem;
-  background:radial-gradient(ellipse at center,#350a0a 0%,var(--bg) 60%)}
+  background:radial-gradient(ellipse at center,#350a0a 0%,var(--bg) 60%);
+  transform:translateX(100%)}
+#timeout-screen.drift-in{transform:translateX(0);transition:transform 1s cubic-bezier(.25,.46,.45,.94)}
 #timeout-dragon-sprite{font-size:6rem;animation:dfloat 1.5s ease-in-out infinite}
 /* ── Visual FX — shoot RIGHT from hero toward dragon ── */
 @keyframes shootRight{
@@ -318,7 +341,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 /* Battle log */
 .b-log{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:.7rem;
-  padding:.65rem;overflow-y:auto;flex:1;min-height:80px;max-height:130px}
+  padding:.4rem .65rem;overflow-y:auto;max-height:72px}
 .log-e{font-size:.72rem;color:var(--muted);padding:.15rem 0;border-bottom:1px solid rgba(255,255,255,.04);animation:fadein .25s ease}
 .log-e:last-child{border-bottom:none}
 .log-imp{color:var(--text)}
@@ -456,6 +479,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 @keyframes defeatFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
 .defeat-skull-wrap{font-size:7rem;line-height:1;margin-bottom:.6rem;display:block;
   animation:defeatFloat 2s ease-in-out infinite,defeatPulse 1.5s ease-in-out infinite}
+/* Human skull on defeat screen — large glowing red */
+.human-skull-wrap{display:flex;justify-content:center;margin-bottom:.85rem}
+.human-skull-wrap span{font-size:9rem;line-height:1;
+  display:block;
+  animation:defeatFloat 2s ease-in-out infinite;
+  filter:drop-shadow(0 0 24px rgba(239,68,68,.9)) drop-shadow(0 0 50px rgba(220,38,38,.6))}
 .defeat-caption{font-size:1.6rem;font-weight:900;color:#ef4444;letter-spacing:2px;
   text-shadow:0 0 20px rgba(239,68,68,.5);margin-bottom:.3rem}
 .defeat-retry{font-size:.95rem;color:var(--muted);margin-bottom:1.25rem}
@@ -658,11 +687,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 <!-- TIMEOUT SCREEN -->
 <div id="timeout-screen" class="screen">
-  <div class="defeat-skull-wrap">☠️</div>
-  <div class="defeat-caption">You have lost.</div>
-  <div class="defeat-retry">Time ran out — try again!</div>
-  <button class="again-btn" onclick="location.reload()">Try Again</button>
-  <a class="book-link" href="index.html" style="margin-top:.75rem;display:inline-block" onclick="if(window.parent!==window){event.preventDefault();window.parent.closeMpScene&&window.parent.closeMpScene();}">Return to Book</a>
+  <div class="defeat-skull-wrap" style="font-size:8rem;animation:defeatFloat 2s ease-in-out infinite,defeatPulse 1.5s ease-in-out infinite">☠️</div>
+  <div class="defeat-caption" style="font-size:2.2rem;letter-spacing:4px">⏰ TIME IS UP</div>
+  <div class="defeat-retry" style="font-size:1.1rem;color:#ff9999;margin:1rem 0">Play Again and Defeat the Dralioster!</div>
+  <button class="again-btn" onclick="location.reload()">⚔️ Play Again</button>
+  <a class="book-link" href="index.html" style="margin-top:.75rem;display:inline-block" onclick="if(window.parent!==window){event.preventDefault();window.parent.closeMpScene&&window.parent.closeMpScene();}">📖 Return to Book</a>
 </div>
 
 <!-- VICTORY -->
@@ -683,7 +712,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 <!-- DEFEAT -->
 <div id="defeat-screen" class="screen">
-  <div class="defeat-skull-wrap">☠️</div>
+  <div class="human-skull-wrap"><span>☠️</span></div>
   <div class="defeat-caption">You have lost.</div>
   <div class="defeat-retry">Try again!</div>
   <button class="again-btn" onclick="location.reload()">⚔️ Try Again</button>
@@ -1040,10 +1069,19 @@ function showRoleActions(){
 }
 
 // ── ACTIONS ───────────────────────────────────────────────────────
+function _heroAnim(cls,ms){
+  const card=document.getElementById('active-card');
+  if(!card)return;
+  card.classList.remove('hero-attacking','hero-healing','hero-defending');
+  void card.offsetWidth;
+  card.classList.add(cls);
+  setTimeout(()=>card.classList.remove(cls),ms||800);
+}
 function doAction(a){
   if(G.done)return;
   const p=G.players[G.curIdx];const ch=p.character;
   if(a==='attack'){
+    _heroAnim('hero-attacking',700);
     const dmg=r(18,38);
     log(ch.name+' attacks! '+dmg+' damage to Dralioster.','log-imp');
     playGearFx('sword',()=>{
@@ -1055,11 +1093,13 @@ function doAction(a){
     });
     return;
   }else if(a==='shield'){
+    _heroAnim('hero-defending',750);
     G.players.forEach(p2=>{if(p2.isAlive)p2.shielded=true;});
     log(ch.name+' raises a Power Shield! All heroes protected for this round.','log-imp');
     applyWearOverlay('Shield',60000);
     endTurn();
   }else if(a==='heal'){
+    _heroAnim('hero-healing',850);
     const t=lowestAlive();
     if(!t){log('💚 No allies need healing.','');endTurn();return;}
     const amt=r(28,48);
@@ -1390,10 +1430,13 @@ function triggerTimeUp(){
   clearInterval(_qTimerInterval);
   document.getElementById('q-modal').classList.add('hidden');
   updateCaveLight(true);
-  showScreen('timeout-screen');
+  // Drift the screen in from the right
+  const ts=document.getElementById('timeout-screen');
+  ts.style.display='flex';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>ts.classList.add('drift-in')));
   setTimeout(function(){
     if(window.parent!==window)window.parent.closeMpScene&&window.parent.closeMpScene();
-  },5000);
+  },8000);
 }
 
 function startQTimer(){
