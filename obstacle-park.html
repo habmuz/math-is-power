@@ -52,6 +52,8 @@ canvas{border-radius:8px;border:2px solid #2a0055;display:block;
 <script>
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 const W=cv.width,H=cv.height;
+const _charSrc3=new URLSearchParams(location.search).get('char');
+const _charImg3=_charSrc3?Object.assign(new Image(),{src:_charSrc3}):null;
 const GROUND=320, PW=30, PH=42;
 const G=900, JUMP=-500;
 
@@ -228,11 +230,20 @@ function draw(){
     }
   }
 
-  // Player
+  // Player sprite
   ctx.save();
   const py=player.duck?GROUND-player.h:player.y;
-  ctx.font=`${player.duck?20:32}px serif`;ctx.textAlign='center';
-  ctx.fillText(player.duck?'🙇':'🏃',player.x+player.w/2,py+player.h-2);
+  if(_charImg3&&_charImg3.complete&&_charImg3.naturalWidth){
+    const sw=_charImg3.naturalWidth*0.3;
+    const ph=player.duck?player.h+4:player.h+16;
+    const pw=player.duck?player.w+6:player.w+16;
+    // Duck: squish vertically
+    if(player.duck){ctx.transform(1,0,0,0.55,0,py+ph*0.9);}
+    ctx.drawImage(_charImg3,0,0,sw,_charImg3.naturalHeight,player.x-6,player.duck?-ph*0.45:py,pw,ph);
+  }else{
+    ctx.font=`${player.duck?20:32}px serif`;ctx.textAlign='center';
+    ctx.fillText(player.duck?'🙇':'🏃',player.x+player.w/2,py+player.h-2);
+  }
   ctx.restore();
 }
 

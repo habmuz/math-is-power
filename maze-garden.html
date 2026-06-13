@@ -49,6 +49,8 @@ canvas{border-radius:8px;border:2px solid #1a4422;display:block;
 
 <script>
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const _charSrc2=new URLSearchParams(location.search).get('char');
+const _charImg2=_charSrc2?Object.assign(new Image(),{src:_charSrc2}):null;
 // Canvas size based on window
 const CW=Math.min(window.innerWidth-20,860);
 const CH=Math.min(window.innerHeight-110,390);
@@ -177,10 +179,14 @@ function draw(){
       }
     }
   }
-  // Player
+  // Player sprite
   const px=offX+player.x*CS,py=offY+player.y*CS;
-  if(CS>=12){ctx.font=`${CS}px serif`;ctx.textAlign='center';ctx.fillText('🧑',px+CS/2,py+CS-1);}
-  else{ctx.fillStyle='#00ffaa';ctx.fillRect(px+2,py+2,CS-4,CS-4);}
+  if(_charImg2&&_charImg2.complete&&_charImg2.naturalWidth){
+    const sw=_charImg2.naturalWidth*0.3;
+    ctx.drawImage(_charImg2,0,0,sw,_charImg2.naturalHeight,px,py,CS,CS);
+  }else if(CS>=12){
+    ctx.font=`${CS}px serif`;ctx.textAlign='center';ctx.fillText('🧑',px+CS/2,py+CS-1);
+  }else{ctx.fillStyle='#00ffaa';ctx.fillRect(px+2,py+2,CS-4,CS-4);}
   // Visited glow trail
   ctx.fillStyle='rgba(0,255,100,.06)';
   ctx.fillRect(px,py,CS,CS);

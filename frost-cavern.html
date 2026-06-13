@@ -72,12 +72,10 @@ body{
 @keyframes exitFloat{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 
 /* ── PLAYER ── */
-#player{position:absolute;width:46px;height:46px;z-index:10;pointer-events:none;
-  display:flex;align-items:center;justify-content:center;font-size:1.5rem;
-  transition:top .14s ease,left .14s ease;
+#player{position:absolute;width:46px;height:56px;z-index:10;pointer-events:none;
+  transition:top .14s ease,left .14s ease;overflow:hidden;
   filter:drop-shadow(0 0 8px rgba(120,210,255,.9))}
-#player::after{content:'';position:absolute;inset:4px;border-radius:50%;
-  background:radial-gradient(circle,rgba(100,200,255,.2),transparent 70%)}
+#player img{width:300%;height:100%;object-fit:cover;object-position:0% 0%;margin-left:0}
 
 /* ── WIN OVERLAY ── */
 #win-overlay{display:none;position:absolute;inset:0;z-index:30;
@@ -120,7 +118,7 @@ body{
 
 <div id="board-wrap">
   <div id="board"></div>
-  <div id="player">🧊</div>
+  <div id="player"></div>
   <div id="win-overlay">
     <div class="wo-stars" id="wo-stars">⭐⭐⭐</div>
     <div class="wo-title" id="wo-title">Level Clear!</div>
@@ -132,6 +130,12 @@ body{
 <div id="ctrl-hint">Arrow keys / WASD to slide &nbsp;·&nbsp; Click ⚙️ to rotate gears</div>
 
 <script>
+// ─── CHARACTER IMAGE ───────────────────────────────────────────────
+const _charSrc=new URLSearchParams(location.search).get('char');
+const _pEl=document.getElementById('player');
+if(_charSrc){_pEl.innerHTML=`<img src="${_charSrc}" alt="">`;}
+else{_pEl.textContent='🧊';_pEl.style.fontSize='1.5rem';_pEl.style.display='flex';_pEl.style.alignItems='center';_pEl.style.justifyContent='center';}
+
 // ─── LEVELS ────────────────────────────────────────────────────────
 // Cell: 0=ice  1=wall  2=gear  3=door  4=exit
 const LEVELS=[

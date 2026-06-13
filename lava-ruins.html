@@ -58,6 +58,9 @@ canvas{border-radius:8px;border:2px solid #3a1100;display:block;
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 const W=cv.width,H=cv.height;
 const G=900,SPEED=200,JUMP=-490,CS=20;
+// Character sprite
+const _charSrc=new URLSearchParams(location.search).get('char');
+const _charImg=_charSrc?Object.assign(new Image(),{src:_charSrc}):null;
 
 const LEVELS=[
   {speed:18,lives:3,hint:'Reach the portal — jump the gaps!',
@@ -193,11 +196,17 @@ function draw(){
   ctx.fillStyle=pg;ctx.beginPath();ctx.ellipse(ex.x+22,ex.y+22,32,42,0,0,Math.PI*2);ctx.fill();
   ctx.font='2.2rem serif';ctx.textAlign='center';
   ctx.fillText('🚪',ex.x+22,ex.y+40);
-  // Player
+  // Player sprite
   ctx.save();
-  if(player.dir===-1){ctx.translate(player.x+player.w/2,0);ctx.scale(-1,1);ctx.translate(-(player.x+player.w/2),0);}
-  ctx.font=`${player.h+4}px serif`;ctx.textAlign='left';
-  ctx.fillText('🧑',player.x-4,player.y+player.h+2);
+  const cx2=player.x+player.w/2;
+  if(player.dir===-1){ctx.translate(cx2,0);ctx.scale(-1,1);ctx.translate(-cx2,0);}
+  if(_charImg&&_charImg.complete&&_charImg.naturalWidth){
+    const sw=_charImg.naturalWidth*0.3;
+    ctx.drawImage(_charImg,0,0,sw,_charImg.naturalHeight,player.x-4,player.y,player.w+14,player.h+10);
+  }else{
+    ctx.font=`${player.h+4}px serif`;ctx.textAlign='left';
+    ctx.fillText('🧑',player.x-4,player.y+player.h+2);
+  }
   ctx.restore();
   // Lava
   const lg=ctx.createLinearGradient(0,lava,0,H);

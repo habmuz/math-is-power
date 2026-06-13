@@ -1623,7 +1623,10 @@ function closeMiniMap(){$id('mini-map-overlay').classList.remove('open');$id('mi
 function closeMiniPlay(){$id('mini-play').classList.remove('open')}
 function openMiniGameScene(url){
   $id('mini-map-overlay').classList.remove('open');
-  $id('mini-game-iframe').src=url;
+  const ch=G.mpPlayers&&G.mpPlayers[0]&&G.mpPlayers[0].character
+    ?G.mpPlayers[0].character.img
+    :'chars/4834f4e7-7b2b-44b0-b223-2fd8f667b16f.jpg';
+  $id('mini-game-iframe').src=url+'?char='+encodeURIComponent(ch);
   $id('mini-game-scene').style.display='block';
 }
 function closeMiniGameScene(){
