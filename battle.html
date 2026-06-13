@@ -446,8 +446,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 @keyframes dragonSkullFloat{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-14px) rotate(4deg)}}
 @keyframes skullGlow{0%,100%{text-shadow:0 0 20px #ffd700,0 0 40px #ff6b35,0 0 80px rgba(255,215,0,.3)}
   50%{text-shadow:0 0 50px #ffd700,0 0 100px #ff6b35,0 0 150px rgba(255,215,0,.5)}}
-.dragon-skull-wrap{font-size:7rem;line-height:1;margin-bottom:.85rem;display:block;
-  animation:dragonSkullFloat 3s ease-in-out infinite,skullGlow 2s ease-in-out infinite}
+.dragon-skull-wrap{margin-bottom:.85rem;display:flex;justify-content:center}
+.dragon-skull-wrap img{width:160px;height:160px;object-fit:contain;
+  animation:dragonSkullFloat 3s ease-in-out infinite,skullGlow 2s ease-in-out infinite;
+  filter:drop-shadow(0 0 24px rgba(255,80,0,.8)) drop-shadow(0 0 50px rgba(255,150,0,.5))}
 /* ── DEFEAT SKULL ── */
 @keyframes defeatPulse{0%,100%{text-shadow:0 0 20px #ef4444,0 0 40px #991b1b}
   50%{text-shadow:0 0 50px #ef4444,0 0 100px #dc2626,0 0 20px rgba(255,255,255,.3)}}
@@ -665,7 +667,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 <!-- VICTORY -->
 <div id="victory-screen" class="screen">
-  <div class="dragon-skull-wrap">🐉💀</div>
+  <div class="dragon-skull-wrap"><img src="gears/dragon-skull.png" alt="Dragon Skull"></div>
   <div class="res-title res-v">Victory!</div>
   <div class="res-sub" id="v-sub">The Dralioster has been defeated!</div>
   <div class="book-page">
