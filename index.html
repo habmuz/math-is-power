@@ -320,44 +320,60 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 /* ═══ MINI GAME MAP OVERLAY ═══ */
 #mini-map-overlay{position:absolute;inset:0;background:rgba(0,0,0,.92);z-index:80;display:none;align-items:center;justify-content:center}
 #mini-map-overlay.open{display:flex}
-#map-container{width:700px;height:510px;background:radial-gradient(ellipse at 50% 30%,#0d1f0d,#050d05);border:3px solid #4a7a4a;border-radius:18px;position:relative;overflow:hidden}
-#map-title{text-align:center;color:#88ff88;font-size:18px;padding:11px;letter-spacing:3px;text-shadow:0 0 10px #44ff44;border-bottom:1px solid #2a5a2a;font-family:Georgia,serif}
-#map-subtitle{text-align:center;color:#6aaa6a;font-size:10px;letter-spacing:2px;padding:4px 0 6px;border-bottom:1px solid #1a3a1a}
-/* world map regions grid */
-#map-regions{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:10px;padding:10px 14px;height:420px}
-.map-region{border-radius:12px;cursor:pointer;transition:transform .2s,box-shadow .3s;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:10px 8px}
-.map-region:hover{transform:scale(1.05)}
-.map-region.r-center{grid-column:2;grid-row:1/3;display:flex}
-/* region colours */
-.r-lava{background:linear-gradient(160deg,#3d0a00,#6b1500);border:2px solid #ff4400;box-shadow:0 0 18px rgba(255,68,0,.35)}
-.r-lava:hover{box-shadow:0 0 30px rgba(255,68,0,.65)}
-.r-ice{background:linear-gradient(160deg,#001a3d,#003366);border:2px solid #44aaff;box-shadow:0 0 18px rgba(68,170,255,.35)}
-.r-ice:hover{box-shadow:0 0 30px rgba(68,170,255,.65)}
-.r-obstacle{background:linear-gradient(160deg,#1e0033,#3d0066);border:2px solid #cc44ff;box-shadow:0 0 18px rgba(204,68,255,.35)}
-.r-obstacle:hover{box-shadow:0 0 30px rgba(204,68,255,.65)}
-.r-code{background:linear-gradient(160deg,#2a2200,#4a3a00);border:2px solid #ffdd44;box-shadow:0 0 18px rgba(255,221,68,.35)}
-.r-code:hover{box-shadow:0 0 30px rgba(255,221,68,.65)}
-.r-maze{background:linear-gradient(160deg,#003322,#005533);border:2px solid #44ff99;box-shadow:0 0 18px rgba(68,255,153,.35)}
-.r-maze:hover{box-shadow:0 0 30px rgba(68,255,153,.65)}
-.r-center{background:linear-gradient(160deg,#1a0022,#2a0044);border:2px solid #aa66ff;box-shadow:0 0 22px rgba(170,102,255,.45)}
-.r-center:hover{box-shadow:0 0 36px rgba(170,102,255,.75)}
-.region-icon{font-size:34px;line-height:1}
-.region-name{font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase}
-.region-game{font-size:9px;font-style:italic;opacity:.85;line-height:1.3;padding:0 4px}
-.r-lava .region-name{color:#ff8844}
-.r-lava .region-game{color:#ffaa88}
-.r-ice .region-name{color:#88ccff}
-.r-ice .region-game{color:#aaddff}
-.r-obstacle .region-name{color:#ee88ff}
-.r-obstacle .region-game{color:#ddaaff}
-.r-code .region-name{color:#ffee88}
-.r-code .region-game{color:#ffeeaa}
-.r-maze .region-name{color:#88ffcc}
-.r-maze .region-game{color:#aaffdd}
-.r-center .region-name{color:#cc99ff;font-size:13px}
-.r-center .region-game{color:#ddbbff}
-.r-center .region-icon{font-size:44px}
-#map-close{position:absolute;top:10px;right:12px;background:none;border:2px solid #88ff88;color:#88ff88;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:13px}
+#map-container{width:700px;height:510px;
+  background:
+    radial-gradient(ellipse at 20% 35%,rgba(80,40,0,.18) 0%,transparent 45%),
+    radial-gradient(ellipse at 80% 65%,rgba(0,60,20,.18) 0%,transparent 45%),
+    radial-gradient(ellipse at 55% 20%,rgba(0,40,80,.14) 0%,transparent 40%),
+    linear-gradient(160deg,#0c1f0c,#081608,#050f05);
+  border:3px solid #3a6a3a;border-radius:18px;position:relative;overflow:hidden}
+/* subtle grid lines for map feel */
+#map-container::before{content:'';position:absolute;inset:0;pointer-events:none;
+  background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+  background-size:40px 40px}
+#map-title{text-align:center;color:#aaffaa;font-size:17px;padding:9px;letter-spacing:3px;
+  text-shadow:0 0 10px #44ff44;border-bottom:1px solid #2a4a2a;font-family:Georgia,serif}
+#map-close{position:absolute;top:8px;right:10px;background:none;border:2px solid #66aa66;
+  color:#66aa66;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px}
+/* SVG paths */
+#map-svg{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:1}
+/* Flag pins */
+.map-pin{position:absolute;transform:translate(-50%,-100%);cursor:pointer;
+  display:flex;flex-direction:column;align-items:center;transition:transform .22s;z-index:2}
+.map-pin:hover{transform:translate(-50%,-100%) scale(1.12) translateY(-4px)}
+.pin-flag{border:2px solid rgba(255,255,255,.22);border-radius:7px;
+  width:72px;padding:6px 5px 5px;display:flex;flex-direction:column;align-items:center;gap:2px;
+  box-shadow:0 0 18px var(--fg,rgba(136,136,136,.5)),0 4px 10px rgba(0,0,0,.6);position:relative}
+/* arrow tip on right side of flag */
+.pin-flag::after{content:'';position:absolute;right:-9px;top:38%;
+  width:0;height:0;border-left:9px solid var(--fc,#888);
+  border-top:7px solid transparent;border-bottom:7px solid transparent}
+.pin-icon{font-size:22px;line-height:1}
+.pin-fname{font-size:8px;font-weight:800;color:#fff;text-align:center;
+  letter-spacing:.8px;line-height:1.25;text-shadow:0 1px 3px rgba(0,0,0,.9)}
+.pin-pole{width:3px;height:44px;background:linear-gradient(#d4b06a,#9a7030);border-radius:1px}
+.pin-base{width:14px;height:5px;background:#9a7030;border-radius:3px}
+/* POPped center — bigger */
+.p-pop .pin-flag{width:90px;padding:8px 7px 6px;border-width:3px}
+.p-pop .pin-icon{font-size:28px}
+.p-pop .pin-fname{font-size:9px;letter-spacing:1px}
+.p-pop .pin-pole{height:56px;width:4px}
+.p-pop .pin-base{width:20px;height:7px}
+/* mini game play overlay */
+#mini-play{position:absolute;inset:0;background:rgba(0,0,0,.88);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+#mini-play.open{display:flex}
+#mp-title{color:#ffd700;font-size:22px;font-weight:bold}
+#mp-desc{color:#ffcc88;font-size:13px;font-style:italic}
+#mp-q{background:rgba(255,255,255,.1);border:2px solid #ffd700;border-radius:10px;padding:14px 24px;color:#fff;font-size:20px;font-weight:bold;text-align:center;min-width:300px}
+#mp-input{width:120px;padding:8px;border:2px solid #ffd700;border-radius:6px;background:#111;color:#ffd700;font-size:20px;text-align:center;letter-spacing:2px;outline:none;font-family:monospace}
+#mp-submit{padding:8px 28px;background:linear-gradient(#ffd700,#cc8800);color:#000;border:none;border-radius:20px;font-size:15px;cursor:pointer;font-family:Georgia,serif;font-weight:bold}
+#mp-feedback{color:#fff;font-size:14px;min-height:20px;text-align:center}
+#mp-streak{display:flex;gap:5px;justify-content:center}
+.mpdot{width:14px;height:14px;border-radius:50%;background:#555;border:2px solid #888;transition:all .3s}
+.mpdot.on{background:#ffd700;border-color:#cc8800;box-shadow:0 0 8px #ffd700}
+#mp-close{padding:6px 20px;background:#333;color:#fff;border:none;border-radius:14px;cursor:pointer;font-size:12px}
+#mp-score{color:#88ff88;font-size:12px}
 /* mini game play overlay */
 #mini-play{position:absolute;inset:0;background:rgba(0,0,0,.88);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px}
 #mini-play.open{display:flex}
@@ -792,37 +808,77 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     <button id="map-close" onclick="closeMiniMap()">✕ EXIT</button>
 
     <!-- 5-region world map -->
-    <div id="map-regions">
-      <!-- 🌋 Lava Region (top-left) -->
-      <div class="map-region r-lava" onclick="playMiniGame('lava')">
-        <div class="region-icon">🌋</div>
-        <div class="region-name">🔴 LAVA REGION</div>
-        <div class="region-game">Lava Ruins<br>React before the lava rises!</div>
+    <!-- SVG dashed paths from center to each pin -->
+    <svg id="map-svg" viewBox="0 0 700 510" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="dot" markerWidth="6" markerHeight="6" refX="3" refY="3"><circle cx="3" cy="3" r="2" fill="#5a8a5a"/></marker>
+      </defs>
+      <!-- center = 350,300 ; each line goes to pin base -->
+      <line x1="350" y1="300" x2="125" y2="185" stroke="#4a7a4a" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
+      <line x1="350" y1="300" x2="575" y2="185" stroke="#4a7a4a" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
+      <line x1="350" y1="300" x2="90"  y2="375" stroke="#4a7a4a" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
+      <line x1="350" y1="300" x2="610" y2="375" stroke="#4a7a4a" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
+      <line x1="350" y1="300" x2="350" y2="448" stroke="#4a7a4a" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
+    </svg>
+
+    <!-- 🌋 Lava — RED — top-left -->
+    <div class="map-pin" style="left:125px;top:185px" onclick="playMiniGame('lava')">
+      <div class="pin-flag" style="background:#c03000;--fc:#c03000;--fg:rgba(255,68,0,.7)">
+        <div class="pin-icon">🌋</div>
+        <div class="pin-fname">LAVA RUINS</div>
       </div>
-      <!-- 🌀 Maze Region (center — spans 2 rows) -->
-      <div class="map-region r-center r-maze" onclick="playMiniGame('maze')">
-        <div class="region-icon">🌀</div>
-        <div class="region-name">🟢 MAZE REGION</div>
-        <div class="region-game">Maze Garden<br>Follow clues &amp; find the center!</div>
+      <div class="pin-pole"></div>
+      <div class="pin-base"></div>
+    </div>
+
+    <!-- ❄️ Ice — BLUE — top-right -->
+    <div class="map-pin" style="left:575px;top:185px" onclick="playMiniGame('ice')">
+      <div class="pin-flag" style="background:#0055aa;--fc:#0055aa;--fg:rgba(68,170,255,.7)">
+        <div class="pin-icon">❄️</div>
+        <div class="pin-fname">FROST CAVERN</div>
       </div>
-      <!-- ❄️ Ice Region (top-right) -->
-      <div class="map-region r-ice" onclick="playMiniGame('ice')">
-        <div class="region-icon">❄️</div>
-        <div class="region-name">🔵 ICE REGION</div>
-        <div class="region-game">Frost Gear Cavern<br>Spot the pattern before it freezes!</div>
+      <div class="pin-pole"></div>
+      <div class="pin-base"></div>
+    </div>
+
+    <!-- 🏃 Obstacle — ORANGE — bottom-left -->
+    <div class="map-pin" style="left:90px;top:375px" onclick="playMiniGame('obstacle')">
+      <div class="pin-flag" style="background:#cc5500;--fc:#cc5500;--fg:rgba(255,140,0,.7)">
+        <div class="pin-icon">🏃</div>
+        <div class="pin-fname">OBSTACLE PARK</div>
       </div>
-      <!-- 🏃 Obstacle Region (bottom-left) -->
-      <div class="map-region r-obstacle" onclick="playMiniGame('obstacle')">
-        <div class="region-icon">🏃</div>
-        <div class="region-name">🟣 OBSTACLE REGION</div>
-        <div class="region-game">Obstacle Park<br>Race the clock — jump &amp; dodge!</div>
+      <div class="pin-pole"></div>
+      <div class="pin-base"></div>
+    </div>
+
+    <!-- 🔐 Code — YELLOW — bottom-right -->
+    <div class="map-pin" style="left:610px;top:375px" onclick="playMiniGame('code')">
+      <div class="pin-flag" style="background:#997700;--fc:#997700;--fg:rgba(255,215,0,.7)">
+        <div class="pin-icon">🔐</div>
+        <div class="pin-fname">PUZZLE TOWER</div>
       </div>
-      <!-- 🔐 Code Region (bottom-right) -->
-      <div class="map-region r-code" onclick="playMiniGame('code')">
-        <div class="region-icon">🔐</div>
-        <div class="region-name">🟡 CODE REGION</div>
-        <div class="region-game">Puzzle Tower<br>Solve 10 floors of logic puzzles!</div>
+      <div class="pin-pole"></div>
+      <div class="pin-base"></div>
+    </div>
+
+    <!-- 🌀 Maze — GREEN — bottom-center -->
+    <div class="map-pin" style="left:350px;top:448px" onclick="playMiniGame('maze')">
+      <div class="pin-flag" style="background:#006633;--fc:#006633;--fg:rgba(68,255,153,.7)">
+        <div class="pin-icon">🌀</div>
+        <div class="pin-fname">MAZE GARDEN</div>
       </div>
+      <div class="pin-pole"></div>
+      <div class="pin-base"></div>
+    </div>
+
+    <!-- 💥 POPped Your Mind — PURPLE — CENTER -->
+    <div class="map-pin p-pop" style="left:350px;top:300px" onclick="playMiniGame('pop')">
+      <div class="pin-flag" style="background:#6600cc;--fc:#6600cc;--fg:rgba(170,68,255,.8);border-color:rgba(200,150,255,.5)">
+        <div class="pin-icon">💥</div>
+        <div class="pin-fname">POPped<br>YOUR MIND</div>
+      </div>
+      <div class="pin-pole"></div>
+      <div class="pin-base"></div>
     </div>
 
     <!-- Mini game play panel -->
@@ -1552,9 +1608,10 @@ function showDirs(){toggleScroll();showDialog('📖 How to Play','1. Answer 9 ma
 const MINI_INFO={
   lava:    {name:'🌋 Lava Ruins',        emoji:'🌋',desc:'React fast — answer before the lava rises!',color:'#ff6622'},
   ice:     {name:'❄️ Frost Gear Cavern', emoji:'❄️',desc:'Spot the pattern before it freezes!',color:'#44aaff'},
-  obstacle:{name:'🏃 Obstacle Park',     emoji:'🏃',desc:'Race the clock — speed maths challenge!',color:'#cc44ff'},
+  obstacle:{name:'🏃 Obstacle Park',     emoji:'🏃',desc:'Race the clock — speed maths challenge!',color:'#ff8800'},
   code:    {name:'🔐 Puzzle Tower',      emoji:'🔐',desc:'Solve palindromes & logic puzzles!',color:'#ffdd44'},
   maze:    {name:'🌀 Maze Garden',       emoji:'🌀',desc:'Follow the clues — find the center!',color:'#44ff99'},
+  pop:     {name:'💥 POPped Your Mind',  emoji:'💥',desc:'Mind-popping mix — all 4 operations plus patterns!',color:'#cc44ff'},
 };
 function openMiniMap(){if(!G.miniUnlocked)return;toggleScroll();$id('mini-map-overlay').classList.add('open')}
 function closeMiniMap(){$id('mini-map-overlay').classList.remove('open');$id('mini-play').classList.remove('open')}
@@ -1584,6 +1641,7 @@ function genMiniQ(type){
   if(type==='obstacle') return pick([add,mul])();
   if(type==='code')     return pick([pal,pat])();
   if(type==='maze')     return pick([add,sub,mul,div,pat])();
+  if(type==='pop')      return pick([add,sub,mul,div,pat,pal])();
   return add();
 }
 let mpStreak=0, mpCurQ=null, mpGame=null;
