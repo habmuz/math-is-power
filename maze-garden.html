@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌀 Maze Garden</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(ellipse at 50% 0%,#001a0a,#000a04);
+  font-family:'Segoe UI',system-ui,sans-serif;color:#88ffbb;
+  display:flex;flex-direction:column;align-items:center;
+  height:100vh;overflow:hidden;padding:6px;gap:5px}
+#hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:870px}
+#hdr h1{font-size:1.1rem;color:#66ffaa;letter-spacing:2px;text-shadow:0 0 12px #00ff66}
+#stats{display:flex;gap:14px;font-size:.72rem;color:#336644}
+#stats b{color:#66ffaa}
+#back-btn{background:none;border:1px solid #1a4422;color:#336644;
+  border-radius:.4rem;padding:.22rem .55rem;font-size:.68rem;cursor:pointer}
+#back-btn:hover{color:#66ffaa;border-color:#448844}
+canvas{border-radius:8px;border:2px solid #1a4422;display:block;
+  box-shadow:0 0 40px rgba(0,200,80,.15)}
+#ctrl{font-size:.64rem;color:#224433;letter-spacing:.8px;text-align:center}
+#overlay{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(0,10,4,.94);border:2px solid #00ff88;border-radius:12px;
+  padding:22px 28px;text-align:center;z-index:20;min-width:240px;
+  box-shadow:0 0 40px rgba(0,200,80,.3)}
+#overlay.show{display:block}
+.ov-t{font-size:1.8rem;font-weight:900;margin-bottom:6px;color:#88ffcc}
+.ov-s{font-size:.82rem;color:#446655;margin-bottom:14px}
+.ov-btn{padding:.55rem 1.5rem;background:linear-gradient(135deg,#006633,#003322);
+  border:2px solid #00aa55;border-radius:.55rem;color:#88ffcc;font-size:.85rem;
+  font-weight:700;cursor:pointer;transition:all .2s;margin:0 4px}
+.ov-btn:hover{background:linear-gradient(135deg,#008844,#005533)}
+</style>
+</head>
+<body>
+<div id="hdr">
+  <button id="back-btn" onclick="goBack()">← Map</button>
+  <h1>🌀 Maze Garden</h1>
+  <div id="stats">Maze <b id="lv">1</b>/3 &nbsp;|&nbsp; Chests: <b id="chests">0</b>/3 &nbsp;|&nbsp; Steps: <b id="steps">0</b></div>
+</div>
+<canvas id="c"></canvas>
+<div id="ctrl">Arrow keys / WASD to move &nbsp;·&nbsp; Find 3 chests then reach the center 🌀</div>
+<div id="overlay">
+  <div class="ov-t" id="ov-t">🎉</div>
+  <div class="ov-s" id="ov-s"></div>
+  <button class="ov-btn" id="ov-btn">Next Maze 🌿</button>
+</div>
+
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+// Canvas size based on window
+const CW=Math.min(window.innerWidth-20,860);
+const CH=Math.min(window.innerHeight-110,390);
+cv.width=CW;cv.height=CH;
+
+// ── MAZE GENERATION (DFS) ──────────────────────────────────────────
+function genMaze(cols,rows){
+  // cols/rows must be odd
+  const grid=Array.from({length:rows},()=>Array(cols).fill(1));
+  function carve(x,y){
+    grid[y][x]=0;
+    const dirs=[[0,-2],[2,0],[0,2],[-2,0]].sort(()=>Math.random()-.5);
+    for(const [dx,dy] of dirs){
+      const nx=x+dx,ny=y+dy;
+      if(nx>0&&nx<cols-1&&ny>0&&ny<rows-1&&grid[ny][nx]===1){
+        grid[y+dy/2][x+dx/2]=0;
+        carve(nx,ny);
+      }
+    }
+  }
+  carve(1,1);
+  return grid;
+}
+
+const SIZES=[[21,15],[27,19],[33,23]]; // cols×rows for each level
+let lvIdx=0,maze,cols,rows,CS,player,chests,collected,steps,exit,won,fog;
+
+function initLevel(i){
+  lvIdx=i;won=false;steps=0;collected=0;
+  [cols,rows]=SIZES[i];
+  CS=Math.min(Math.floor(CW/cols),Math.floor(CH/rows));
+  maze=genMaze(cols,rows);
+  // Place exit at center
+  const cx=Math.floor(cols/2)|1, cy=Math.floor(rows/2)|1;
+  maze[cy][cx]=3; exit={x:cx,y:cy};
+  // Place player near top-left
+  player={x:1,y:1};
+  // Place 3 chests on open cells away from start and exit
+  chests=[];
+  const candidates=[];
+  for(let y=1;y<rows-1;y++)for(let x=1;x<cols-1;x++){
+    if(maze[y][x]===0&&!(x===1&&y===1)&&Math.abs(x-cx)+Math.abs(y-cy)>4)
+      candidates.push({x,y});
+  }
+  candidates.sort(()=>Math.random()-.5);
+  for(let i=0;i<3&&i<candidates.length;i++){
+    const c=candidates[i];chests.push({x:c.x,y:c.y,found:false});maze[c.y][c.x]=4;
+  }
+  // Fog of war array
+  fog=Array.from({length:rows},()=>Array(cols).fill(true));
+  revealFog(player.x,player.y);
+  document.getElementById('lv').textContent=i+1;
+  document.getElementById('chests').textContent='0';
+  document.getElementById('steps').textContent='0';
+  document.getElementById('overlay').classList.remove('show');
+}
+
+function revealFog(x,y,r=3){
+  for(let dy=-r;dy<=r;dy++)for(let dx=-r;dx<=r;dx++){
+    const nx=x+dx,ny=y+dy;
+    if(nx>=0&&nx<cols&&ny>=0&&ny<rows&&dx*dx+dy*dy<=r*r)fog[ny][nx]=false;
+  }
+}
+
+function move(dx,dy){
+  if(won)return;
+  const nx=player.x+dx,ny=player.y+dy;
+  if(nx<0||nx>=cols||ny<0||ny>=rows)return;
+  const cell=maze[ny][nx];
+  if(cell===1)return;
+  player.x=nx;player.y=ny;steps++;
+  revealFog(nx,ny);
+  document.getElementById('steps').textContent=steps;
+  // Collect chest
+  if(cell===4){
+    maze[ny][nx]=0;collected++;
+    document.getElementById('chests').textContent=collected;
+  }
+  // Reach exit
+  if(cell===3&&collected>=3){
+    won=true;
+    const isLast=lvIdx>=SIZES.length-1;
+    const ov=document.getElementById('overlay');
+    document.getElementById('ov-t').textContent=isLast?'🏆 Garden Complete!':'🌿 Maze Cleared!';
+    document.getElementById('ov-s').textContent=`Found all chests in ${steps} steps!`;
+    const btn=document.getElementById('ov-btn');
+    if(isLast){btn.textContent='🗺️ Back to Map';btn.onclick=goBack;}
+    else{btn.textContent=`Next Maze 🌿`;btn.onclick=()=>initLevel(lvIdx+1);}
+    ov.classList.add('show');
+  }
+}
+
+function draw(){
+  ctx.fillStyle='#000a04';ctx.fillRect(0,0,CW,CH);
+  const offX=Math.floor((CW-cols*CS)/2);
+  const offY=Math.floor((CH-rows*CS)/2);
+  for(let y=0;y<rows;y++)for(let x=0;x<cols;x++){
+    const px=offX+x*CS,py=offY+y*CS;
+    const cell=maze[y][x];
+    const hidden=fog[y][x];
+    if(hidden){ctx.fillStyle='#000804';ctx.fillRect(px,py,CS,CS);continue;}
+    if(cell===1){
+      // Hedge/wall
+      const g=ctx.createLinearGradient(px,py,px,py+CS);
+      g.addColorStop(0,'#0a2a0a');g.addColorStop(1,'#061606');
+      ctx.fillStyle=g;ctx.fillRect(px,py,CS,CS);
+      // Leaf texture dots
+      ctx.fillStyle='rgba(0,100,0,.3)';
+      ctx.fillRect(px+2,py+2,3,3);ctx.fillRect(px+CS-5,py+CS-5,3,3);
+    }else{
+      // Path
+      ctx.fillStyle='#001208';ctx.fillRect(px,py,CS,CS);
+      if(cell===4){
+        // Chest
+        ctx.fillStyle='#886600';ctx.fillRect(px+3,py+3,CS-6,CS-6);
+        ctx.fillStyle='#ffd700';ctx.fillRect(px+3,py+3,CS-6,4);
+        ctx.fillStyle='#aa8800';ctx.fillRect(px+CS/2-3,py+3,6,CS-6);
+      }else if(cell===3){
+        // Exit — glowing swirl
+        const g=ctx.createRadialGradient(px+CS/2,py+CS/2,1,px+CS/2,py+CS/2,CS/2);
+        g.addColorStop(0,'rgba(0,255,128,.9)');g.addColorStop(0.5,'rgba(0,150,80,.4)');
+        g.addColorStop(1,'transparent');
+        ctx.fillStyle=g;ctx.beginPath();ctx.arc(px+CS/2,py+CS/2,CS/2,0,Math.PI*2);ctx.fill();
+        if(CS>=14){ctx.font=`${CS-2}px serif`;ctx.textAlign='center';
+          ctx.fillText(collected>=3?'🌀':'🔒',px+CS/2,py+CS-2);}
+      }
+    }
+  }
+  // Player
+  const px=offX+player.x*CS,py=offY+player.y*CS;
+  if(CS>=12){ctx.font=`${CS}px serif`;ctx.textAlign='center';ctx.fillText('🧑',px+CS/2,py+CS-1);}
+  else{ctx.fillStyle='#00ffaa';ctx.fillRect(px+2,py+2,CS-4,CS-4);}
+  // Visited glow trail
+  ctx.fillStyle='rgba(0,255,100,.06)';
+  ctx.fillRect(px,py,CS,CS);
+}
+
+// Input
+document.addEventListener('keydown',e=>{
+  const m={ArrowUp:[0,-1],ArrowDown:[0,1],ArrowLeft:[-1,0],ArrowRight:[1,0],
+    KeyW:[0,-1],KeyS:[0,1],KeyA:[-1,0],KeyD:[1,0]};
+  const d=m[e.code];
+  if(d){e.preventDefault();move(d[0],d[1]);}
+});
+// Touch swipe
+let ts=null;
+cv.addEventListener('touchstart',e=>{const t=e.touches[0];ts={x:t.clientX,y:t.clientY};},{passive:true});
+cv.addEventListener('touchend',e=>{
+  if(!ts)return;
+  const dx=e.changedTouches[0].clientX-ts.x,dy=e.changedTouches[0].clientY-ts.y;
+  if(Math.abs(dx)>20||Math.abs(dy)>20)
+    move(Math.abs(dx)>Math.abs(dy)?(dx>0?1:-1):0,Math.abs(dy)>Math.abs(dx)?(dy>0?1:-1):0);
+  ts=null;
+},{passive:true});
+
+function goBack(){
+  if(window.parent!==window&&window.parent.closeMiniGameScene)window.parent.closeMiniGameScene();
+  else window.history.back();
+}
+
+function loop(){draw();requestAnimationFrame(loop);}
+initLevel(0);loop();
+</script>
+</body>
+</html>

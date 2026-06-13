@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏃 Obstacle Park</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0010;display:flex;flex-direction:column;align-items:center;
+  height:100vh;overflow:hidden;padding:6px;gap:4px;
+  font-family:'Segoe UI',system-ui,sans-serif;color:#ddaaff}
+#hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:870px}
+#hdr h1{font-size:1.1rem;color:#cc88ff;letter-spacing:2px;text-shadow:0 0 12px #8844ff}
+#stats{display:flex;gap:14px;font-size:.72rem;color:#664488}
+#stats b{color:#cc88ff}
+#back-btn{background:none;border:1px solid #330055;color:#553377;
+  border-radius:.4rem;padding:.22rem .55rem;font-size:.68rem;cursor:pointer}
+#back-btn:hover{color:#cc88ff;border-color:#8844aa}
+canvas{border-radius:8px;border:2px solid #2a0055;display:block;
+  box-shadow:0 0 40px rgba(150,50,255,.15)}
+#ctrl{font-size:.64rem;color:#332244;letter-spacing:.8px;text-align:center}
+#overlay{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(4,0,12,.95);border:2px solid #aa44ff;border-radius:12px;
+  padding:22px 28px;text-align:center;z-index:20;min-width:250px;
+  box-shadow:0 0 40px rgba(170,68,255,.3)}
+#overlay.show{display:block}
+.ov-t{font-size:1.8rem;font-weight:900;margin-bottom:6px}
+.ov-s{font-size:.82rem;color:#775599;margin-bottom:14px}
+.ov-btn{padding:.55rem 1.4rem;background:linear-gradient(135deg,#4a1a8a,#2a0a5a);
+  border:2px solid #aa44ff;border-radius:.55rem;color:#ddaaff;font-size:.85rem;
+  font-weight:700;cursor:pointer;transition:all .2s;margin:0 4px}
+.ov-btn:hover{background:linear-gradient(135deg,#6622aa,#3a1270);
+  box-shadow:0 0 16px rgba(170,68,255,.4)}
+</style>
+</head>
+<body>
+<div id="hdr">
+  <button id="back-btn" onclick="goBack()">← Map</button>
+  <h1>🏃 Obstacle Park</h1>
+  <div id="stats">Course <b id="lv">1</b>/3 &nbsp;|&nbsp; <b id="timer">0.0</b>s &nbsp;|&nbsp; Lives: <b id="lives">3</b></div>
+</div>
+<canvas id="c" width="860" height="420"></canvas>
+<div id="ctrl">Space / ↑ = Jump &nbsp;·&nbsp; ↓ = Duck &nbsp;·&nbsp; Tap top to jump, bottom to duck</div>
+<div id="overlay">
+  <div class="ov-t" id="ov-t"></div>
+  <div class="ov-s" id="ov-s"></div>
+  <button class="ov-btn" id="btn-r" onclick="retry()">🔄 Try Again</button>
+  <button class="ov-btn" id="btn-n" style="display:none" onclick="nextLv()">▶ Next Course</button>
+  <button class="ov-btn" id="btn-m" style="display:none" onclick="goBack()">🗺️ Map</button>
+</div>
+
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const GROUND=320, PW=30, PH=42;
+const G=900, JUMP=-500;
+
+// Obstacle types: w=wall(jump over), b=beam(duck under), p=pit(jump over)
+// x = starting x from right, type, w=width
+function makeCourse(seed,speed){
+  // Generate a sequence of obstacles
+  const obs=[];
+  let x=W+100;
+  const patterns=[
+    [{type:'w'},{gap:300},{type:'w'},{gap:250},{type:'b'},{gap:280},{type:'w'}],
+    [{type:'p'},{gap:200},{type:'b'},{gap:240},{type:'w'},{gap:200},{type:'p'}],
+    [{type:'w'},{gap:180},{type:'w'},{gap:220},{type:'p'},{gap:180},{type:'b'},{gap:200},{type:'w'}],
+  ];
+  const pat=patterns[seed%patterns.length];
+  for(const item of pat){
+    if(item.gap)x+=item.gap;
+    else{
+      obs.push({x,type:item.type,passed:false});
+      x+=180;
+    }
+  }
+  // Add finish flag
+  obs.push({x:x+200,type:'finish',passed:false});
+  return obs;
+}
+
+const LEVELS=[
+  {speed:240,seed:0,lives:3,hint:'Watch for walls — jump over them!'},
+  {speed:290,seed:1,lives:3,hint:'Beams and pits — jump or duck!'},
+  {speed:340,seed:2,lives:2,hint:'Maximum speed — stay sharp!'},
+];
+
+let lvIdx,player,obs,scroll,running,elapsed,lives,raf,lastT,waveBg=0,distDone;
+
+function initLevel(i){
+  lvIdx=i;
+  const lv=LEVELS[i];
+  lives=lv.lives;scroll=0;elapsed=0;running=true;distDone=false;
+  player={x:120,y:GROUND-PH,vy:0,onG:true,duck:false,w:PW,h:PH};
+  obs=makeCourse(lv.seed,lv.speed);
+  document.getElementById('lv').textContent=i+1;
+  document.getElementById('lives').textContent=lives;
+  document.getElementById('timer').textContent='0.0';
+  hide();
+}
+
+const keys={};
+document.addEventListener('keydown',e=>{keys[e.code]=true;
+  ['Space','ArrowUp','ArrowDown'].includes(e.code)&&e.preventDefault();});
+document.addEventListener('keyup',e=>keys[e.code]=false);
+
+// Touch
+let touchJ=false,touchD=false;
+cv.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  const ry=(e.touches[0].clientY-cv.getBoundingClientRect().top)/cv.getBoundingClientRect().height;
+  if(ry<0.5)touchJ=true;else touchD=true;
+},{passive:false});
+cv.addEventListener('touchend',e=>{e.preventDefault();touchJ=false;touchD=false;},{passive:false});
+
+let lastJ=false;
+function update(dt){
+  const lv=LEVELS[lvIdx];
+  elapsed+=dt;
+  document.getElementById('timer').textContent=elapsed.toFixed(1);
+
+  // Duck
+  player.duck=(keys['ArrowDown']||keys['ControlLeft']||touchD)&&player.onG;
+  player.h=player.duck?PH*0.5:PH;
+  player.y=GROUND-player.h;
+
+  // Jump
+  const jNow=keys['Space']||keys['ArrowUp']||keys['KeyW']||touchJ;
+  if(jNow&&!lastJ&&player.onG&&!player.duck){player.vy=JUMP;player.onG=false;}
+  lastJ=jNow;
+
+  player.vy=Math.min(player.vy+G*dt,900);
+  if(!player.onG){player.y+=player.vy*dt;}
+  if(player.y>=GROUND-player.h){player.y=GROUND-player.h;player.vy=0;player.onG=true;}
+
+  // Scroll
+  scroll+=lv.speed*dt;
+  for(const ob of obs){ob.x-=lv.speed*dt;}
+
+  // Check obstacles
+  for(const ob of obs){
+    if(ob.passed)continue;
+    if(ob.x+80<0){ob.passed=true;continue;}
+    if(ob.type==='finish'&&ob.x<player.x){
+      running=false;
+      const medal=elapsed<12?'🥇 GOLD':elapsed<20?'🥈 SILVER':'🥉 BRONZE';
+      const isLast=lvIdx>=LEVELS.length-1;
+      over(true,isLast?'🏆 Park Complete!':'🎉 Course Clear!',
+        `${medal}  Finished in ${elapsed.toFixed(1)}s!`,isLast);
+      return;
+    }
+    if(ob.type==='w'){
+      // Wall: x=ob.x, y=GROUND-70, w=28, h=70
+      const wx=ob.x,wy=GROUND-70,ww=28,wh=70;
+      if(player.x+player.w>wx&&player.x<wx+ww&&player.y+player.h>wy){hit();return;}
+    }else if(ob.type==='b'){
+      // Beam: full width but gap duck through
+      const bx=ob.x,by=GROUND-PH-30,bw=60,bh=20;
+      if(player.x+player.w>bx&&player.x<bx+bw&&player.y<by+bh&&player.y+player.h>by){hit();return;}
+    }else if(ob.type==='p'){
+      // Pit: hole in ground
+      const px2=ob.x,pw2=60;
+      if(player.x+player.w>px2&&player.x<px2+pw2&&player.onG){hit();return;}
+    }
+  }
+}
+
+function hit(){
+  lives--;document.getElementById('lives').textContent=lives;
+  if(lives<=0){over(false,'💥 Wiped Out!','No lives left — try again?',false);}
+  else{
+    // Reset player and obstacles scroll back a bit
+    player={x:120,y:GROUND-PH,vy:0,onG:true,duck:false,w:PW,h:PH};
+    // Reset all obstacles to original positions
+    const lv=LEVELS[lvIdx];
+    obs=makeCourse(lv.seed,lv.speed);
+    scroll=0;elapsed=0;
+  }
+}
+
+function draw(){
+  waveBg+=0.03;
+  // Sky gradient
+  const bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#0a0020');bg.addColorStop(0.6,'#100030');bg.addColorStop(1,'#1a0040');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  // Scrolling background stars
+  ctx.fillStyle='rgba(200,150,255,.5)';
+  for(let i=0;i<30;i++){
+    const sx=((i*137+scroll*0.2)%W);
+    const sy=20+((i*97)%200);
+    ctx.fillRect(sx,sy,1.5,1.5);
+  }
+  // Ground
+  const grd=ctx.createLinearGradient(0,GROUND,0,H);
+  grd.addColorStop(0,'#2a0055');grd.addColorStop(1,'#0a001a');
+  ctx.fillStyle=grd;ctx.fillRect(0,GROUND,W,H-GROUND);
+  // Ground line glow
+  const gl=ctx.createLinearGradient(0,GROUND-3,0,GROUND+6);
+  gl.addColorStop(0,'rgba(180,80,255,.6)');gl.addColorStop(1,'transparent');
+  ctx.fillStyle=gl;ctx.fillRect(0,GROUND-3,W,9);
+
+  // Obstacles
+  for(const ob of obs){
+    if(ob.x>W+100||ob.x<-200)continue;
+    if(ob.type==='w'){
+      const g=ctx.createLinearGradient(ob.x,GROUND-70,ob.x+28,GROUND);
+      g.addColorStop(0,'#660088');g.addColorStop(1,'#330044');
+      ctx.fillStyle=g;ctx.fillRect(ob.x,GROUND-70,28,70);
+      ctx.fillStyle='#cc44ff';ctx.fillRect(ob.x,GROUND-70,28,4);
+      ctx.fillStyle='rgba(200,100,255,.3)';ctx.fillRect(ob.x-3,GROUND-74,34,78);
+    }else if(ob.type==='b'){
+      ctx.fillStyle='#882200';ctx.fillRect(ob.x-10,GROUND-PH-30,80,16);
+      ctx.fillStyle='#ff4400';ctx.fillRect(ob.x-10,GROUND-PH-30,80,4);
+      ctx.fillStyle='rgba(255,80,0,.2)';ctx.fillRect(ob.x-12,GROUND-PH-35,84,26);
+    }else if(ob.type==='p'){
+      // Cover the ground
+      ctx.fillStyle='#0a001a';ctx.fillRect(ob.x,GROUND,60,H-GROUND);
+      // Dark pit
+      ctx.fillStyle='#050010';ctx.fillRect(ob.x,GROUND-4,60,H-GROUND);
+      ctx.fillStyle='rgba(100,0,200,.4)';ctx.fillRect(ob.x,GROUND-2,60,4);
+    }else if(ob.type==='finish'){
+      // Finish flag
+      ctx.fillStyle='#ffd700';ctx.fillRect(ob.x,GROUND-100,4,100);
+      ctx.fillStyle='#ffd700';ctx.beginPath();
+      ctx.moveTo(ob.x+4,GROUND-100);ctx.lineTo(ob.x+34,GROUND-85);ctx.lineTo(ob.x+4,GROUND-70);
+      ctx.closePath();ctx.fill();
+    }
+  }
+
+  // Player
+  ctx.save();
+  const py=player.duck?GROUND-player.h:player.y;
+  ctx.font=`${player.duck?20:32}px serif`;ctx.textAlign='center';
+  ctx.fillText(player.duck?'🙇':'🏃',player.x+player.w/2,py+player.h-2);
+  ctx.restore();
+}
+
+function over(win,title,sub,isLast){
+  running=false;
+  document.getElementById('ov-t').textContent=title;
+  document.getElementById('ov-s').textContent=sub;
+  document.getElementById('btn-r').style.display=win&&isLast?'none':'inline-block';
+  document.getElementById('btn-n').style.display=win&&!isLast?'inline-block':'none';
+  document.getElementById('btn-m').style.display=win&&isLast?'inline-block':'none';
+  document.getElementById('overlay').classList.add('show');
+}
+function hide(){document.getElementById('overlay').classList.remove('show');}
+function retry(){initLevel(lvIdx);}
+function nextLv(){initLevel(lvIdx+1);}
+function goBack(){
+  cancelAnimationFrame(raf);
+  if(window.parent!==window&&window.parent.closeMiniGameScene)window.parent.closeMiniGameScene();
+  else window.history.back();
+}
+
+function loop(ts){
+  const dt=Math.min((ts-(lastT||ts))/1000,.05);lastT=ts;
+  if(running)update(dt);
+  draw();
+  raf=requestAnimationFrame(loop);
+}
+initLevel(0);
+requestAnimationFrame(ts=>{lastT=ts;requestAnimationFrame(loop);});
+</script>
+</body>
+</html>

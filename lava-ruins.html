@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌋 Lava Ruins</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#080000;display:flex;flex-direction:column;align-items:center;
+  height:100vh;overflow:hidden;padding:6px;gap:4px;
+  font-family:'Segoe UI',system-ui,sans-serif;color:#ffcc88}
+#hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:870px}
+#hdr h1{font-size:1.1rem;color:#ff8844;letter-spacing:2px;text-shadow:0 0 12px #ff4400}
+#stats{display:flex;gap:14px;font-size:.72rem;color:#883300}
+#stats b{color:#ffaa66}
+#back-btn{background:none;border:1px solid #441100;color:#662200;
+  border-radius:.4rem;padding:.22rem .55rem;font-size:.68rem;cursor:pointer}
+#back-btn:hover{color:#ff6622;border-color:#aa3300}
+canvas{border-radius:8px;border:2px solid #3a1100;display:block;
+  box-shadow:0 0 40px rgba(255,80,0,.2)}
+#ctrl{font-size:.64rem;color:#442200;letter-spacing:.8px;text-align:center}
+#hint{font-size:.68rem;color:#774422;text-align:center;min-height:1em}
+#overlay{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(8,0,0,.93);border:2px solid #ff4400;border-radius:12px;
+  padding:22px 28px;text-align:center;z-index:20;min-width:250px;
+  box-shadow:0 0 40px rgba(255,60,0,.3)}
+#overlay.show{display:block}
+.ov-title{font-size:1.8rem;font-weight:900;margin-bottom:6px}
+.ov-sub{font-size:.82rem;color:#cc9966;margin-bottom:14px}
+.ov-btn{padding:.55rem 1.5rem;border:2px solid;border-radius:.55rem;font-size:.85rem;
+  font-weight:700;cursor:pointer;transition:all .2s;margin:0 4px}
+.btn-red{background:linear-gradient(135deg,#8a2000,#5a1000);border-color:#ff4400;color:#ffcc88}
+.btn-red:hover{background:linear-gradient(135deg,#aa3000,#7a2000)}
+.btn-grn{background:linear-gradient(135deg,#1a6600,#0d4400);border-color:#44dd00;color:#aaffaa;display:none}
+.btn-grn:hover{background:linear-gradient(135deg,#2a8800,#1a5500)}
+</style>
+</head>
+<body>
+<div id="hdr">
+  <button id="back-btn" onclick="goBack()">← Map</button>
+  <h1>🌋 Lava Ruins</h1>
+  <div id="stats">Lv <b id="lv">1</b>/3 &nbsp;|&nbsp; <b id="timer">0.0</b>s &nbsp;|&nbsp; Lives: <b id="lives">3</b></div>
+</div>
+<div id="hint"></div>
+<div style="position:relative">
+  <canvas id="c" width="860" height="420"></canvas>
+  <div id="overlay">
+    <div class="ov-title" id="ov-t"></div>
+    <div class="ov-sub" id="ov-s"></div>
+    <button class="ov-btn btn-red" id="btn-retry" onclick="retry()">🔄 Try Again</button>
+    <button class="ov-btn btn-grn" id="btn-next" onclick="nextLv()">Next Level ▶</button>
+    <button class="ov-btn btn-red" id="btn-map" style="display:none" onclick="goBack()">🗺️ Map</button>
+  </div>
+</div>
+<div id="ctrl">← → Move &nbsp;·&nbsp; Space / ↑ Jump &nbsp;·&nbsp; Touch left/right/top</div>
+
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const W=cv.width,H=cv.height;
+const G=900,SPEED=200,JUMP=-490,CS=20;
+
+const LEVELS=[
+  {speed:18,lives:3,hint:'Reach the portal — jump the gaps!',
+   plats:[
+    {x:0,y:390,w:150,c:false},{x:190,y:355,w:110,c:false},
+    {x:330,y:315,w:90,c:true},{x:450,y:278,w:100,c:false},
+    {x:580,y:242,w:90,c:true},{x:700,y:200,w:130,c:false},
+    {x:580,y:140,w:100,c:false},{x:430,y:100,w:110,c:false},
+    {x:700,y:80,w:150,c:false},
+   ],exit:{x:715,y:36}},
+  {speed:28,lives:3,hint:'Faster lava — crumble platforms shake!',
+   plats:[
+    {x:0,y:400,w:120,c:false},{x:150,y:368,w:80,c:true},
+    {x:260,y:330,w:70,c:false},{x:360,y:292,w:80,c:true},
+    {x:470,y:255,w:70,c:false},{x:570,y:218,w:80,c:true},
+    {x:680,y:175,w:100,c:false},{x:540,y:125,w:90,c:true},
+    {x:400,y:82,w:100,c:false},{x:690,y:56,w:145,c:false},
+   ],exit:{x:705,y:14}},
+  {speed:40,lives:2,hint:'⚠️ Maximum heat — every move matters!',
+   plats:[
+    {x:0,y:405,w:100,c:false},{x:130,y:378,w:65,c:true},
+    {x:225,y:342,w:60,c:true},{x:315,y:305,w:70,c:false},
+    {x:415,y:268,w:60,c:true},{x:505,y:232,w:70,c:true},
+    {x:605,y:195,w:80,c:false},{x:475,y:155,w:85,c:true},
+    {x:340,y:115,w:80,c:false},{x:460,y:74,w:80,c:true},
+    {x:580,y:44,w:80,c:false},{x:700,y:50,w:150,c:false},
+   ],exit:{x:715,y:8}},
+];
+
+let lvIdx,plats,player,lava,running,elapsed,lives,raf,lastT,waveT=0;
+
+function initLevel(i){
+  lvIdx=i;
+  const lv=LEVELS[i];
+  lives=lv.lives;
+  plats=lv.plats.map(p=>({...p,cTimer:0,fallen:false}));
+  spawnPlayer();
+  lava=H+30;running=true;elapsed=0;
+  document.getElementById('lv').textContent=i+1;
+  document.getElementById('lives').textContent=lives;
+  document.getElementById('hint').textContent=lv.hint;
+  hide();
+}
+function spawnPlayer(){
+  player={x:20,y:355,vx:0,vy:0,w:26,h:32,onG:false,dir:1};
+}
+
+const keys={};
+document.addEventListener('keydown',e=>{keys[e.code]=true;e.preventDefault&&['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code)&&e.preventDefault()});
+document.addEventListener('keyup',e=>keys[e.code]=false);
+
+let touch={l:false,r:false,j:false};
+cv.addEventListener('touchstart',e=>{
+  e.preventDefault();
+  [...e.changedTouches].forEach(t=>{
+    const rx=(t.clientX-cv.getBoundingClientRect().left)/cv.getBoundingClientRect().width;
+    const ry=(t.clientY-cv.getBoundingClientRect().top)/cv.getBoundingClientRect().height;
+    if(ry<0.3)touch.j=true;
+    else if(rx<0.5)touch.l=true;
+    else touch.r=true;
+  });
+},{passive:false});
+cv.addEventListener('touchend',e=>{e.preventDefault();touch={l:false,r:false,j:false};},{passive:false});
+
+let lastJ=false;
+function update(dt){
+  const lv=LEVELS[lvIdx];
+  player.vx=0;
+  if(keys['ArrowLeft']||keys['KeyA']||touch.l){player.vx=-SPEED;player.dir=-1;}
+  if(keys['ArrowRight']||keys['KeyD']||touch.r){player.vx=SPEED;player.dir=1;}
+  const jNow=keys['Space']||keys['ArrowUp']||keys['KeyW']||touch.j;
+  if(jNow&&!lastJ&&player.onG){player.vy=JUMP;}
+  lastJ=jNow;
+  player.vy=Math.min(player.vy+G*dt,800);
+  player.x=Math.max(0,Math.min(W-player.w,player.x+player.vx*dt));
+  player.y+=player.vy*dt;
+  player.onG=false;
+  for(const p of plats){
+    if(p.fallen)continue;
+    if(player.x+player.w>p.x&&player.x<p.x+p.w&&
+       player.y+player.h>p.y&&player.y+player.h<p.y+14&&player.vy>=0){
+      player.y=p.y-player.h;player.vy=0;player.onG=true;
+      if(p.c){p.cTimer+=dt;if(p.cTimer>0.72)p.fallen=true;}
+    }
+  }
+  lava-=lv.speed*dt;
+  elapsed+=dt;
+  document.getElementById('timer').textContent=elapsed.toFixed(1);
+  // Check lava / fall death
+  if(player.y+player.h>lava||player.y>H+50){
+    lives--;document.getElementById('lives').textContent=lives;
+    if(lives<=0){over(false,'💀 Caught by Lava!','The ruins got you. Try again?');}
+    else{spawnPlayer();lava=H+30;} // reset lava but keep elapsed
+    return;
+  }
+  // Check exit
+  const ex=lv.exit;
+  if(player.x+player.w>ex.x&&player.x<ex.x+44&&player.y+player.h>ex.y&&player.y<ex.y+50){
+    running=false;
+    const isLast=lvIdx>=LEVELS.length-1;
+    const stars=elapsed<10?'⭐⭐⭐':elapsed<18?'⭐⭐':'⭐';
+    over(true,isLast?'🏆 Escaped!':'🎉 Ruins Cleared!',`${stars}  Escaped in ${elapsed.toFixed(1)}s!`,isLast);
+  }
+}
+
+function draw(){
+  waveT+=0.06;
+  // BG
+  const bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#0a0000');bg.addColorStop(0.6,'#180600');bg.addColorStop(1,'#2a0500');
+  ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  // Stalactites
+  ctx.fillStyle='#1a0600';
+  for(let i=0;i<15;i++){const bx=i*60;ctx.beginPath();ctx.moveTo(bx,0);ctx.lineTo(bx+30,0);ctx.lineTo(bx+15,16+Math.sin(i*1.3)*10);ctx.closePath();ctx.fill();}
+  // Platforms
+  for(const p of plats){
+    if(p.fallen)continue;
+    const shake=p.c&&p.cTimer>0.4?(Math.random()*3-1.5):0;
+    const alpha=p.c&&p.cTimer>0.4?Math.max(0,1-(p.cTimer-0.4)/0.32):1;
+    ctx.save();ctx.globalAlpha=alpha;
+    const g=ctx.createLinearGradient(0,p.y,0,p.y+14);
+    g.addColorStop(0,p.c?'#663300':'#4a2800');
+    g.addColorStop(1,p.c?'#3a1a00':'#2a1400');
+    ctx.fillStyle=g;ctx.fillRect(p.x+shake,p.y+shake,p.w,14);
+    ctx.fillStyle=p.c&&p.cTimer>0?'#ff4400':'#8b5520';
+    ctx.fillRect(p.x+shake,p.y+shake,p.w,3);
+    ctx.restore();
+  }
+  // Exit portal
+  const ex=LEVELS[lvIdx].exit;
+  const pg=ctx.createRadialGradient(ex.x+22,ex.y+22,2,ex.x+22,ex.y+22,32);
+  pg.addColorStop(0,'rgba(255,190,60,.9)');pg.addColorStop(0.5,'rgba(255,90,0,.4)');pg.addColorStop(1,'transparent');
+  ctx.fillStyle=pg;ctx.beginPath();ctx.ellipse(ex.x+22,ex.y+22,32,42,0,0,Math.PI*2);ctx.fill();
+  ctx.font='2.2rem serif';ctx.textAlign='center';
+  ctx.fillText('🚪',ex.x+22,ex.y+40);
+  // Player
+  ctx.save();
+  if(player.dir===-1){ctx.translate(player.x+player.w/2,0);ctx.scale(-1,1);ctx.translate(-(player.x+player.w/2),0);}
+  ctx.font=`${player.h+4}px serif`;ctx.textAlign='left';
+  ctx.fillText('🧑',player.x-4,player.y+player.h+2);
+  ctx.restore();
+  // Lava
+  const lg=ctx.createLinearGradient(0,lava,0,H);
+  lg.addColorStop(0,'#ff5500');lg.addColorStop(0.3,'#cc2200');lg.addColorStop(1,'#880000');
+  ctx.fillStyle=lg;
+  ctx.beginPath();ctx.moveTo(0,H);
+  for(let x=0;x<=W;x+=18)ctx.lineTo(x,lava+Math.sin(x*0.04+waveT)*7);
+  ctx.lineTo(W,H);ctx.closePath();ctx.fill();
+  // Lava glow
+  const glow=ctx.createLinearGradient(0,lava-35,0,lava);
+  glow.addColorStop(0,'transparent');glow.addColorStop(1,'rgba(255,80,0,.15)');
+  ctx.fillStyle=glow;ctx.fillRect(0,lava-35,W,35);
+}
+
+function over(win,title,sub,isLast){
+  running=false;
+  document.getElementById('ov-t').textContent=title;
+  document.getElementById('ov-s').textContent=sub;
+  document.getElementById('btn-retry').style.display=win&&isLast?'none':'inline-block';
+  document.getElementById('btn-next').style.display=win&&!isLast?'inline-block':'none';
+  document.getElementById('btn-map').style.display=win&&isLast?'inline-block':'none';
+  document.getElementById('overlay').classList.add('show');
+}
+function hide(){document.getElementById('overlay').classList.remove('show');}
+function retry(){initLevel(lvIdx);}
+function nextLv(){initLevel(lvIdx+1);}
+function goBack(){
+  cancelAnimationFrame(raf);
+  if(window.parent!==window&&window.parent.closeMiniGameScene)window.parent.closeMiniGameScene();
+  else window.history.back();
+}
+
+function loop(ts){
+  const dt=Math.min((ts-(lastT||ts))/1000,.05);lastT=ts;
+  if(running)update(dt);
+  draw();
+  raf=requestAnimationFrame(loop);
+}
+initLevel(0);
+requestAnimationFrame(ts=>{lastT=ts;requestAnimationFrame(loop);});
+</script>
+</body>
+</html>
