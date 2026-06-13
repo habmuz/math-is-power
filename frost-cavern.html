@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>❄️ Frost Gear Cavern</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:radial-gradient(ellipse at 50% 0%,#0a1a2e,#05080f);
+  font-family:'Segoe UI',system-ui,sans-serif;color:#c0d8ff;
+  display:flex;flex-direction:column;align-items:center;
+  height:100vh;overflow:hidden;padding:6px 8px;gap:6px;
+}
+
+/* ── HEADER ── */
+#hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:720px}
+#hdr h1{font-size:1.1rem;color:#88ccff;letter-spacing:2px;text-shadow:0 0 12px #4499ff}
+#hdr-stats{display:flex;gap:16px;font-size:.72rem;color:#5588aa}
+#hdr-stats span{font-weight:700;color:#88bbee}
+#back-btn{background:none;border:1px solid #2a4466;color:#446688;
+  border-radius:.4rem;padding:.22rem .55rem;font-size:.68rem;cursor:pointer}
+#back-btn:hover{color:#88aacc;border-color:#4466aa}
+
+/* ── HINT ── */
+#hint-bar{font-size:.68rem;color:#3a6a8a;letter-spacing:.5px;text-align:center;
+  min-height:1rem}
+
+/* ── BOARD ── */
+#board-wrap{position:relative;flex-shrink:0}
+#board{display:grid;border:2px solid #1a3a5a;border-radius:8px;overflow:hidden;
+  box-shadow:0 0 40px rgba(40,100,200,.25),0 0 80px rgba(20,60,120,.15)}
+
+.cell{width:56px;height:56px;position:relative;display:flex;
+  align-items:center;justify-content:center;flex-shrink:0}
+
+/* Ice */
+.c-ice{background:linear-gradient(135deg,#0d2438,#0e2840)}
+.c-ice::after{content:'';position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(135deg,rgba(140,200,255,.05) 0%,transparent 55%,rgba(140,200,255,.03) 100%)}
+
+/* Wall */
+.c-wall{background:linear-gradient(135deg,#080f18,#0a1520)}
+.c-wall::before{content:'';position:absolute;inset:0;
+  background:repeating-linear-gradient(45deg,rgba(30,60,100,.22) 0,rgba(30,60,100,.22) 2px,transparent 2px,transparent 9px)}
+
+/* Gear */
+.c-gear{background:linear-gradient(135deg,#0d2030,#152840);
+  border:1px solid #2a5a7a;cursor:pointer;transition:background .18s}
+.c-gear:hover{background:linear-gradient(135deg,#1a3040,#1e3a50)}
+.c-gear.unlocked{border-color:#44ffcc;background:linear-gradient(135deg,#0d3030,#103838)}
+.gear-svg{width:38px;height:38px;transition:transform .35s cubic-bezier(.34,1.56,.64,1);
+  filter:drop-shadow(0 0 5px rgba(100,180,255,.4))}
+.c-gear.unlocked .gear-svg{filter:drop-shadow(0 0 10px rgba(80,255,200,.85))}
+
+/* Door */
+.c-door{background:linear-gradient(135deg,#101020,#0a0a18);
+  border:1px solid #3344aa;overflow:hidden}
+.door-inner{display:flex;gap:5px;align-items:center;justify-content:center;width:100%;height:100%}
+.dbar{width:7px;height:46px;background:linear-gradient(#4455cc,#2233aa);
+  border-radius:3px;transition:transform .45s ease,opacity .45s ease}
+.c-door.open .dbar{transform:scaleY(0);opacity:0}
+
+/* Exit */
+.c-exit{background:radial-gradient(circle at 50% 50%,#0d2a48,#060f1a);
+  border:1px solid #2288cc;animation:exitPulse 2s ease-in-out infinite}
+@keyframes exitPulse{
+  0%,100%{box-shadow:inset 0 0 14px rgba(80,180,255,.3)}
+  50%{box-shadow:inset 0 0 28px rgba(80,180,255,.65),0 0 14px rgba(80,180,255,.3)}
+}
+.exit-icon{font-size:1.7rem;animation:exitFloat 2.5s ease-in-out infinite}
+@keyframes exitFloat{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
+
+/* ── PLAYER ── */
+#player{position:absolute;width:46px;height:46px;z-index:10;pointer-events:none;
+  display:flex;align-items:center;justify-content:center;font-size:1.5rem;
+  transition:top .14s ease,left .14s ease;
+  filter:drop-shadow(0 0 8px rgba(120,210,255,.9))}
+#player::after{content:'';position:absolute;inset:4px;border-radius:50%;
+  background:radial-gradient(circle,rgba(100,200,255,.2),transparent 70%)}
+
+/* ── WIN OVERLAY ── */
+#win-overlay{display:none;position:absolute;inset:0;z-index:30;
+  background:rgba(0,8,20,.92);border-radius:8px;
+  flex-direction:column;align-items:center;justify-content:center;gap:14px}
+#win-overlay.show{display:flex}
+.wo-title{font-size:1.9rem;font-weight:900;color:#88ddff;
+  text-shadow:0 0 24px #4499ff,0 0 50px #2266aa}
+.wo-sub{font-size:.85rem;color:#5599bb}
+.wo-btn{padding:.6rem 1.8rem;background:linear-gradient(135deg,#1a5a8a,#0d3a60);
+  border:2px solid #3399cc;border-radius:.6rem;color:#88ccff;font-size:.88rem;
+  font-weight:700;cursor:pointer;letter-spacing:.5px;transition:all .2s}
+.wo-btn:hover{background:linear-gradient(135deg,#2a6a9a,#1a4a70);
+  box-shadow:0 0 18px rgba(50,150,255,.4)}
+.wo-stars{font-size:2rem;letter-spacing:8px}
+
+/* ── CONTROLS HINT ── */
+#ctrl-hint{font-size:.65rem;color:#2a4a66;text-align:center;letter-spacing:.8px}
+
+/* ── LEVEL BADGE ── */
+#lvl-badge{display:flex;gap:6px;align-items:center}
+.lvl-dot{width:10px;height:10px;border-radius:50%;background:#1a3a5a;border:1.5px solid #2a5a7a;transition:all .3s}
+.lvl-dot.done{background:#44aacc;border-color:#88ccee;box-shadow:0 0 6px #44aacc}
+.lvl-dot.cur{background:#88ccff;border-color:#aaddff;box-shadow:0 0 8px #88ccff}
+</style>
+</head>
+<body>
+
+<div id="hdr">
+  <button id="back-btn" onclick="goBack()">← Map</button>
+  <h1>❄️ Frost Gear Cavern</h1>
+  <div id="hdr-stats">
+    <div id="lvl-badge"></div>
+    <div>Moves: <span id="mv">0</span></div>
+    <div>⚙️ <span id="gr">0</span>/<span id="grt">0</span></div>
+  </div>
+</div>
+
+<div id="hint-bar"></div>
+
+<div id="board-wrap">
+  <div id="board"></div>
+  <div id="player">🧊</div>
+  <div id="win-overlay">
+    <div class="wo-stars" id="wo-stars">⭐⭐⭐</div>
+    <div class="wo-title" id="wo-title">Level Clear!</div>
+    <div class="wo-sub" id="wo-sub"></div>
+    <button class="wo-btn" id="wo-btn">Next Level ❄️</button>
+  </div>
+</div>
+
+<div id="ctrl-hint">Arrow keys / WASD to slide &nbsp;·&nbsp; Click ⚙️ to rotate gears</div>
+
+<script>
+// ─── LEVELS ────────────────────────────────────────────────────────
+// Cell: 0=ice  1=wall  2=gear  3=door  4=exit
+const LEVELS=[
+  {
+    cols:8,rows:6,
+    hint:'Rotate the gear to open the door!',
+    grid:[
+      1,1,1,1,1,1,1,1,
+      1,0,0,0,0,0,0,1,
+      1,0,1,0,2,0,0,1,
+      1,0,0,0,0,0,3,1,
+      1,0,0,1,0,0,4,1,
+      1,1,1,1,1,1,1,1,
+    ],
+    start:{x:1,y:1},
+    gears:[{id:0,x:4,y:2,rot:0,need:2,door:0}],
+    doors:[{id:0,x:6,y:3,open:false}],
+    exit:{x:6,y:4},
+  },
+  {
+    cols:10,rows:7,
+    hint:'Two gears — unlock both doors to escape!',
+    grid:[
+      1,1,1,1,1,1,1,1,1,1,
+      1,0,0,0,0,0,0,0,0,1,
+      1,0,0,1,0,2,0,0,0,1,
+      1,0,1,0,0,0,0,3,0,1,
+      1,0,0,0,2,0,1,0,0,1,
+      1,0,0,0,0,3,0,0,4,1,
+      1,1,1,1,1,1,1,1,1,1,
+    ],
+    start:{x:1,y:1},
+    gears:[
+      {id:0,x:5,y:2,rot:0,need:1,door:0},
+      {id:1,x:4,y:4,rot:0,need:3,door:1},
+    ],
+    doors:[
+      {id:0,x:7,y:3,open:false},
+      {id:1,x:5,y:5,open:false},
+    ],
+    exit:{x:8,y:5},
+  },
+  {
+    cols:11,rows:8,
+    hint:'Three gears — find the right order!',
+    grid:[
+      1,1,1,1,1,1,1,1,1,1,1,
+      1,0,0,0,0,0,0,0,0,0,1,
+      1,0,1,2,0,0,1,0,0,0,1,
+      1,0,0,0,0,3,0,0,2,0,1,
+      1,0,0,1,0,0,0,1,0,0,1,
+      1,2,0,0,3,0,0,0,0,3,1,
+      1,0,0,0,0,0,0,0,0,4,1,
+      1,1,1,1,1,1,1,1,1,1,1,
+    ],
+    start:{x:1,y:1},
+    gears:[
+      {id:0,x:3,y:2,rot:0,need:1,door:0},
+      {id:1,x:8,y:3,rot:0,need:2,door:1},
+      {id:2,x:1,y:5,rot:0,need:3,door:2},
+    ],
+    doors:[
+      {id:0,x:5,y:3,open:false},
+      {id:1,x:9,y:5,open:false},
+      {id:2,x:4,y:5,open:false},
+    ],
+    exit:{x:9,y:6},
+  },
+];
+
+const CS=56; // cell size
+let lvIdx=0, grid=[], gears=[], doors=[], player={x:0,y:0}, moves=0, won=false;
+
+function initLevel(i){
+  won=false; moves=0;
+  lvIdx=i;
+  const lv=LEVELS[i];
+  grid=[...lv.grid];
+  gears=lv.gears.map(g=>({...g}));
+  doors=lv.doors.map(d=>({...d}));
+  player={...lv.start};
+  document.getElementById('mv').textContent=0;
+  document.getElementById('grt').textContent=gears.length;
+  document.getElementById('gr').textContent=0;
+  document.getElementById('hint-bar').textContent=lv.hint;
+  document.getElementById('win-overlay').classList.remove('show');
+  renderLevelBadge();
+  buildBoard();
+  placePlayer(false);
+}
+
+function renderLevelBadge(){
+  const el=document.getElementById('lvl-badge');
+  el.innerHTML=LEVELS.map((_,i)=>`<div class="lvl-dot ${i<lvIdx?'done':i===lvIdx?'cur':''}"></div>`).join('');
+}
+
+function buildBoard(){
+  const lv=LEVELS[lvIdx];
+  const board=document.getElementById('board');
+  board.style.gridTemplateColumns=`repeat(${lv.cols},${CS}px)`;
+  board.innerHTML='';
+  for(let i=0;i<lv.rows*lv.cols;i++){
+    const x=i%lv.cols, y=Math.floor(i/lv.cols);
+    const t=grid[i];
+    const cell=document.createElement('div');
+    cell.className='cell';
+    cell.id=`c${x}_${y}`;
+    if(t===1){
+      cell.classList.add('c-wall');
+    }else if(t===2){
+      const g=gears.find(g=>g.x===x&&g.y===y);
+      cell.classList.add('c-gear');
+      if(g){
+        cell.innerHTML=`<svg class="gear-svg" id="gs${g.id}" viewBox="0 0 40 40">${gearPath()}</svg>`;
+        cell.querySelector('.gear-svg').style.transform=`rotate(${g.rot*90}deg)`;
+        if(g.rot===g.need)cell.classList.add('unlocked');
+        cell.onclick=()=>rotGear(g.id);
+      }
+    }else if(t===3){
+      const d=doors.find(d=>d.x===x&&d.y===y);
+      cell.classList.add('c-door');
+      if(d&&d.open)cell.classList.add('open');
+      cell.innerHTML='<div class="door-inner"><div class="dbar"></div><div class="dbar"></div><div class="dbar"></div></div>';
+    }else if(t===4){
+      cell.classList.add('c-exit');
+      cell.innerHTML='<div class="exit-icon">🚪</div>';
+    }else{
+      cell.classList.add('c-ice');
+    }
+    board.appendChild(cell);
+  }
+  const wrap=document.getElementById('board-wrap');
+  wrap.style.width=lv.cols*CS+'px';
+  wrap.style.height=lv.rows*CS+'px';
+}
+
+function gearPath(){
+  return`<circle cx="20" cy="20" r="9" fill="#3a6a8a" stroke="#6699bb" stroke-width="1.5"/>
+  <circle cx="20" cy="20" r="4.5" fill="#1a3a4a"/>
+  <rect x="18" y="5"  width="4" height="8" rx="2" fill="#5588aa"/>
+  <rect x="18" y="27" width="4" height="8" rx="2" fill="#5588aa"/>
+  <rect x="5"  y="18" width="8" height="4" rx="2" fill="#5588aa"/>
+  <rect x="27" y="18" width="8" height="4" rx="2" fill="#5588aa"/>
+  <rect x="9"  y="9"  width="4" height="8" rx="2" fill="#5588aa" transform="rotate(45 11 13)"/>
+  <rect x="27" y="23" width="4" height="8" rx="2" fill="#5588aa" transform="rotate(45 29 27)"/>
+  <rect x="23" y="9"  width="4" height="8" rx="2" fill="#5588aa" transform="rotate(-45 25 13)"/>
+  <rect x="13" y="23" width="4" height="8" rx="2" fill="#5588aa" transform="rotate(-45 15 27)"/>`;
+}
+
+function placePlayer(anim=true){
+  const p=document.getElementById('player');
+  if(!anim){p.style.transition='none';requestAnimationFrame(()=>p.style.transition='top .14s ease,left .14s ease');}
+  p.style.left=player.x*CS+5+'px';
+  p.style.top =player.y*CS+5+'px';
+}
+
+function rotGear(id){
+  if(won)return;
+  const g=gears.find(g=>g.id===id);
+  if(!g)return;
+  g.rot=(g.rot+1)%4;
+  const svg=document.getElementById('gs'+id);
+  if(svg)svg.style.transform=`rotate(${g.rot*90}deg)`;
+  if(g.rot===g.need){
+    const d=doors.find(d=>d.id===g.door);
+    if(d&&!d.open){
+      d.open=true;
+      const idx=d.y*LEVELS[lvIdx].cols+d.x;
+      grid[idx]=0;
+      const dc=document.getElementById(`c${d.x}_${d.y}`);
+      if(dc)dc.classList.add('open');
+      const gc=document.getElementById(`c${g.x}_${g.y}`);
+      if(gc)gc.classList.add('unlocked');
+    }
+    document.getElementById('gr').textContent=gears.filter(g=>g.rot===g.need).length;
+  }
+}
+
+function slide(dir){
+  if(won)return;
+  const lv=LEVELS[lvIdx];
+  let{x,y}=player;
+  const dx=dir==='right'?1:dir==='left'?-1:0;
+  const dy=dir==='down'?1:dir==='up'?-1:0;
+  let moved=false;
+  while(true){
+    const nx=x+dx,ny=y+dy;
+    if(nx<0||nx>=lv.cols||ny<0||ny>=lv.rows)break;
+    const t=grid[ny*lv.cols+nx];
+    if(t===1||t===2||t===3)break;
+    x=nx;y=ny;moved=true;
+    if(t===4){player={x,y};placePlayer();setTimeout(showWin,350);won=true;return;}
+  }
+  if(moved){
+    player={x,y};
+    moves++;
+    document.getElementById('mv').textContent=moves;
+    placePlayer();
+  }
+}
+
+function showWin(){
+  const isLast=lvIdx>=LEVELS.length-1;
+  const stars=moves<=6?'⭐⭐⭐':moves<=10?'⭐⭐':moves<=16?'⭐':'';
+  document.getElementById('wo-stars').textContent=stars;
+  document.getElementById('wo-title').textContent=isLast?'🏆 Cavern Complete!':'🎉 Chamber Cleared!';
+  document.getElementById('wo-sub').textContent=isLast
+    ?`You escaped the Frost Cavern! ${moves} moves.`
+    :`Level ${lvIdx+1} done in ${moves} moves!`;
+  const btn=document.getElementById('wo-btn');
+  if(isLast){btn.textContent='🗺️ Back to Map';btn.onclick=goBack;}
+  else{btn.textContent=`Next Chamber ❄️`;btn.onclick=()=>initLevel(lvIdx+1);}
+  document.getElementById('win-overlay').classList.add('show');
+}
+
+function goBack(){
+  if(window.parent!==window&&window.parent.closeMiniGameScene)
+    window.parent.closeMiniGameScene();
+  else window.history.back();
+}
+
+// Keyboard
+document.addEventListener('keydown',e=>{
+  const m={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',
+    KeyW:'up',KeyS:'down',KeyA:'left',KeyD:'right'};
+  const d=m[e.code];
+  if(d){e.preventDefault();slide(d);}
+});
+
+// Touch swipe
+let ts=null;
+document.addEventListener('touchstart',e=>{ts={x:e.touches[0].clientX,y:e.touches[0].clientY};},{passive:true});
+document.addEventListener('touchend',e=>{
+  if(!ts)return;
+  const dx=e.changedTouches[0].clientX-ts.x, dy=e.changedTouches[0].clientY-ts.y;
+  if(Math.abs(dx)>28||Math.abs(dy)>28)
+    slide(Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up'));
+  ts=null;
+},{passive:true});
+
+initLevel(0);
+</script>
+</body>
+</html>
