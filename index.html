@@ -318,31 +318,48 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 .pnav-btn:hover{background:rgba(139,100,60,1)}
 
 /* ═══ MINI GAME MAP OVERLAY ═══ */
-#mini-map-overlay{position:absolute;inset:0;background:rgba(0,0,0,.9);z-index:80;display:none;align-items:center;justify-content:center}
+#mini-map-overlay{position:absolute;inset:0;background:rgba(0,0,0,.92);z-index:80;display:none;align-items:center;justify-content:center}
 #mini-map-overlay.open{display:flex}
-#map-container{width:700px;height:500px;background:radial-gradient(#1a3a1a,#0a1a0a);border:3px solid #5a8a5a;border-radius:16px;position:relative;overflow:hidden}
-#map-title{text-align:center;color:#88ff88;font-size:20px;padding:14px;letter-spacing:3px;text-shadow:0 0 10px #44ff44;border-bottom:1px solid #336633}
-/* map paths */
-.map-path{position:absolute;background:#336633;z-index:1}
-/* game nodes */
-.map-node{position:absolute;width:110px;text-align:center;cursor:pointer;z-index:2;transition:transform .2s}
-.map-node:hover{transform:scale(1.08)}
-.node-icon{width:70px;height:70px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:32px;margin:0 auto 4px;border:3px solid;box-shadow:0 0 16px;transition:all .3s}
-.node-name{font-size:11px;font-weight:bold;letter-spacing:1px}
-/* node colours */
-.n-add .node-icon{background:radial-gradient(#003366,#001133);border-color:#4488ff;box-shadow:0 0 16px #4488ff;color:#4488ff}
-.n-add .node-name{color:#4488ff}
-.n-sub .node-icon{background:radial-gradient(#660000,#330000);border-color:#ff4444;box-shadow:0 0 16px #ff4444}
-.n-sub .node-name{color:#ff4444}
-.n-mul .node-icon{background:radial-gradient(#006600,#003300);border-color:#44ff44;box-shadow:0 0 16px #44ff44}
-.n-mul .node-name{color:#44ff44}
-.n-div .node-icon{background:radial-gradient(#666600,#333300);border-color:#ffff44;box-shadow:0 0 16px #ffff44}
-.n-div .node-name{color:#ffff44}
-.n-dam .node-icon{background:radial-gradient(#660066,#330033);border-color:#ff44ff;box-shadow:0 0 20px #ff44ff;font-size:28px}
-.n-dam .node-name{color:#ff44ff;font-size:13px}
+#map-container{width:700px;height:510px;background:radial-gradient(ellipse at 50% 30%,#0d1f0d,#050d05);border:3px solid #4a7a4a;border-radius:18px;position:relative;overflow:hidden}
+#map-title{text-align:center;color:#88ff88;font-size:18px;padding:11px;letter-spacing:3px;text-shadow:0 0 10px #44ff44;border-bottom:1px solid #2a5a2a;font-family:Georgia,serif}
+#map-subtitle{text-align:center;color:#6aaa6a;font-size:10px;letter-spacing:2px;padding:4px 0 6px;border-bottom:1px solid #1a3a1a}
+/* world map regions grid */
+#map-regions{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:1fr 1fr;gap:10px;padding:10px 14px;height:420px}
+.map-region{border-radius:12px;cursor:pointer;transition:transform .2s,box-shadow .3s;position:relative;overflow:hidden;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;text-align:center;padding:10px 8px}
+.map-region:hover{transform:scale(1.05)}
+.map-region.r-center{grid-column:2;grid-row:1/3;display:flex}
+/* region colours */
+.r-lava{background:linear-gradient(160deg,#3d0a00,#6b1500);border:2px solid #ff4400;box-shadow:0 0 18px rgba(255,68,0,.35)}
+.r-lava:hover{box-shadow:0 0 30px rgba(255,68,0,.65)}
+.r-ice{background:linear-gradient(160deg,#001a3d,#003366);border:2px solid #44aaff;box-shadow:0 0 18px rgba(68,170,255,.35)}
+.r-ice:hover{box-shadow:0 0 30px rgba(68,170,255,.65)}
+.r-obstacle{background:linear-gradient(160deg,#1e0033,#3d0066);border:2px solid #cc44ff;box-shadow:0 0 18px rgba(204,68,255,.35)}
+.r-obstacle:hover{box-shadow:0 0 30px rgba(204,68,255,.65)}
+.r-code{background:linear-gradient(160deg,#2a2200,#4a3a00);border:2px solid #ffdd44;box-shadow:0 0 18px rgba(255,221,68,.35)}
+.r-code:hover{box-shadow:0 0 30px rgba(255,221,68,.65)}
+.r-maze{background:linear-gradient(160deg,#003322,#005533);border:2px solid #44ff99;box-shadow:0 0 18px rgba(68,255,153,.35)}
+.r-maze:hover{box-shadow:0 0 30px rgba(68,255,153,.65)}
+.r-center{background:linear-gradient(160deg,#1a0022,#2a0044);border:2px solid #aa66ff;box-shadow:0 0 22px rgba(170,102,255,.45)}
+.r-center:hover{box-shadow:0 0 36px rgba(170,102,255,.75)}
+.region-icon{font-size:34px;line-height:1}
+.region-name{font-size:11px;font-weight:bold;letter-spacing:1px;text-transform:uppercase}
+.region-game{font-size:9px;font-style:italic;opacity:.85;line-height:1.3;padding:0 4px}
+.r-lava .region-name{color:#ff8844}
+.r-lava .region-game{color:#ffaa88}
+.r-ice .region-name{color:#88ccff}
+.r-ice .region-game{color:#aaddff}
+.r-obstacle .region-name{color:#ee88ff}
+.r-obstacle .region-game{color:#ddaaff}
+.r-code .region-name{color:#ffee88}
+.r-code .region-game{color:#ffeeaa}
+.r-maze .region-name{color:#88ffcc}
+.r-maze .region-game{color:#aaffdd}
+.r-center .region-name{color:#cc99ff;font-size:13px}
+.r-center .region-game{color:#ddbbff}
+.r-center .region-icon{font-size:44px}
 #map-close{position:absolute;top:10px;right:12px;background:none;border:2px solid #88ff88;color:#88ff88;border-radius:6px;padding:4px 12px;cursor:pointer;font-size:13px}
 /* mini game play overlay */
-#mini-play{position:absolute;inset:0;background:rgba(0,0,0,.85);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+#mini-play{position:absolute;inset:0;background:rgba(0,0,0,.88);display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px}
 #mini-play.open{display:flex}
 #mp-title{color:#ffd700;font-size:22px;font-weight:bold}
 #mp-desc{color:#ffcc88;font-size:13px;font-style:italic}
@@ -771,42 +788,41 @@ body.sharp-off #pcp-img-wrap img{filter:none}
 <div id="mini-map-overlay">
   <div id="map-container">
     <div id="map-title">🗺️ MINI GAME WORLD MAP 🗺️</div>
+    <div id="map-subtitle">Choose a region to explore</div>
     <button id="map-close" onclick="closeMiniMap()">✕ EXIT</button>
 
-    <!-- Paths -->
-    <div class="map-path" style="width:4px;height:80px;left:174px;top:180px;border-radius:2px;background:#336633"></div>
-    <div class="map-path" style="width:4px;height:80px;right:174px;top:180px;border-radius:2px;background:#336633"></div>
-    <div class="map-path" style="width:4px;height:80px;left:174px;top:330px;border-radius:2px;background:#336633"></div>
-    <div class="map-path" style="width:4px;height:80px;right:174px;top:330px;border-radius:2px;background:#336633"></div>
-    <div class="map-path" style="height:4px;width:80px;left:230px;top:390px;border-radius:2px;background:#336633"></div>
-    <div class="map-path" style="height:4px;width:80px;right:230px;top:390px;border-radius:2px;background:#336633"></div>
-    <div class="map-path" style="height:4px;width:80px;left:230px;top:240px;border-radius:2px;background:#336633"></div>
-    <div class="map-path" style="height:4px;width:80px;right:230px;top:240px;border-radius:2px;background:#336633"></div>
-
-    <!-- 4 Operation Era (top-left) -->
-    <div class="map-node n-add" style="left:60px;top:160px" onclick="playMiniGame('add')">
-      <div class="node-icon">🔢</div>
-      <div class="node-name">4 OPERATION<br>ERA</div>
-    </div>
-    <!-- Pattern-drops (top-right) -->
-    <div class="map-node n-mul" style="right:60px;top:160px" onclick="playMiniGame('mul')">
-      <div class="node-icon">🔮</div>
-      <div class="node-name">PATTERN<br>DROPS</div>
-    </div>
-    <!-- DAMsVille (centre) -->
-    <div class="map-node n-dam" style="left:50%;top:260px;transform:translateX(-50%)" onclick="playMiniGame('dam')">
-      <div class="node-icon">🏰</div>
-      <div class="node-name">DAMsVILLE<br><span style="font-size:9px">(All 4!)</span></div>
-    </div>
-    <!-- Palindrome-ville (bottom-left) -->
-    <div class="map-node n-sub" style="left:60px;top:350px" onclick="playMiniGame('sub')">
-      <div class="node-icon">🔄</div>
-      <div class="node-name">PALINDROME<br>VILLE</div>
-    </div>
-    <!-- POPped Your Mind (bottom-right) -->
-    <div class="map-node n-div" style="right:60px;top:350px" onclick="playMiniGame('div')">
-      <div class="node-icon">💥</div>
-      <div class="node-name">POPped YOUR<br>MIND</div>
+    <!-- 5-region world map -->
+    <div id="map-regions">
+      <!-- 🌋 Lava Region (top-left) -->
+      <div class="map-region r-lava" onclick="playMiniGame('lava')">
+        <div class="region-icon">🌋</div>
+        <div class="region-name">🔴 LAVA REGION</div>
+        <div class="region-game">Lava Ruins<br>React before the lava rises!</div>
+      </div>
+      <!-- 🌀 Maze Region (center — spans 2 rows) -->
+      <div class="map-region r-center r-maze" onclick="playMiniGame('maze')">
+        <div class="region-icon">🌀</div>
+        <div class="region-name">🟢 MAZE REGION</div>
+        <div class="region-game">Maze Garden<br>Follow clues &amp; find the center!</div>
+      </div>
+      <!-- ❄️ Ice Region (top-right) -->
+      <div class="map-region r-ice" onclick="playMiniGame('ice')">
+        <div class="region-icon">❄️</div>
+        <div class="region-name">🔵 ICE REGION</div>
+        <div class="region-game">Frost Gear Cavern<br>Spot the pattern before it freezes!</div>
+      </div>
+      <!-- 🏃 Obstacle Region (bottom-left) -->
+      <div class="map-region r-obstacle" onclick="playMiniGame('obstacle')">
+        <div class="region-icon">🏃</div>
+        <div class="region-name">🟣 OBSTACLE REGION</div>
+        <div class="region-game">Obstacle Park<br>Race the clock — jump &amp; dodge!</div>
+      </div>
+      <!-- 🔐 Code Region (bottom-right) -->
+      <div class="map-region r-code" onclick="playMiniGame('code')">
+        <div class="region-icon">🔐</div>
+        <div class="region-name">🟡 CODE REGION</div>
+        <div class="region-game">Puzzle Tower<br>Solve 10 floors of logic puzzles!</div>
+      </div>
     </div>
 
     <!-- Mini game play panel -->
@@ -815,7 +831,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div id="mp-desc"></div>
       <div id="mp-q"></div>
       <div id="mp-streak"><div class="mpdot" id="md1"></div><div class="mpdot" id="md2"></div><div class="mpdot" id="md3"></div></div>
-      <input type="number" id="mp-input" placeholder="?" onkeydown="if(event.key==='Enter')mpSubmit()">
+      <input type="number" id="mp-input" placeholder="?" onkeydown="if(event.key==='Enter')mpSubmit()" autocomplete="off">
       <button id="mp-submit" onclick="mpSubmit()">Submit ✓</button>
       <div id="mp-feedback"></div>
       <div id="mp-score"></div>
@@ -1248,20 +1264,21 @@ function awardGear(){
 // PAGE FLIP TO BATTLE
 // ═══════════════════════════════════════
 function goToBattlePage(){
-  // After 3 gears: go straight to password machine (fight scene launches after correct code)
+  // After 3 gears: flip to fight scene directly (password machine shows AFTER you win)
   if(G.flipMode==='manual'){
     $id('q-flip-btn').style.display='block';
     updateFlipStrip();
     return;
   }
-  _execFlipToMachine();
+  launchFightScene();
 }
 function manualFlipToBattle(){
   $id('q-flip-btn').style.display='none';
   $id('page-flip-strip').style.display='none';
-  _execFlipToMachine();
+  launchFightScene();
 }
 function _execFlipToMachine(){
+  _cSendGame({type:'sync_flip',target:'machine'});
   doFlip(()=>{
     $id('cave-scene').style.display='none';
     $id('battle-scene').style.display='flex'; // must stay visible — machine is a child of it
@@ -1292,6 +1309,7 @@ function launchFightScene(){
     src='battle.html?solo=1&pw='+pw+'&gears='+gearsParam+'&level='+lvl+'&p1n=Scholar&p1g=boy&p1c=Zach';
   }
   $id('mp-iframe').src=src;
+  _cSendGame({type:'sync_flip',target:'fight'});
   doFlip(()=>{
     $id('machine').classList.remove('visible');
     $id('cave-scene').style.display='none';
@@ -1301,18 +1319,19 @@ function launchFightScene(){
 }
 function onSoloBattleWin(leftoverGears){
   G.carryoverGears=(leftoverGears||[]).filter(n=>n);
+  // After winning the fight, flip to show the password machine
   doFlip(()=>{
     $id('mp-scene').style.display='none';
     $id('mp-iframe').src='';
-    $id('cave-scene').style.display='flex';
-    showPanel('q');
+    $id('cave-scene').style.display='none';
+    $id('battle-scene').style.display='flex';
+    $id('machine').classList.add('visible');
+    showPanel('intro');
   },()=>{
-    G.chapter++;
-    $id('chapter-title').textContent=`📖 Chapter ${G.chapter} of 12`;
-    saveGame();
-    showDialog(`🔓 Chapter ${G.chapter} Unlocked!`,`Great work! The dragon grows stronger…\nReady for Chapter ${G.chapter}?`,`Start Chapter ${G.chapter}!`,()=>{
-      startChapter();
-    });
+    G.phase='machine';
+    resetMachineDisplay();
+    G.machineInput='';
+    G.machineAttempts=0;
   });
 }
 
@@ -1444,12 +1463,24 @@ function mClear(){G.machineInput='';resetMachineDisplay();$id('m-msg').textConte
 function mEnter(){
   if(G.machineInput.length<3){$id('m-msg').textContent='Need 3 digits!';return}
   if(G.machineInput===G.password.join('')){
-    sfx('victory'); $id('m-msg').textContent='✅ CODE ACCEPTED! Now face the dragon!';
+    sfx('victory'); $id('m-msg').textContent='✅ CODE ACCEPTED! Chapter complete!';
     for(let i=0;i<3;i++)$id('ms-'+i).style.background='#003300';
     if(G.chapter===1){G.miniUnlocked=true;$id('mini-btn').disabled=false;$id('mini-btn').textContent='🎮 Play'}
     setTimeout(()=>{
       if(G.chapter>=12){clearSave();endGame();return}
-      launchFightScene();
+      G.chapter++;
+      $id('chapter-title').textContent=`📖 Chapter ${G.chapter} of 12`;
+      saveGame();
+      doFlip(()=>{
+        $id('machine').classList.remove('visible');
+        $id('battle-scene').style.display='none';
+        $id('cave-scene').style.display='flex';
+        showPanel('q');
+      },()=>{
+        showDialog(`🔓 Chapter ${G.chapter} Unlocked!`,`Great work! The dragon grows stronger…\nReady for Chapter ${G.chapter}?`,`Start Chapter ${G.chapter}!`,()=>{
+          startChapter();
+        });
+      });
     },1000);
   } else {
     sfx('wrong');
@@ -1519,25 +1550,41 @@ function showDirs(){toggleScroll();showDialog('📖 How to Play','1. Answer 9 ma
 // MINI GAME MAP
 // ═══════════════════════════════════════
 const MINI_INFO={
-  add:{name:'4 Operation Era',emoji:'🔢',desc:'Master all 4 operations — the era begins!',color:'#4488ff'},
-  sub:{name:'Palindrome-ville',emoji:'🔄',desc:'Find palindromes and crack the mirror code!',color:'#ff4444'},
-  mul:{name:'Pattern-drops',emoji:'🔮',desc:'Spot the pattern before it drops!',color:'#44ff44'},
-  div:{name:'POPped Your Mind',emoji:'💥',desc:'Mind-popping mixed challenge — all 4!',color:'#ffff44'},
-  dam:{name:'DAMsVILLE 🏰',emoji:'🏰',desc:'All 4 operations — the ultimate challenge!',color:'#ff44ff'},
+  lava:    {name:'🌋 Lava Ruins',        emoji:'🌋',desc:'React fast — answer before the lava rises!',color:'#ff6622'},
+  ice:     {name:'❄️ Frost Gear Cavern', emoji:'❄️',desc:'Spot the pattern before it freezes!',color:'#44aaff'},
+  obstacle:{name:'🏃 Obstacle Park',     emoji:'🏃',desc:'Race the clock — speed maths challenge!',color:'#cc44ff'},
+  code:    {name:'🔐 Puzzle Tower',      emoji:'🔐',desc:'Solve palindromes & logic puzzles!',color:'#ffdd44'},
+  maze:    {name:'🌀 Maze Garden',       emoji:'🌀',desc:'Follow the clues — find the center!',color:'#44ff99'},
 };
 function openMiniMap(){if(!G.miniUnlocked)return;toggleScroll();$id('mini-map-overlay').classList.add('open')}
 function closeMiniMap(){$id('mini-map-overlay').classList.remove('open');$id('mini-play').classList.remove('open')}
 function closeMiniPlay(){$id('mini-play').classList.remove('open')}
 
 function genMiniQ(type){
-  const ops={
-    add:()=>{const a=rnd(5,50),b=rnd(5,50);return{q:`${a} + ${b} = ?`,a:a+b}},
-    sub:()=>{const a=rnd(20,80),b=rnd(5,a);return{q:`${a} − ${b} = ?`,a:a-b}},
-    mul:()=>{const a=rnd(2,12),b=rnd(2,12);return{q:`${a} × ${b} = ?`,a:a*b}},
-    div:()=>{const a=rnd(2,12),b=rnd(2,12);return{q:`${a*b} ÷ ${a} = ?`,a:b}},
+  const add=()=>{const a=rnd(5,50),b=rnd(5,50);return{q:`${a} + ${b} = ?`,a:a+b}};
+  const sub=()=>{const a=rnd(20,80),b=rnd(5,a);return{q:`${a} − ${b} = ?`,a:a-b}};
+  const mul=()=>{const a=rnd(2,12),b=rnd(2,12);return{q:`${a} × ${b} = ?`,a:a*b}};
+  const div=()=>{const a=rnd(2,12),b=rnd(2,12);return{q:`${a*b} ÷ ${a} = ?`,a:b}};
+  // palindrome: give a 3-digit number, ask if it's a palindrome (1=yes,0=no)
+  const pal=()=>{
+    const nums=['121','131','141','151','161','171','181','191','202','212','232','252','323','434','545','656','767','878','989'];
+    const non=['123','456','234','345','567','678','789','891','213','456','321'];
+    const isPal=Math.random()<.5;
+    const n=isPal?pick(nums):pick(non);
+    return{q:`Is ${n} a palindrome? (1=yes, 0=no)`,a:isPal?1:0};
   };
-  if(type==='dam') return ops[pick(['add','sub','mul','div'])]();
-  return ops[type]();
+  // pattern: next number in sequence
+  const pat=()=>{
+    const start=rnd(1,10),step=rnd(1,8);
+    const seq=[start,start+step,start+step*2,start+step*3];
+    return{q:`${seq[0]}, ${seq[1]}, ${seq[2]}, ? = `,a:seq[3]};
+  };
+  if(type==='lava')     return pick([add,sub,mul,div])();
+  if(type==='ice')      return pat();
+  if(type==='obstacle') return pick([add,mul])();
+  if(type==='code')     return pick([pal,pat])();
+  if(type==='maze')     return pick([add,sub,mul,div,pat])();
+  return add();
 }
 let mpStreak=0, mpCurQ=null, mpGame=null;
 function playMiniGame(type){
@@ -1694,7 +1741,7 @@ function closeDialog(){
     <div class="mp-divider">── OR ──</div>
     <div class="mp-side-lbl">🎮 You are Player 2</div>
     <div class="mp-side-hint">Enter the code your friend gave you</div>
-    <input class="mp-input" type="text" id="mp-join-inp" placeholder="Enter code..." maxlength="8">
+    <input class="mp-input" type="text" id="mp-join-inp" placeholder="Enter code..." maxlength="8" autocomplete="off">
     <button class="mp-smb" onclick="mpJoin()">🚀 Join Friend's Battle</button>
     <button class="mp-close" onclick="$id('mp-overlay').classList.remove('open')">✕ Close</button>
   </div>
@@ -2290,6 +2337,16 @@ function _cHandleGame(msg){
       btn.classList.add('ready');
       btn.disabled=false;
       if(G.flipMode==='auto') setTimeout(()=>doMpBattle(),1400);
+    }
+  } else if(msg.type==='sync_flip'){
+    if(msg.target==='fight'&&_myPlayer>1){
+      // Non-host player receives flip-to-fight signal
+      if(G.phase==='questions'&&$id('panel-q').classList.contains('active')){
+        launchFightScene();
+      }
+    } else if(msg.target==='machine'&&_myPlayer>1){
+      // Non-host player receives flip-to-machine signal (after fight win)
+      _execFlipToMachine();
     }
   } else if(msg.type==='start'){
     if($id('panel-chars').classList.contains('active')) doMpBattle(true);

@@ -1596,18 +1596,38 @@ let _gsSelected=[]; // array of gear names chosen
 
 function showGearSelect(players){
   _gsPending=players;_gsSelected=[];
-  // Determine which types the team has
-  const teamTypes=new Set(players.map(p=>ROLE_GEAR_TYPE[p.character.role]).filter(Boolean));
   const cols=document.getElementById('gs-columns');cols.innerHTML='';
-  GEAR_SELECT_COLS.forEach(col=>{
+  // Only show gears that were EARNED in the book game (from URL param)
+  const earnedUnique=[...new Set(_gearsParam)];
+  if(!earnedUnique.length){
+    // No gears earned — go straight to battle
+    startBattle(players);
+    return;
+  }
+  // Group earned gears by type label
+  const byType={1:[],2:[],3:[]};
+  earnedUnique.forEach(name=>{
+    const data=GEAR_DATA[name];
+    if(data)byType[data.type].push(name);
+  });
+  const colDefs=[
+    {type:1,title:'TYPE 1 — HEALER',sub:'Power-ups'},
+    {type:2,title:'TYPE 2 — DEFENDER',sub:'Defence'},
+    {type:3,title:'TYPE 3 — FIGHTER',sub:'Attack'},
+  ];
+  // Determine which types the team can use
+  const teamTypes=new Set(players.map(p=>ROLE_GEAR_TYPE[p.character.role]).filter(Boolean));
+  colDefs.forEach(col=>{
+    const gearsForType=byType[col.type];
+    if(!gearsForType.length)return;
     const colDiv=document.createElement('div');
     colDiv.className='gs-col gs-col-t'+col.type+(teamTypes.has(col.type)?'':' gs-locked');
     const titleDiv=document.createElement('div');
     titleDiv.className='gs-col-title';titleDiv.textContent=col.title;
     const subDiv=document.createElement('div');
-    subDiv.className='gs-col-sub';subDiv.textContent=col.sub;
+    subDiv.className='gs-col-sub';subDiv.textContent='Earned: '+gearsForType.join(', ');
     colDiv.appendChild(titleDiv);colDiv.appendChild(subDiv);
-    col.gears.forEach(name=>{
+    gearsForType.forEach(name=>{
       const data=GEAR_DATA[name];if(!data)return;
       const canPick=teamTypes.has(col.type);
       const card=document.createElement('div');
@@ -1618,9 +1638,7 @@ function showGearSelect(players){
       const nm=document.createElement('div');nm.className='gs-gname';nm.textContent=name;
       const eff=document.createElement('div');eff.className='gs-geffect';eff.textContent=data.effect||'';
       card.appendChild(img);card.appendChild(nm);card.appendChild(eff);
-      if(canPick){
-        card.onclick=()=>gsPickGear(name);
-      }
+      if(canPick)card.onclick=()=>gsPickGear(name);
       colDiv.appendChild(card);
     });
     cols.appendChild(colDiv);
@@ -1657,9 +1675,8 @@ function gsUpdateSummary(){
 
 function beginBattleWithGears(){
   if(!_gsPending)return;
-  // Merge URL gears with gear-screen picks
-  const combined=[..._gearsParam,..._gsSelected];
-  _gearsParam.length=0;combined.forEach(g=>_gearsParam.push(g));
+  // Use only selected gears (they come from earned gears, no duplicates)
+  _gearsParam.length=0;_gsSelected.forEach(g=>_gearsParam.push(g));
   startBattle(_gsPending);
 }
 
