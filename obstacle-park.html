@@ -6,7 +6,7 @@
 <title>🏃 Obstacle Park</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0a0010;display:flex;flex-direction:column;align-items:center;
+body{background:#0a0010;display:flex;flex-direction:column;align-items:flex-start;
   height:100vh;overflow:hidden;padding:6px;gap:4px;
   font-family:'Segoe UI',system-ui,sans-serif;color:#ddaaff}
 #hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:870px}
@@ -234,12 +234,13 @@ function draw(){
   ctx.save();
   const py=player.duck?GROUND-player.h:player.y;
   if(_charImg3&&_charImg3.complete&&_charImg3.naturalWidth){
-    const sw=_charImg3.naturalWidth*0.3;
-    const ph=player.duck?player.h+4:player.h+16;
+    const iw=_charImg3.naturalWidth,ih=_charImg3.naturalHeight;
     const pw=player.duck?player.w+6:player.w+16;
-    // Duck: squish vertically
-    if(player.duck){ctx.transform(1,0,0,0.55,0,py+ph*0.9);}
-    ctx.drawImage(_charImg3,0,0,sw,_charImg3.naturalHeight,player.x-6,player.duck?-ph*0.45:py,pw,ph);
+    const ph=player.duck?player.h+4:player.h+16;
+    const sc2=Math.min(pw/iw,ph/ih);
+    const dw=iw*sc2,dh=ih*sc2;
+    if(player.duck){ctx.transform(1,0,0,0.6,0,py+dh*0.4);}
+    ctx.drawImage(_charImg3,0,0,iw,ih,player.x-6+(pw-dw)/2,player.duck?-dh*0.4:py,dw,dh);
   }else{
     ctx.font=`${player.duck?20:32}px serif`;ctx.textAlign='center';
     ctx.fillText(player.duck?'🙇':'🏃',player.x+player.w/2,py+player.h-2);
@@ -271,6 +272,11 @@ function loop(ts){
   draw();
   raf=requestAnimationFrame(loop);
 }
+function fitCanvas(){
+  const sc=Math.min(1,(window.innerWidth-12)/W,(window.innerHeight-80)/H);
+  cv.style.transform=`scale(${sc})`;cv.style.transformOrigin='top left';
+}
+window.addEventListener('resize',fitCanvas);fitCanvas();
 initLevel(0);
 requestAnimationFrame(ts=>{lastT=ts;requestAnimationFrame(loop);});
 </script>

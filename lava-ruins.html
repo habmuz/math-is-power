@@ -6,7 +6,7 @@
 <title>🌋 Lava Ruins</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#080000;display:flex;flex-direction:column;align-items:center;
+body{background:#080000;display:flex;flex-direction:column;align-items:flex-start;
   height:100vh;overflow:hidden;padding:6px;gap:4px;
   font-family:'Segoe UI',system-ui,sans-serif;color:#ffcc88}
 #hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:870px}
@@ -201,8 +201,10 @@ function draw(){
   const cx2=player.x+player.w/2;
   if(player.dir===-1){ctx.translate(cx2,0);ctx.scale(-1,1);ctx.translate(-cx2,0);}
   if(_charImg&&_charImg.complete&&_charImg.naturalWidth){
-    const sw=_charImg.naturalWidth*0.3;
-    ctx.drawImage(_charImg,0,0,sw,_charImg.naturalHeight,player.x-4,player.y,player.w+14,player.h+10);
+    const iw=_charImg.naturalWidth,ih=_charImg.naturalHeight;
+    const dw=player.w+14,dh=player.h+10;
+    const sc2=Math.min(dw/iw,dh/ih);
+    ctx.drawImage(_charImg,0,0,iw,ih,player.x-4+(dw-iw*sc2)/2,player.y,iw*sc2,ih*sc2);
   }else{
     ctx.font=`${player.h+4}px serif`;ctx.textAlign='left';
     ctx.fillText('🧑',player.x-4,player.y+player.h+2);
@@ -245,6 +247,11 @@ function loop(ts){
   draw();
   raf=requestAnimationFrame(loop);
 }
+function fitCanvas(){
+  const sc=Math.min(1,(window.innerWidth-12)/W,(window.innerHeight-80)/H);
+  cv.style.transform=`scale(${sc})`;cv.style.transformOrigin='top left';
+}
+window.addEventListener('resize',fitCanvas);fitCanvas();
 initLevel(0);
 requestAnimationFrame(ts=>{lastT=ts;requestAnimationFrame(loop);});
 </script>

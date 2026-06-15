@@ -192,22 +192,25 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 /* intro panel */
 #panel-intro{align-items:center;justify-content:center;text-align:center}
 #panel-intro h2{color:#5a2d00;font-size:18px;margin-bottom:8px}
-/* Solo character picker */
-#solo-picker{display:flex;gap:14px;justify-content:center;margin:8px 0 4px}
-.solo-char-btn{background:none;border:3px solid rgba(139,100,60,.3);border-radius:10px;
-  padding:0;cursor:pointer;transition:all .25s;overflow:hidden;width:80px;height:100px}
-.solo-char-btn img{width:240px;height:100px;object-fit:cover;object-position:0% 0%;
-  margin-left:0;display:block}
-.solo-char-btn.selected{border-color:#ffd700;box-shadow:0 0 14px rgba(255,215,0,.5)}
-.solo-char-btn:hover{border-color:#cc8800}
-.solo-char-name{font-size:9px;color:#5a2d00;font-weight:bold;text-align:center;
-  margin-top:2px;letter-spacing:.5px}
 .inst{background:rgba(139,100,60,.1);border-left:3px solid #8b4513;padding:5px 11px;border-radius:0 6px 6px 0;font-size:12px;color:#4a2000;text-align:left;width:100%}
 #friend-btn{margin-top:6px;padding:7px 22px;background:linear-gradient(#1a6699,#0d3d5c);color:#e0f4ff;border:none;border-radius:16px;font-size:13px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3);transition:transform .2s}
 #friend-btn:hover{transform:translateY(-2px)}
-#solo-btn{margin-top:3px;padding:5px 18px;background:rgba(139,100,60,.15);color:#5a2d00;border:1px solid rgba(139,100,60,.4);border-radius:14px;font-size:12px;font-family:Georgia,serif;cursor:pointer;transition:background .2s}
-#solo-btn:hover{background:rgba(139,100,60,.28)}
+#solo-player-btn{margin-top:3px;padding:7px 22px;background:linear-gradient(#5a2d00,#3a1800);color:#ffeedd;border:none;border-radius:16px;font-size:13px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3);transition:transform .2s}
+#solo-player-btn:hover{transform:translateY(-2px)}
 #level-select{margin-top:8px;padding:6px 12px;border:2px solid #8b4513;border-radius:6px;background:#fdf5e6;color:#2d0000;font-size:13px;font-family:Georgia,serif;cursor:pointer;width:200px}
+/* Solo picker overlay */
+#sp-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:300;align-items:center;justify-content:center}
+#sp-overlay.open{display:flex}
+#sp-box{background:linear-gradient(160deg,#f5e4a8,#e8c86a);border:3px solid #8b4513;border-radius:14px;padding:22px 28px;font-family:Georgia,serif;box-shadow:0 8px 40px rgba(0,0,0,.6);text-align:center;min-width:300px}
+#sp-box h3{color:#5a2d00;font-size:14px;letter-spacing:2px;border-bottom:2px solid #8b4513;padding-bottom:8px;margin-bottom:18px}
+.sp-chars{display:flex;gap:20px;justify-content:center;margin-bottom:18px}
+.sp-card{background:rgba(139,100,60,.1);border:3px solid rgba(139,100,60,.3);border-radius:12px;padding:10px 8px;cursor:pointer;transition:all .25s;display:flex;flex-direction:column;align-items:center;gap:6px}
+.sp-card img{height:180px;width:auto;max-width:120px;object-fit:contain;border-radius:8px;display:block}
+.sp-card .sp-name{font-size:10px;color:#5a2d00;font-weight:bold;letter-spacing:1px}
+.sp-card.selected{border-color:#ffd700;box-shadow:0 0 16px rgba(255,215,0,.5);background:rgba(255,215,0,.12)}
+.sp-card:hover:not(.selected){border-color:#cc8800}
+#sp-start{padding:8px 28px;background:linear-gradient(#5a2d00,#3a1800);color:#ffeedd;border:none;border-radius:16px;font-size:14px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3);margin-right:8px}
+#sp-close{padding:8px 18px;background:rgba(139,100,60,.15);color:#5a2d00;border:1px solid rgba(139,100,60,.4);border-radius:14px;font-size:12px;font-family:Georgia,serif;cursor:pointer}
 
 /* question panel */
 #narrator{background:rgba(90,45,0,.08);border:1px solid rgba(139,100,60,.3);border-radius:6px;padding:6px 11px;font-size:11px;color:#5a2d00;font-style:italic;min-height:32px}
@@ -677,26 +680,11 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="inst">🐉 Defeat the Dragon → flip page → Password Machine</div>
       <div class="inst">🔐 Enter the 3-digit password → unlock next Chapter</div>
       <div class="inst">🎮 Mini Games unlocked after Chapter 1!</div>
-      <!-- Solo character picker -->
-      <div id="solo-picker">
-        <div>
-          <button class="solo-char-btn" id="sc-girl" onclick="setSoloChar('Yun Seo','girl','chars/78a6f12a-220d-4596-bbb5-cb786095b267.jpg')">
-            <img src="chars/78a6f12a-220d-4596-bbb5-cb786095b267.jpg" alt="Yun Seo">
-          </button>
-          <div class="solo-char-name">YUN SEO</div>
-        </div>
-        <div>
-          <button class="solo-char-btn selected" id="sc-boy" onclick="setSoloChar('Leo','boy','chars/ad8d4e23-eec4-4ae2-9d31-76b420af265d.png')">
-            <img src="chars/ad8d4e23-eec4-4ae2-9d31-76b420af265d.png" alt="Leo">
-          </button>
-          <div class="solo-char-name">LEO</div>
-        </div>
-      </div>
       <select id="level-select" onchange="G.level=this.value;if(G.phase==='questions'&&curQ)nextQ()">
         <option value="P1">P1 – Primary 1</option><option value="P2">P2 – Primary 2</option><option value="P3" selected>P3 – Primary 3</option><option value="P4">P4 – Primary 4</option><option value="P5">P5 – Primary 5</option><option value="P6">P6 – Primary 6</option>
       </select>
       <button id="friend-btn" onclick="openMpOverlay()">🔗 Play with Friend</button>
-      <button id="solo-btn" onclick="startGame()">▶ Begin Adventure ✨</button>
+      <button id="solo-player-btn" onclick="openSoloPicker()">🧑 Solo Player</button>
     </div>
 
     <!-- Question panel -->
@@ -974,6 +962,9 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     <div class="adm-row">Chapter Password: <span id="adm-pw">—</span></div>
     <button class="adm-btn" onclick="admShowPw()">🔍 Reveal Password</button>
     <button class="adm-btn" onclick="admSkip()">⏭ Skip Chapter</button>
+    <button class="adm-btn" onclick="admSkipN()">⏭ Skip N Chapters</button>
+    <button class="adm-btn" onclick="admSkipToEnd()">📖 Skip to End</button>
+    <button class="adm-btn" onclick="admSkipToFight()">⚔️ Skip to Fight</button>
     <button class="adm-btn danger" onclick="admReset()">🗑 Reset Game</button>
     <button class="adm-btn close-adm" onclick="closeAdmin()">✕ Close</button>
   </div>
@@ -1406,6 +1397,7 @@ function launchFightScene(){
 }
 function onSoloBattleWin(leftoverGears){
   G.carryoverGears=(leftoverGears||[]).filter(n=>n);
+  G.allGears=G.carryoverGears.map(name=>({name}));
   // After winning the fight, flip to show the password machine
   doFlip(()=>{
     $id('mp-scene').style.display='none';
@@ -1630,6 +1622,21 @@ function admSkip(){
     showPanel('q');
   },()=>startChapter());
 }
+function admSkipN(){
+  const n=parseInt(prompt('Skip how many chapters?','1'));
+  if(!n||n<1)return;
+  closeAdmin();
+  G.chapter=Math.min(G.chapter+n,12);
+  $id('chapter-title').textContent=`📖 Chapter ${G.chapter} of 12`;
+  saveGame();
+  doFlip(()=>{$id('battle-scene').style.display='none';$id('machine').classList.remove('visible');$id('cave-scene').style.display='flex';showPanel('q');},()=>startChapter());
+}
+function admSkipToEnd(){closeAdmin();endGame();}
+function admSkipToFight(){
+  closeAdmin();
+  if(!G.gears.length)G.gears=[{name:'Sword'},{name:'Water'},{name:'Lamp'}];
+  launchFightScene();
+}
 function admReset(){if(confirm('Reset ALL progress?')){clearSave();location.reload();}}
 function showDirs(){toggleScroll();showDialog('📖 How to Play','1. Answer 9 math questions at your level\n2. 3 correct in a row → 1 ⚙️ Gear + 1 Password Digit\n3. Collect 3 Gears → flip page → Dragon Battle!\n4. Defeat the Dragon → flip page → Password Machine\n5. Enter the 3-digit Password → next Chapter\n6. 12 Chapters total!','Got it!',()=>{})}
 
@@ -1649,9 +1656,10 @@ function closeMiniMap(){$id('mini-map-overlay').classList.remove('open');$id('mi
 function closeMiniPlay(){$id('mini-play').classList.remove('open')}
 function setSoloChar(name,gender,img){
   G.soloChar={name,gender,img};
-  $id('sc-girl').classList.toggle('selected',gender==='girl');
-  $id('sc-boy').classList.toggle('selected',gender==='boy');
+  $id('sp-girl').classList.toggle('selected',gender==='girl');
+  $id('sp-boy').classList.toggle('selected',gender==='boy');
 }
+function openSoloPicker(){$id('sp-overlay').classList.add('open');}
 function openMiniGameScene(url){
   $id('mini-map-overlay').classList.remove('open');
   // Use multiplayer char if in multiplayer, else use solo char
@@ -1864,6 +1872,25 @@ function closeDialog(){
     <input class="mp-input" type="text" id="mp-join-inp" placeholder="Enter code..." maxlength="8" autocomplete="off">
     <button class="mp-smb" onclick="mpJoin()">🚀 Join Friend's Battle</button>
     <button class="mp-close" onclick="$id('mp-overlay').classList.remove('open')">✕ Close</button>
+  </div>
+</div>
+
+<!-- Solo picker overlay -->
+<div id="sp-overlay">
+  <div id="sp-box">
+    <h3>🧑 CHOOSE YOUR HERO</h3>
+    <div class="sp-chars">
+      <div class="sp-card selected" id="sp-boy" onclick="setSoloChar('Leo','boy','chars/ad8d4e23-eec4-4ae2-9d31-76b420af265d.png')">
+        <img src="chars/ad8d4e23-eec4-4ae2-9d31-76b420af265d.png" alt="Leo">
+        <div class="sp-name">LEO</div>
+      </div>
+      <div class="sp-card" id="sp-girl" onclick="setSoloChar('Yun Seo','girl','chars/78a6f12a-220d-4596-bbb5-cb786095b267.jpg')">
+        <img src="chars/78a6f12a-220d-4596-bbb5-cb786095b267.jpg" alt="Yun Seo">
+        <div class="sp-name">YUN SEO</div>
+      </div>
+    </div>
+    <button id="sp-start" onclick="startGame();$id('sp-overlay').classList.remove('open')">▶ Start Adventure</button>
+    <button id="sp-close" onclick="$id('sp-overlay').classList.remove('open')">✕ Close</button>
   </div>
 </div>
 

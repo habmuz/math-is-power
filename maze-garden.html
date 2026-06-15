@@ -182,8 +182,9 @@ function draw(){
   // Player sprite
   const px=offX+player.x*CS,py=offY+player.y*CS;
   if(_charImg2&&_charImg2.complete&&_charImg2.naturalWidth){
-    const sw=_charImg2.naturalWidth*0.3;
-    ctx.drawImage(_charImg2,0,0,sw,_charImg2.naturalHeight,px,py,CS,CS);
+    const iw=_charImg2.naturalWidth,ih=_charImg2.naturalHeight;
+    const sc2=Math.min(CS/iw,CS/ih);
+    ctx.drawImage(_charImg2,0,0,iw,ih,px+(CS-iw*sc2)/2,py+(CS-ih*sc2)/2,iw*sc2,ih*sc2);
   }else if(CS>=12){
     ctx.font=`${CS}px serif`;ctx.textAlign='center';ctx.fillText('🧑',px+CS/2,py+CS-1);
   }else{ctx.fillStyle='#00ffaa';ctx.fillRect(px+2,py+2,CS-4,CS-4);}
