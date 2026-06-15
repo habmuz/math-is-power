@@ -192,6 +192,16 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 /* intro panel */
 #panel-intro{align-items:center;justify-content:center;text-align:center}
 #panel-intro h2{color:#5a2d00;font-size:18px;margin-bottom:8px}
+/* Solo character picker */
+#solo-picker{display:flex;gap:14px;justify-content:center;margin:8px 0 4px}
+.solo-char-btn{background:none;border:3px solid rgba(139,100,60,.3);border-radius:10px;
+  padding:0;cursor:pointer;transition:all .25s;overflow:hidden;width:80px;height:100px}
+.solo-char-btn img{width:240px;height:100px;object-fit:cover;object-position:0% 0%;
+  margin-left:0;display:block}
+.solo-char-btn.selected{border-color:#ffd700;box-shadow:0 0 14px rgba(255,215,0,.5)}
+.solo-char-btn:hover{border-color:#cc8800}
+.solo-char-name{font-size:9px;color:#5a2d00;font-weight:bold;text-align:center;
+  margin-top:2px;letter-spacing:.5px}
 .inst{background:rgba(139,100,60,.1);border-left:3px solid #8b4513;padding:5px 11px;border-radius:0 6px 6px 0;font-size:12px;color:#4a2000;text-align:left;width:100%}
 #friend-btn{margin-top:6px;padding:7px 22px;background:linear-gradient(#1a6699,#0d3d5c);color:#e0f4ff;border:none;border-radius:16px;font-size:13px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3);transition:transform .2s}
 #friend-btn:hover{transform:translateY(-2px)}
@@ -667,11 +677,26 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="inst">🐉 Defeat the Dragon → flip page → Password Machine</div>
       <div class="inst">🔐 Enter the 3-digit password → unlock next Chapter</div>
       <div class="inst">🎮 Mini Games unlocked after Chapter 1!</div>
+      <!-- Solo character picker -->
+      <div id="solo-picker">
+        <div>
+          <button class="solo-char-btn" id="sc-girl" onclick="setSoloChar('Yun Seo','girl','chars/78a6f12a-220d-4596-bbb5-cb786095b267.jpg')">
+            <img src="chars/78a6f12a-220d-4596-bbb5-cb786095b267.jpg" alt="Yun Seo">
+          </button>
+          <div class="solo-char-name">YUN SEO</div>
+        </div>
+        <div>
+          <button class="solo-char-btn selected" id="sc-boy" onclick="setSoloChar('Leo','boy','chars/ad8d4e23-eec4-4ae2-9d31-76b420af265d.png')">
+            <img src="chars/ad8d4e23-eec4-4ae2-9d31-76b420af265d.png" alt="Leo">
+          </button>
+          <div class="solo-char-name">LEO</div>
+        </div>
+      </div>
       <select id="level-select" onchange="G.level=this.value;if(G.phase==='questions'&&curQ)nextQ()">
         <option value="P1">P1 – Primary 1</option><option value="P2">P2 – Primary 2</option><option value="P3" selected>P3 – Primary 3</option><option value="P4">P4 – Primary 4</option><option value="P5">P5 – Primary 5</option><option value="P6">P6 – Primary 6</option>
       </select>
       <button id="friend-btn" onclick="openMpOverlay()">🔗 Play with Friend</button>
-      <button id="solo-btn" onclick="startGame()">▶ Play Solo (Skip)</button>
+      <button id="solo-btn" onclick="startGame()">▶ Begin Adventure ✨</button>
     </div>
 
     <!-- Question panel -->
@@ -1031,6 +1056,7 @@ const G = {
   machineInput:'',
   machineAttempts:0,
   mpPlayers:[], // pre-selected characters for multiplayer [{playerName,gender,charName}]
+  soloChar:{name:'Leo',gender:'boy',img:'chars/ad8d4e23-eec4-4ae2-9d31-76b420af265d.png'},
 };
 
 // ═══════════════════════════════════════
@@ -1367,7 +1393,7 @@ function launchFightScene(){
           +'&p'+(i+1)+'c='+encodeURIComponent(p.charName);
     });
   } else {
-    src='battle.html?solo=1&pw='+pw+'&gears='+gearsParam+'&level='+lvl+'&p1n=Scholar&p1g=boy&p1c=Zach';
+    src='battle.html?solo=1&pw='+pw+'&gears='+gearsParam+'&level='+lvl+'&p1n=Scholar&p1g='+G.soloChar.gender+'&p1c='+encodeURIComponent(G.soloChar.name);
   }
   $id('mp-iframe').src=src;
   _cSendGame({type:'sync_flip',target:'fight'});
@@ -1621,11 +1647,17 @@ const MINI_INFO={
 function openMiniMap(){if(!G.miniUnlocked)return;toggleScroll();$id('mini-map-overlay').classList.add('open')}
 function closeMiniMap(){$id('mini-map-overlay').classList.remove('open');$id('mini-play').classList.remove('open')}
 function closeMiniPlay(){$id('mini-play').classList.remove('open')}
+function setSoloChar(name,gender,img){
+  G.soloChar={name,gender,img};
+  $id('sc-girl').classList.toggle('selected',gender==='girl');
+  $id('sc-boy').classList.toggle('selected',gender==='boy');
+}
 function openMiniGameScene(url){
   $id('mini-map-overlay').classList.remove('open');
+  // Use multiplayer char if in multiplayer, else use solo char
   const ch=G.mpPlayers&&G.mpPlayers[0]&&G.mpPlayers[0].character
     ?G.mpPlayers[0].character.img
-    :'chars/4834f4e7-7b2b-44b0-b223-2fd8f667b16f.jpg';
+    :G.soloChar.img;
   $id('mini-game-iframe').src=url+'?char='+encodeURIComponent(ch);
   $id('mini-game-scene').style.display='block';
 }
@@ -1971,6 +2003,7 @@ function closeMpScene(){
 const _IB='chars/';
 const _CHARS={
   girls:[
+    {name:'Yun Seo',role:'ultimate_guardian',img:_IB+'78a6f12a-220d-4596-bbb5-cb786095b267.jpg',desc:'Ultimate Guardian',soloOnly:true},
     {name:'Zoey',  role:'fighter',        img:_IB+'6e6c7b93-b806-492b-b2ae-40922105fef6.jpg',  desc:'Power Attacker'},
     {name:'Arya',  role:'defender',       img:_IB+'44513300-842f-4d72-9e69-92fca75c8ebc.jpg',  desc:'Defender'},
     {name:'Autumn',role:'math_master',    img:_IB+'53e32a3e-50f4-402e-baa9-d0de3cbd934d.jpg',  desc:'4 Ops Master'},
@@ -1978,6 +2011,7 @@ const _CHARS={
     {name:'Iris',  role:'pattern_master', img:_IB+'f9f0e704-044d-42d9-9a44-9bdb2e371cd4.png',  desc:'Pattern Master'},
   ],
   boys:[
+    {name:'Leo',   role:'ultimate_guardian',img:_IB+'ad8d4e23-eec4-4ae2-9d31-76b420af265d.png',desc:'Ultimate Guardian',soloOnly:true},
     {name:'Zach',  role:'fighter',        img:_IB+'4834f4e7-7b2b-44b0-b223-2fd8f667b16f.jpg',  desc:'Power Attacker'},
     {name:'Max',   role:'defender',       img:_IB+'d3d14242-4c81-46bf-a8b2-64b626fe149b.jpg',  desc:'Defender'},
     {name:'Alex',  role:'math_master',    img:_IB+'e74bd7d5-865b-4821-aa1d-808b5cdcf4b8.jpg',  desc:'4 Ops Master'},
@@ -1985,8 +2019,8 @@ const _CHARS={
     {name:'Isaac', role:'pattern_master', img:_IB+'fa170847-2e48-4e0d-b184-a90cad9a308f.jpg',  desc:'Pattern Master'},
   ]
 };
-const _RE={fighter:'⚔️',defender:'🛡️',healer:'💚',math_master:'🔢',pattern_master:'🔮'};
-const _RC={fighter:'#ef4444',defender:'#3b82f6',healer:'#22c55e',math_master:'#f97316',pattern_master:'#a855f7'};
+const _RE={fighter:'⚔️',defender:'🛡️',healer:'💚',math_master:'🔢',pattern_master:'🔮',ultimate_guardian:'⭐'};
+const _RC={fighter:'#ef4444',defender:'#3b82f6',healer:'#22c55e',math_master:'#f97316',pattern_master:'#a855f7',ultimate_guardian:'#ffd700'};
 // _pcSel: {gender_name: 1|2}
 let _pcSel={}, _pcFilter='all', _pcTurn=1;
 let _pcPrevChar=null; // currently previewed char {gender,name,c}
@@ -2022,8 +2056,8 @@ function pcTab(f,el){
 function renderPcGrid(){
   const grid=$id('pc-grid'); grid.innerHTML='';
   let chars=[];
-  if(_pcFilter!=='boys')  _CHARS.girls.forEach(c=>chars.push({...c,gender:'girl'}));
-  if(_pcFilter!=='girls') _CHARS.boys.forEach(c=>chars.push({...c,gender:'boy'}));
+  if(_pcFilter!=='boys')  _CHARS.girls.forEach(c=>{if(!c.soloOnly)chars.push({...c,gender:'girl'});});
+  if(_pcFilter!=='girls') _CHARS.boys.forEach(c=>{if(!c.soloOnly)chars.push({...c,gender:'boy'});});
 
   // Status line — cross-device vs same-device
   if(_myPlayer>0){

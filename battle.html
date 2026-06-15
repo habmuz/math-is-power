@@ -724,6 +724,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 const IB = 'chars/';
 const CHARS = {
   girls:[
+    {name:'Yun Seo',role:'ultimate_guardian',color:'#ffd700',img:IB+'78a6f12a-220d-4596-bbb5-cb786095b267.jpg',desc:'Ultimate Guardian',soloOnly:true},
     {name:'Zoey',  role:'fighter',        color:'#22c55e',img:IB+'6e6c7b93-b806-492b-b2ae-40922105fef6.jpg',  desc:'Power Attacker'},
     {name:'Arya',  role:'defender',       color:'#3b82f6',img:IB+'44513300-842f-4d72-9e69-92fca75c8ebc.jpg',  desc:'Power Defender'},
     {name:'Autumn',role:'math_master',    color:'#f97316',img:IB+'53e32a3e-50f4-402e-baa9-d0de3cbd934d.jpg',  desc:'4 Ops Master'},
@@ -731,6 +732,7 @@ const CHARS = {
     {name:'Iris',  role:'pattern_master', color:'#a855f7',img:IB+'f9f0e704-044d-42d9-9a44-9bdb2e371cd4.png',  desc:'Pattern Master'},
   ],
   boys:[
+    {name:'Leo',   role:'ultimate_guardian',color:'#ffd700',img:IB+'ad8d4e23-eec4-4ae2-9d31-76b420af265d.png',desc:'Ultimate Guardian',soloOnly:true},
     {name:'Zach',  role:'fighter',        color:'#22c55e',img:IB+'4834f4e7-7b2b-44b0-b223-2fd8f667b16f.jpg',  desc:'Power Attacker'},
     {name:'Max',   role:'defender',       color:'#3b82f6',img:IB+'d3d14242-4c81-46bf-a8b2-64b626fe149b.jpg',  desc:'Power Defender'},
     {name:'Alex',  role:'math_master',    color:'#f97316',img:IB+'e74bd7d5-865b-4821-aa1d-808b5cdcf4b8.jpg',  desc:'4 Ops Master'},
@@ -740,7 +742,8 @@ const CHARS = {
 };
 const ROLE_LBL = {
   fighter:'⚔️ Fighter',defender:'🛡️ Defender',
-  math_master:'🔢 Math Master',healer:'💚 Healer',pattern_master:'🔮 Pattern Master'
+  math_master:'🔢 Math Master',healer:'💚 Healer',pattern_master:'🔮 Pattern Master',
+  ultimate_guardian:'⭐ Ultimate Guardian'
 };
 const DRAGON_SUBS = [
   'The Dralioster watches with ancient, hungry eyes…',
@@ -1061,6 +1064,12 @@ function showRoleActions(){
   }else if(role==='healer'){
     const b=document.createElement('button');b.className='abtn b-heal';b.textContent='Heal Ally';
     b.onclick=()=>doAction('heal');c.appendChild(b);
+  }else if(role==='ultimate_guardian'){
+    [['⚔️ Attack','b-atk','attack'],['🛡️ Shield','b-shld','shield'],['💚 Heal','b-heal','heal']]
+      .forEach(([lbl,cls,act])=>{
+        const b=document.createElement('button');b.className='abtn '+cls;b.textContent=lbl;
+        b.onclick=()=>doAction(act);c.appendChild(b);
+      });
   }else{
     setTimeout(endTurn,300);return;
   }
@@ -1470,7 +1479,7 @@ const GEAR_DATA={
   Lamp:     {img:'gears/lamp.svg',        type:1,effect:'Brightens cave — see clearly for 60s'},
   Invisible:{img:'gears/invisible.svg',   type:1,effect:'Team invisible 35s — dragon cannot attack'},
 };
-const ROLE_GEAR_TYPE={fighter:3,defender:2,healer:1,math_master:null,pattern_master:null};
+const ROLE_GEAR_TYPE={fighter:3,defender:2,healer:1,math_master:null,pattern_master:null,ultimate_guardian:'all'};
 const ALL_GEAR_NAMES=['Immunity','Hourglass','Lamp','Invisible','Shield','Armor','Helmet','Sword','Fire','Water'];
 
 function renderGearTray(){
@@ -1482,6 +1491,7 @@ function renderGearTray(){
   // Only show gears that were actually earned AND match this player's role type
   const earnedNames=[...new Set(G.gearItems.map(g=>g.name))];
   const visibleNames=earnedNames.filter(name=>{
+    if(myType==='all')return true;
     const data=GEAR_DATA[name];if(!data)return false;
     return myType===data.type;
   });
@@ -1810,8 +1820,8 @@ function renderGallery(){
   const taken=getTakenChars(_cgIdx);
   const cur=pData[_cgIdx]||{};
   let chars=[];
-  if(_cgFilter==='all'||_cgFilter==='girls') CHARS.girls.forEach(c=>chars.push({...c,gender:'girl'}));
-  if(_cgFilter==='all'||_cgFilter==='boys')  CHARS.boys.forEach(c=>chars.push({...c,gender:'boy'}));
+  if(_cgFilter==='all'||_cgFilter==='girls') CHARS.girls.forEach(c=>{if(!c.soloOnly)chars.push({...c,gender:'girl'});});
+  if(_cgFilter==='all'||_cgFilter==='boys')  CHARS.boys.forEach(c=>{if(!c.soloOnly)chars.push({...c,gender:'boy'});});
 
   chars.forEach(c=>{
     const key=c.gender+'_'+c.name;
