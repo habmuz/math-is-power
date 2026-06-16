@@ -1138,7 +1138,7 @@ function adapt(ok){
 // ═══════════════════════════════════════
 // SAVE / LOAD
 // ═══════════════════════════════════════
-const SAVE_VERSION='20260603';
+const SAVE_VERSION='20260616';
 const SAVE_KEY='mathIsPower_save_'+SAVE_VERSION;
 // Wipe all old game saves from previous versions
 (function(){Object.keys(localStorage).filter(k=>k.startsWith('mathIsPower_')&&k!==SAVE_KEY).forEach(k=>localStorage.removeItem(k));})();
