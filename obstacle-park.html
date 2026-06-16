@@ -37,7 +37,7 @@ canvas{border-radius:8px;border:2px solid #2a0055;display:block;
 <div id="hdr">
   <button id="back-btn" onclick="goBack()">← Map</button>
   <h1>🏃 Obstacle Park</h1>
-  <div id="stats">Course <b id="lv">1</b>/3 &nbsp;|&nbsp; <b id="timer">0.0</b>s &nbsp;|&nbsp; Lives: <b id="lives">3</b></div>
+  <div id="stats">Course <b id="lv">1</b>/50 &nbsp;|&nbsp; <b id="timer">0.0</b>s &nbsp;|&nbsp; Lives: <b id="lives">3</b></div>
 </div>
 <canvas id="c" width="860" height="420"></canvas>
 <div id="ctrl">Space / ↑ = Jump &nbsp;·&nbsp; ↓ = Duck &nbsp;·&nbsp; Tap top to jump, bottom to duck</div>
@@ -57,35 +57,27 @@ const _charImg3=_charSrc3?Object.assign(new Image(),{src:_charSrc3}):null;
 const GROUND=320, PW=30, PH=42;
 const G=900, JUMP=-500;
 
-// Obstacle types: w=wall(jump over), b=beam(duck under), p=pit(jump over)
-// x = starting x from right, type, w=width
-function makeCourse(seed,speed){
-  // Generate a sequence of obstacles
+function makeCourse(n,speed){
+  function rng(s){let v=(s*9301+49297)%233280;return{next:()=>{v=(v*9301+49297)%233280;return v/233280;}};}
+  const r=rng(n+1);
   const obs=[];
-  let x=W+100;
-  const patterns=[
-    [{type:'w'},{gap:300},{type:'w'},{gap:250},{type:'b'},{gap:280},{type:'w'}],
-    [{type:'p'},{gap:200},{type:'b'},{gap:240},{type:'w'},{gap:200},{type:'p'}],
-    [{type:'w'},{gap:180},{type:'w'},{gap:220},{type:'p'},{gap:180},{type:'b'},{gap:200},{type:'w'}],
-  ];
-  const pat=patterns[seed%patterns.length];
-  for(const item of pat){
-    if(item.gap)x+=item.gap;
-    else{
-      obs.push({x,type:item.type,passed:false});
-      x+=180;
-    }
+  let x=W+120;
+  const types=['w','b','p'];
+  const nObs=5+Math.floor(n/4);
+  for(let i=0;i<nObs;i++){
+    x+=Math.floor(r.next()*120)+130;
+    obs.push({x,type:types[Math.floor(r.next()*3)],passed:false});
   }
-  // Add finish flag
-  obs.push({x:x+200,type:'finish',passed:false});
+  obs.push({x:x+280,type:'finish',passed:false});
   return obs;
 }
 
-const LEVELS=[
-  {speed:240,seed:0,lives:3,hint:'Watch for walls — jump over them!'},
-  {speed:290,seed:1,lives:3,hint:'Beams and pits — jump or duck!'},
-  {speed:340,seed:2,lives:2,hint:'Maximum speed — stay sharp!'},
-];
+const LEVELS=Array.from({length:50},(_,i)=>({
+  speed:200+i*16,
+  seed:i,
+  lives:i<20?3:i<40?2:1,
+  hint:i<10?'Jump walls, duck beams, leap pits!':i<25?'Faster — stay sharp!':'Maximum speed!',
+}));
 
 let lvIdx,player,obs,scroll,running,elapsed,lives,raf,lastT,waveBg=0,distDone;
 
@@ -234,13 +226,12 @@ function draw(){
   ctx.save();
   const py=player.duck?GROUND-player.h:player.y;
   if(_charImg3&&_charImg3.complete&&_charImg3.naturalWidth){
-    const iw=_charImg3.naturalWidth,ih=_charImg3.naturalHeight;
-    const pw=player.duck?player.w+6:player.w+16;
-    const ph=player.duck?player.h+4:player.h+16;
-    const sc2=Math.min(pw/iw,ph/ih);
-    const dw=iw*sc2,dh=ih*sc2;
-    if(player.duck){ctx.transform(1,0,0,0.6,0,py+dh*0.4);}
-    ctx.drawImage(_charImg3,0,0,iw,ih,player.x-6+(pw-dw)/2,player.duck?-dh*0.4:py,dw,dh);
+    const dw=player.duck?player.w+6:player.w+16;
+    const dh=player.duck?Math.round((player.h+16)*0.55):player.h+16;
+    const sc=dw/_charImg3.naturalWidth;
+    const srcH=Math.min(_charImg3.naturalHeight,Math.round(dh/sc));
+    if(player.duck){ctx.transform(1,0,0,0.55,0,py+dh*1.1);}
+    ctx.drawImage(_charImg3,0,0,_charImg3.naturalWidth,srcH,player.x-6,player.duck?-dh*0.1:py,dw,dh);
   }else{
     ctx.font=`${player.duck?20:32}px serif`;ctx.textAlign='center';
     ctx.fillText(player.duck?'🙇':'🏃',player.x+player.w/2,py+player.h-2);
@@ -277,6 +268,7 @@ function fitCanvas(){
   cv.style.transform=`scale(${sc})`;cv.style.transformOrigin='top left';
 }
 window.addEventListener('resize',fitCanvas);fitCanvas();
+window.focus();
 initLevel(0);
 requestAnimationFrame(ts=>{lastT=ts;requestAnimationFrame(loop);});
 </script>

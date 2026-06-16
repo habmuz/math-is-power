@@ -3,51 +3,52 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🔐 Puzzle Tower</title>
+<title>🏛️ Ancient Temple</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:radial-gradient(ellipse at 50% 0%,#0d1a00,#050a00);
-  font-family:'Segoe UI',system-ui,sans-serif;color:#ccff88;
+body{background:radial-gradient(ellipse at 50% 0%,#1a1200,#0a0800);
+  font-family:Georgia,serif;color:#e8c87a;
   display:flex;flex-direction:column;align-items:center;
   height:100vh;overflow:hidden;padding:8px;gap:6px}
 #hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:700px}
-#hdr h1{font-size:1.1rem;color:#aaff66;letter-spacing:2px;text-shadow:0 0 12px #44ff00}
-#back-btn{background:none;border:1px solid #224400;color:#446600;
+#hdr h1{font-size:1.1rem;color:#ffd700;letter-spacing:2px;text-shadow:0 0 12px #cc8800}
+#back-btn{background:none;border:1px solid #4a3800;color:#8b6914;
   border-radius:.4rem;padding:.22rem .55rem;font-size:.68rem;cursor:pointer}
-#back-btn:hover{color:#88ff44;border-color:#558800}
+#back-btn:hover{color:#ffd700;border-color:#cc8800}
 /* Progress bar */
-#progress-bar{width:100%;max-width:700px;height:8px;background:#0a1a00;border-radius:4px;overflow:hidden}
-#progress-fill{height:100%;background:linear-gradient(90deg,#44ff00,#aaff44);border-radius:4px;transition:width .5s ease}
+#progress-bar{width:100%;max-width:700px;height:8px;background:#1a1000;border-radius:4px;overflow:hidden}
+#progress-fill{height:100%;background:linear-gradient(90deg,#cc8800,#ffd700);border-radius:4px;transition:width .5s ease}
 /* Floor indicator */
-#floor-info{font-size:.72rem;color:#446600;display:flex;justify-content:space-between;width:100%;max-width:700px}
+#floor-info{font-size:.72rem;color:#8b6914;display:flex;justify-content:space-between;width:100%;max-width:700px}
 /* Tower card */
-#tower-card{background:linear-gradient(160deg,#0a1a00,#061000);
-  border:2px solid #2a5500;border-radius:14px;padding:20px 24px;
+#tower-card{background:linear-gradient(160deg,#1a1200,#0f0c00);
+  border:2px solid #5a3e00;border-radius:14px;padding:20px 24px;
   width:100%;max-width:700px;flex:1;display:flex;flex-direction:column;
-  gap:12px;box-shadow:0 0 30px rgba(80,200,0,.1)}
-.floor-badge{font-size:.7rem;font-weight:700;letter-spacing:2px;color:#447700;
-  text-transform:uppercase;padding:.2rem .6rem;border:1px solid #336600;
+  gap:12px;box-shadow:0 0 30px rgba(200,140,0,.1);
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 38px,rgba(200,140,0,.04) 39px)}
+.floor-badge{font-size:.7rem;font-weight:700;letter-spacing:2px;color:#cc9900;
+  text-transform:uppercase;padding:.2rem .6rem;border:1px solid #7a5500;
   border-radius:2rem;display:inline-block;width:fit-content}
-#q-text{font-size:1.15rem;font-weight:600;color:#ddff99;line-height:1.6;
-  background:rgba(80,200,0,.05);border-radius:8px;padding:14px 16px;
-  border:1px solid rgba(80,200,0,.15);white-space:pre-line}
+#q-text{font-size:1.15rem;font-weight:600;color:#ffe8a0;line-height:1.6;
+  background:rgba(200,140,0,.06);border-radius:8px;padding:14px 16px;
+  border:1px solid rgba(200,140,0,.2);white-space:pre-line}
 /* Choices */
 #choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.choice-btn{padding:.65rem 1rem;background:rgba(80,200,0,.07);
-  border:1.5px solid #2a5500;border-radius:.6rem;color:#bbff88;
+.choice-btn{padding:.65rem 1rem;background:rgba(200,140,0,.08);
+  border:1.5px solid #5a3e00;border-radius:.6rem;color:#e8c87a;
   font-size:.88rem;cursor:pointer;transition:all .18s;text-align:left;font-weight:600}
-.choice-btn:hover{background:rgba(80,200,0,.18);border-color:#66aa00}
-.choice-btn.correct{background:rgba(0,200,80,.25);border-color:#00ff88;color:#aaffcc}
+.choice-btn:hover{background:rgba(200,140,0,.2);border-color:#cc8800}
+.choice-btn.correct{background:rgba(0,200,80,.2);border-color:#00cc66;color:#aaffcc}
 .choice-btn.wrong{background:rgba(200,0,0,.2);border-color:#ff4444;color:#ffaaaa}
 /* Text input */
 #text-row{display:flex;gap:8px}
-#ans-inp{flex:1;background:rgba(80,200,0,.07);border:1.5px solid #2a5500;
-  border-radius:.55rem;padding:.55rem .9rem;color:#ccff88;font-size:1rem;outline:none}
-#ans-inp:focus{border-color:#66aa00}
-#sub-btn{padding:.55rem 1.4rem;background:linear-gradient(135deg,#1a6600,#0d4400);
-  border:2px solid #44aa00;border-radius:.55rem;color:#aaffaa;font-size:.88rem;
+#ans-inp{flex:1;background:rgba(200,140,0,.07);border:1.5px solid #5a3e00;
+  border-radius:.55rem;padding:.55rem .9rem;color:#e8c87a;font-size:1rem;outline:none}
+#ans-inp:focus{border-color:#cc8800}
+#sub-btn{padding:.55rem 1.4rem;background:linear-gradient(135deg,#7a5500,#4a3300);
+  border:2px solid #cc8800;border-radius:.55rem;color:#ffd700;font-size:.88rem;
   font-weight:700;cursor:pointer;transition:all .2s}
-#sub-btn:hover{background:linear-gradient(135deg,#2a8800,#1a5500)}
+#sub-btn:hover{background:linear-gradient(135deg,#cc8800,#7a5500)}
 /* Yes/No */
 #yn-row{display:flex;gap:12px}
 .yn-btn{flex:1;padding:.65rem;border-radius:.6rem;font-size:1rem;font-weight:700;
@@ -58,31 +59,31 @@ body{background:radial-gradient(ellipse at 50% 0%,#0d1a00,#050a00);
 .yn-no:hover{background:rgba(200,0,60,.25)}
 /* Feedback */
 #feedback{font-size:.88rem;min-height:1.2rem;font-weight:600;text-align:center}
-.fb-ok{color:#88ff66}.fb-no{color:#ff8888}.fb-hint{color:#ffcc44}
+.fb-ok{color:#ffd700}.fb-no{color:#ff8888}.fb-hint{color:#ffcc44}
 /* Tries */
 #tries-dots{display:flex;gap:5px;justify-content:center}
-.tdot{width:9px;height:9px;border-radius:50%;background:#1a3300;border:1.5px solid #2a5500}
+.tdot{width:9px;height:9px;border-radius:50%;background:#2a1800;border:1.5px solid #5a3e00}
 .tdot.used{background:#ff4444;border-color:#ff8888}
 /* Character mascot */
 #char-mascot{position:absolute;bottom:0;right:12px;width:72px;height:100px;
   object-fit:cover;object-position:0% 0%;
-  filter:drop-shadow(0 0 8px rgba(80,200,0,.4));pointer-events:none}
+  filter:drop-shadow(0 0 8px rgba(200,140,0,.5));pointer-events:none}
 /* Win screen */
-#win-screen{display:none;position:absolute;inset:0;background:rgba(0,8,0,.95);
+#win-screen{display:none;position:absolute;inset:0;background:rgba(10,7,0,.96);
   flex-direction:column;align-items:center;justify-content:center;gap:16px;
   border-radius:14px}
 #win-screen.show{display:flex}
 .win-badge{font-size:4rem;animation:spin 3s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.win-title{font-size:2rem;font-weight:900;color:#aaff66;text-shadow:0 0 24px #44ff00}
-.win-sub{font-size:.9rem;color:#668844}
-.win-btn{padding:.7rem 2rem;background:linear-gradient(135deg,#1a6600,#0d4400);
-  border:2px solid #44aa00;border-radius:.6rem;color:#aaffaa;font-size:.9rem;
+.win-title{font-size:2rem;font-weight:900;color:#ffd700;text-shadow:0 0 24px #cc8800}
+.win-sub{font-size:.9rem;color:#8b6914}
+.win-btn{padding:.7rem 2rem;background:linear-gradient(135deg,#7a5500,#4a3300);
+  border:2px solid #cc8800;border-radius:.6rem;color:#ffd700;font-size:.9rem;
   font-weight:700;cursor:pointer;transition:all .2s}
-.win-btn:hover{background:linear-gradient(135deg,#2a8800,#1a5500);
-  box-shadow:0 0 16px rgba(80,200,0,.4)}
+.win-btn:hover{background:linear-gradient(135deg,#cc8800,#7a5500);
+  box-shadow:0 0 16px rgba(200,140,0,.5)}
 /* Floor complete flash */
-#floor-flash{display:none;position:absolute;inset:0;background:rgba(80,200,0,.12);
+#floor-flash{display:none;position:absolute;inset:0;background:rgba(200,140,0,.1);
   border-radius:14px;animation:flash .4s ease forwards}
 #floor-flash.show{display:block}
 @keyframes flash{0%{opacity:1}100%{opacity:0}}
@@ -91,8 +92,8 @@ body{background:radial-gradient(ellipse at 50% 0%,#0d1a00,#050a00);
 <body>
 <div id="hdr">
   <button id="back-btn" onclick="goBack()">← Map</button>
-  <h1>🔐 Puzzle Tower</h1>
-  <div style="font-size:.72rem;color:#446600">Floor <b id="fl-cur">1</b>/10</div>
+  <h1>🏛️ Ancient Temple</h1>
+  <div style="font-size:.72rem;color:#8b6914">Floor <b id="fl-cur">1</b>/50</div>
 </div>
 <div id="progress-bar"><div id="progress-fill" style="width:0%"></div></div>
 <div id="floor-info">
@@ -124,26 +125,61 @@ body{background:radial-gradient(ellipse at 50% 0%,#0d1a00,#050a00);
 
 <script>
 const PUZZLES=[
-  {q:'What number comes next?\n1 → 2 → 4 → 8 → ?',type:'choice',
-   choices:['10','12','16','20'],ans:'16',hint:'Each number doubles!'},
-  {q:'Is RACECAR a palindrome?\n(reads same forwards and backwards)',type:'yn',ans:'yes',
-   hint:'R-A-C-E-C-A-R... read it backwards!'},
-  {q:'Which doesn\'t belong?\nTRIANGLE · SQUARE · CIRCLE · BANANA',type:'choice',
-   choices:['TRIANGLE','SQUARE','CIRCLE','BANANA'],ans:'BANANA',hint:'Three of these are shapes...'},
-  {q:'What pair comes next?\nAB → CD → EF → ?',type:'choice',
-   choices:['GI','GH','HI','FG'],ans:'GH',hint:'Pairs of alphabet letters in order!'},
-  {q:'What number comes next?\n1 → 1 → 2 → 3 → 5 → ?',type:'choice',
-   choices:['6','7','8','9'],ans:'8',hint:'Add the two numbers before it!'},
-  {q:'Which word IS a palindrome?\n(reads same forwards and backwards)',type:'choice',
-   choices:['TIGER','HOUSE','LEVEL','RIVER'],ans:'LEVEL',hint:'Read each one backwards!'},
-  {q:'All birds have wings.\nA penguin is a bird.\nDoes a penguin have wings?',type:'yn',
-   ans:'yes',hint:'Follow the logic step by step!'},
-  {q:'What comes next?\n2 → 6 → 18 → 54 → ?',type:'choice',
-   choices:['108','162','126','144'],ans:'162',hint:'Each number × 3!'},
-  {q:'Is MADAM a palindrome?\n(reads same forwards and backwards)',type:'yn',
-   ans:'yes',hint:'M-A-D-A-M... read it backwards!'},
-  {q:'🏆 BOSS PUZZLE\nWhat comes next?\n1 → 4 → 9 → 16 → 25 → ?',type:'choice',
-   choices:['30','36','35','42'],ans:'36',hint:'1² 2² 3² 4² 5²... square numbers!'},
+  // ── FLOOR 1-10: Basic Patterns & P1-P2 Maths ──
+  {q:'What comes next?\n2 → 4 → 6 → 8 → ?',type:'choice',choices:['9','10','11','12'],ans:'10',hint:'Count by 2s!'},
+  {q:'5 + 7 = ?',type:'text',ans:'12',hint:'Count on from 5: 6,7,8,9,10,11,12'},
+  {q:'Which is the biggest?\n3, 17, 9, 5',type:'choice',choices:['3','17','9','5'],ans:'17',hint:'Compare all four numbers!'},
+  {q:'14 − 6 = ?',type:'text',ans:'8',hint:'Count back 6 from 14'},
+  {q:'What comes next?\n1 → 2 → 4 → 8 → ?',type:'choice',choices:['10','12','16','20'],ans:'16',hint:'Each number doubles!'},
+  {q:'Is 24 an even number?',type:'yn',ans:'yes',hint:'Even numbers end in 0,2,4,6,8'},
+  {q:'3 × 4 = ?',type:'text',ans:'12',hint:'4 + 4 + 4 = ?'},
+  {q:'What shape has 3 sides?',type:'choice',choices:['Square','Circle','Triangle','Rectangle'],ans:'Triangle',hint:'Tri = three!'},
+  {q:'20 ÷ 4 = ?',type:'text',ans:'5',hint:'How many groups of 4 make 20?'},
+  {q:'What comes next?\n10 → 20 → 30 → 40 → ?',type:'choice',choices:['45','48','50','55'],ans:'50',hint:'Count by 10s!'},
+  // ── FLOOR 11-20: P3 Maths ──
+  {q:'48 + 35 = ?',type:'text',ans:'83',hint:'48 + 30 = 78, then + 5'},
+  {q:'7 × 8 = ?',type:'text',ans:'56',hint:'7 × 8: try 7 × 4 × 2 = 28 × 2'},
+  {q:'What is ½ of 36?',type:'text',ans:'18',hint:'Divide 36 by 2'},
+  {q:'How many minutes in 2 hours?',type:'choice',choices:['100','110','120','130'],ans:'120',hint:'60 × 2 = ?'},
+  {q:'Round 67 to the nearest 10.',type:'choice',choices:['60','65','70','80'],ans:'70',hint:'67 is closer to 70 than 60'},
+  {q:'What is the perimeter of a square with side 5 cm?',type:'choice',choices:['10 cm','15 cm','20 cm','25 cm'],ans:'20 cm',hint:'4 × 5 = ?'},
+  {q:'9 × 9 = ?',type:'text',ans:'81',hint:'The 9-times table pattern: digits sum to 9!'},
+  {q:'Is 37 a prime number?',type:'yn',ans:'yes',hint:'Check: no number from 2 to 6 divides 37 evenly'},
+  {q:'125 − 48 = ?',type:'text',ans:'77',hint:'125 − 50 = 75, then + 2'},
+  {q:'What fraction of 20 is 5?',type:'choice',choices:['¼','⅓','½','⅕'],ans:'¼',hint:'5 × ? = 20 → ? = 4, so 1 out of 4'},
+  // ── FLOOR 21-30: P4 Maths ──
+  {q:'24 × 5 = ?',type:'text',ans:'120',hint:'Multiply by 10 then halve: 240 ÷ 2'},
+  {q:'What is the area of a rectangle 8 cm × 6 cm?',type:'choice',choices:['28 cm²','40 cm²','48 cm²','56 cm²'],ans:'48 cm²',hint:'Area = length × width'},
+  {q:'⅔ + ⅓ = ?',type:'choice',choices:['1','5/6','3/6','4/6'],ans:'1',hint:'⅔ + ⅓ = 3/3 = 1'},
+  {q:'What is 15% of 200?',type:'choice',choices:['20','25','30','35'],ans:'30',hint:'10% of 200 = 20, 5% = 10, add them!'},
+  {q:'135 ÷ 5 = ?',type:'text',ans:'27',hint:'Divide 135 ÷ 5: 100÷5=20, 35÷5=7'},
+  {q:'What comes next?\n3 → 6 → 12 → 24 → ?',type:'choice',choices:['36','42','48','52'],ans:'48',hint:'Each number doubles!'},
+  {q:'A bag has 4 red and 6 blue beads.\nWhat fraction are red?',type:'choice',choices:['⅖','⅗','⅓','½'],ans:'⅖',hint:'4 red out of 10 total = 4/10 = 2/5'},
+  {q:'What is 7² (7 squared)?',type:'text',ans:'49',hint:'7 × 7 = ?'},
+  {q:'Convert: 2.5 kg = ___ g',type:'choice',choices:['250 g','2500 g','25 g','2050 g'],ans:'2500 g',hint:'1 kg = 1000 g, so 2.5 × 1000'},
+  {q:'A shirt costs $24 after 20% discount.\nWhat was the original price?',type:'choice',choices:['$28','$29','$30','$32'],ans:'$30',hint:'$24 = 80% of original, so ÷0.8'},
+  // ── FLOOR 31-40: P5-P6 Maths ──
+  {q:'Ratio of boys to girls is 3:2.\nIf there are 12 boys, how many girls?',type:'text',ans:'8',hint:'12 ÷ 3 = 1 part, × 2 = ?'},
+  {q:'Find the average of 14, 18, 22, 26.',type:'text',ans:'20',hint:'Add all 4, then divide by 4'},
+  {q:'What is 30% of 450?',type:'text',ans:'135',hint:'10% of 450 = 45, × 3 = ?'},
+  {q:'3/4 × 16 = ?',type:'text',ans:'12',hint:'÷ 4 first: 16÷4=4, then × 3'},
+  {q:'If speed = 60 km/h and time = 2.5 h,\nwhat is the distance?',type:'choice',choices:['120 km','140 km','150 km','160 km'],ans:'150 km',hint:'Distance = Speed × Time'},
+  {q:'What is the volume of a cuboid\n4 cm × 3 cm × 5 cm?',type:'choice',choices:['40 cm³','55 cm³','60 cm³','65 cm³'],ans:'60 cm³',hint:'Volume = l × w × h'},
+  {q:'Simplify: 36/48',type:'choice',choices:['2/3','3/4','5/6','4/5'],ans:'3/4',hint:'Divide top and bottom by 12'},
+  {q:'A tap fills a tank in 6 hours.\nHow much fills in 1.5 hours?',type:'choice',choices:['¼','⅓','¼','⅔'],ans:'¼',hint:'1.5 ÷ 6 = 0.25 = ¼'},
+  {q:'What is 5² + 12²?',type:'choice',choices:['144','149','169','196'],ans:'169',hint:'25 + 144 = ?'},
+  {q:'Express 0.125 as a fraction.',type:'choice',choices:['⅛','¼','1/16','1/5'],ans:'⅛',hint:'0.125 = 125/1000 = 1/8'},
+  // ── FLOOR 41-50: Boss Floors ──
+  {q:'A rectangle has perimeter 38 cm.\nIts length is 12 cm. What is its width?',type:'text',ans:'7',hint:'2(l+w)=38 → l+w=19 → w=19-12'},
+  {q:'Peter has 3 times as many stickers as Amy.\nTogether they have 48. How many does Peter have?',type:'text',ans:'36',hint:'Amy=1 part, Peter=3 parts, 4 parts=48 → 1 part=12'},
+  {q:'What is the next prime after 23?',type:'choice',choices:['25','27','29','31'],ans:'29',hint:'Check 25(÷5), 27(÷3), 29(prime!), 31(prime)'},
+  {q:'A shop sells 3 pens for $2.40.\nHow much do 7 pens cost?',type:'text',ans:'5.60',hint:'1 pen = $0.80, × 7 = ?'},
+  {q:'What is 2³ × 3²?',type:'choice',choices:['48','54','64','72'],ans:'72',hint:'2³=8, 3²=9, 8×9=?'},
+  {q:'In a class of 40, 60% are girls.\nHow many boys are there?',type:'text',ans:'16',hint:'Girls=60%×40=24, Boys=40-24'},
+  {q:'ABCDE is a pentagon with equal sides of 8 cm.\nWhat is its perimeter?',type:'text',ans:'40',hint:'5 sides × 8 cm each'},
+  {q:'If 3x + 5 = 20, what is x?',type:'text',ans:'5',hint:'3x = 20-5 = 15, x = 15÷3'},
+  {q:'⚔️ TEMPLE BOSS\nA train travels 300 km in 2.5 hours.\nWhat is its speed in km/h?',type:'choice',choices:['100','110','120','130'],ans:'120',hint:'Speed = Distance ÷ Time = 300 ÷ 2.5'},
+  {q:'🏛️ GRAND MASTER\nFind x: 4(x−3) = 2x + 6',type:'text',ans:'9',hint:'4x−12=2x+6 → 2x=18 → x=?'},
 ];
 
 let floor=0,tries=0,maxTries=3,score=0;
@@ -241,7 +277,7 @@ function flashFloor(){
 function showWin(){
   document.getElementById('progress-fill').style.width='100%';
   const stars=score>=9?'⭐⭐⭐':score>=7?'⭐⭐':score>=5?'⭐':'';
-  document.getElementById('win-sub').textContent=`${stars}  ${score}/10 floors solved correctly!`;
+  document.getElementById('win-sub').textContent=`${stars}  ${score}/50 floors solved correctly!`;
   document.getElementById('win-screen').classList.add('show');
 }
 

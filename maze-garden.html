@@ -37,7 +37,7 @@ canvas{border-radius:8px;border:2px solid #1a4422;display:block;
 <div id="hdr">
   <button id="back-btn" onclick="goBack()">← Map</button>
   <h1>🌀 Maze Garden</h1>
-  <div id="stats">Maze <b id="lv">1</b>/3 &nbsp;|&nbsp; Chests: <b id="chests">0</b>/3 &nbsp;|&nbsp; Steps: <b id="steps">0</b></div>
+  <div id="stats">Maze <b id="lv">1</b>/50 &nbsp;|&nbsp; Chests: <b id="chests">0</b>/<b id="ctotal">3</b> &nbsp;|&nbsp; Steps: <b id="steps">0</b></div>
 </div>
 <canvas id="c"></canvas>
 <div id="ctrl">Arrow keys / WASD to move &nbsp;·&nbsp; Find 3 chests then reach the center 🌀</div>
@@ -75,7 +75,7 @@ function genMaze(cols,rows){
   return grid;
 }
 
-const SIZES=[[21,15],[27,19],[33,23]]; // cols×rows for each level
+const SIZES=Array.from({length:50},(_,i)=>{const c=21+Math.floor(i/5)*2,r=15+Math.floor(i/5)*2;return[c%2?c:c+1,r%2?r:r+1];});
 let lvIdx=0,maze,cols,rows,CS,player,chests,collected,steps,exit,won,fog;
 
 function initLevel(i){
@@ -88,7 +88,8 @@ function initLevel(i){
   maze[cy][cx]=3; exit={x:cx,y:cy};
   // Place player near top-left
   player={x:1,y:1};
-  // Place 3 chests on open cells away from start and exit
+  // Place chests (more at higher levels)
+  const nChests=2+Math.floor(i/10);
   chests=[];
   const candidates=[];
   for(let y=1;y<rows-1;y++)for(let x=1;x<cols-1;x++){
@@ -96,14 +97,15 @@ function initLevel(i){
       candidates.push({x,y});
   }
   candidates.sort(()=>Math.random()-.5);
-  for(let i=0;i<3&&i<candidates.length;i++){
-    const c=candidates[i];chests.push({x:c.x,y:c.y,found:false});maze[c.y][c.x]=4;
+  for(let ci=0;ci<nChests&&ci<candidates.length;ci++){
+    const c=candidates[ci];chests.push({x:c.x,y:c.y,found:false});maze[c.y][c.x]=4;
   }
   // Fog of war array
   fog=Array.from({length:rows},()=>Array(cols).fill(true));
   revealFog(player.x,player.y);
   document.getElementById('lv').textContent=i+1;
   document.getElementById('chests').textContent='0';
+  document.getElementById('ctotal').textContent=nChests;
   document.getElementById('steps').textContent='0';
   document.getElementById('overlay').classList.remove('show');
 }
@@ -130,7 +132,7 @@ function move(dx,dy){
     document.getElementById('chests').textContent=collected;
   }
   // Reach exit
-  if(cell===3&&collected>=3){
+  if(cell===3&&collected>=chests.length){
     won=true;
     const isLast=lvIdx>=SIZES.length-1;
     const ov=document.getElementById('overlay');

@@ -136,75 +136,44 @@ const _pEl=document.getElementById('player');
 if(_charSrc){_pEl.innerHTML=`<img src="${_charSrc}" alt="">`;}
 else{_pEl.textContent='🧊';_pEl.style.fontSize='1.5rem';_pEl.style.display='flex';_pEl.style.alignItems='center';_pEl.style.justifyContent='center';}
 
-// ─── LEVELS ────────────────────────────────────────────────────────
+// ─── PROCEDURAL LEVEL GENERATOR ────────────────────────────────────
 // Cell: 0=ice  1=wall  2=gear  3=door  4=exit
-const LEVELS=[
-  {
-    cols:8,rows:6,
-    hint:'Rotate the gear to open the door!',
-    grid:[
-      1,1,1,1,1,1,1,1,
-      1,0,0,0,0,0,0,1,
-      1,0,1,0,2,0,0,1,
-      1,0,0,0,0,0,3,1,
-      1,0,0,1,0,0,4,1,
-      1,1,1,1,1,1,1,1,
-    ],
-    start:{x:1,y:1},
-    gears:[{id:0,x:4,y:2,rot:0,need:2,door:0}],
-    doors:[{id:0,x:6,y:3,open:false}],
-    exit:{x:6,y:4},
-  },
-  {
-    cols:10,rows:7,
-    hint:'Two gears — unlock both doors to escape!',
-    grid:[
-      1,1,1,1,1,1,1,1,1,1,
-      1,0,0,0,0,0,0,0,0,1,
-      1,0,0,1,0,2,0,0,0,1,
-      1,0,1,0,0,0,0,3,0,1,
-      1,0,0,0,2,0,1,0,0,1,
-      1,0,0,0,0,3,0,0,4,1,
-      1,1,1,1,1,1,1,1,1,1,
-    ],
-    start:{x:1,y:1},
-    gears:[
-      {id:0,x:5,y:2,rot:0,need:1,door:0},
-      {id:1,x:4,y:4,rot:0,need:3,door:1},
-    ],
-    doors:[
-      {id:0,x:7,y:3,open:false},
-      {id:1,x:5,y:5,open:false},
-    ],
-    exit:{x:8,y:5},
-  },
-  {
-    cols:11,rows:8,
-    hint:'Three gears — find the right order!',
-    grid:[
-      1,1,1,1,1,1,1,1,1,1,1,
-      1,0,0,0,0,0,0,0,0,0,1,
-      1,0,1,2,0,0,1,0,0,0,1,
-      1,0,0,0,0,3,0,0,2,0,1,
-      1,0,0,1,0,0,0,1,0,0,1,
-      1,2,0,0,3,0,0,0,0,3,1,
-      1,0,0,0,0,0,0,0,0,4,1,
-      1,1,1,1,1,1,1,1,1,1,1,
-    ],
-    start:{x:1,y:1},
-    gears:[
-      {id:0,x:3,y:2,rot:0,need:1,door:0},
-      {id:1,x:8,y:3,rot:0,need:2,door:1},
-      {id:2,x:1,y:5,rot:0,need:3,door:2},
-    ],
-    doors:[
-      {id:0,x:5,y:3,open:false},
-      {id:1,x:9,y:5,open:false},
-      {id:2,x:4,y:5,open:false},
-    ],
-    exit:{x:9,y:6},
-  },
-];
+function makeFrostLevel(n){
+  function rng(seed){let v=seed;return()=>{v=(v*1664525+1013904223)>>>0;return v/0x100000000;};}
+  const r=rng(n*31+17);
+  const cols=8+Math.floor(n/8)*2;  // 8→18 over 50 levels
+  const rows=6+Math.floor(n/10);   // 6→11 over 50 levels
+  const nG=1+Math.floor(n/10);     // 1..5 gears
+  // All walls
+  const grid=Array(rows*cols).fill(1);
+  // Carve: top corridor (row 1), bottom corridor (row rows-2), vertical mid column
+  const midX=Math.floor(cols/2);
+  for(let x=1;x<cols-1;x++){grid[1*cols+x]=0;grid[(rows-2)*cols+x]=0;}
+  for(let y=1;y<rows-1;y++) grid[y*cols+midX]=0;
+  // Carve gear row (row 3 or row rows-3 if small)
+  const gearRow=Math.min(3,rows-3);
+  for(let x=1;x<cols-1;x++) grid[gearRow*cols+x]=0;
+  // Place gears on gear row spread out
+  const gears=[],doors=[];
+  for(let g=0;g<nG;g++){
+    const gx=1+Math.floor(g*(cols-3)/(nG));
+    const need=1+(g%3);
+    // Door on vertical corridor (row between gear row and bottom, vary by g)
+    const dy=gearRow+1+Math.floor(g*(rows-gearRow-3)/Math.max(1,nG-1));
+    if(dy>=1&&dy<rows-1){
+      grid[gearRow*cols+gx]=2; // gear cell
+      grid[dy*cols+midX]=3;    // door on vertical corridor
+      gears.push({id:g,x:gx,y:gearRow,rot:0,need,door:g});
+      doors.push({id:g,x:midX,y:dy,open:false});
+    }
+  }
+  // Exit bottom-right
+  grid[(rows-2)*cols+(cols-2)]=4;
+  const hints=['Rotate the gear to open the door!','Two gears — unlock both doors!',
+    'Three gears — find the order!','Four gears — icy challenge!','Five gears — master the frost!'];
+  return{cols,rows,hint:hints[Math.min(nG-1,4)],grid,start:{x:1,y:1},gears,doors};
+}
+const LEVELS=Array.from({length:50},(_,i)=>makeFrostLevel(i));
 
 const CS=56; // cell size
 let lvIdx=0, grid=[], gears=[], doors=[], player={x:0,y:0}, moves=0, won=false;
@@ -229,7 +198,7 @@ function initLevel(i){
 
 function renderLevelBadge(){
   const el=document.getElementById('lvl-badge');
-  el.innerHTML=LEVELS.map((_,i)=>`<div class="lvl-dot ${i<lvIdx?'done':i===lvIdx?'cur':''}"></div>`).join('');
+  el.textContent=`Chamber ${lvIdx+1} / 50`;
 }
 
 function buildBoard(){

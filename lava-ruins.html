@@ -39,7 +39,7 @@ canvas{border-radius:8px;border:2px solid #3a1100;display:block;
 <div id="hdr">
   <button id="back-btn" onclick="goBack()">← Map</button>
   <h1>🌋 Lava Ruins</h1>
-  <div id="stats">Lv <b id="lv">1</b>/3 &nbsp;|&nbsp; <b id="timer">0.0</b>s &nbsp;|&nbsp; Lives: <b id="lives">3</b></div>
+  <div id="stats">Lv <b id="lv">1</b>/50 &nbsp;|&nbsp; <b id="timer">0.0</b>s &nbsp;|&nbsp; Lives: <b id="lives">3</b></div>
 </div>
 <div id="hint"></div>
 <div style="position:relative">
@@ -58,37 +58,30 @@ canvas{border-radius:8px;border:2px solid #3a1100;display:block;
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 const W=cv.width,H=cv.height;
 const G=900,SPEED=200,JUMP=-490,CS=20;
-// Character sprite
 const _charSrc=new URLSearchParams(location.search).get('char');
 const _charImg=_charSrc?Object.assign(new Image(),{src:_charSrc}):null;
 
-const LEVELS=[
-  {speed:18,lives:3,hint:'Reach the portal — jump the gaps!',
-   plats:[
-    {x:0,y:390,w:150,c:false},{x:190,y:355,w:110,c:false},
-    {x:330,y:315,w:90,c:true},{x:450,y:278,w:100,c:false},
-    {x:580,y:242,w:90,c:true},{x:700,y:200,w:130,c:false},
-    {x:580,y:140,w:100,c:false},{x:430,y:100,w:110,c:false},
-    {x:700,y:80,w:150,c:false},
-   ],exit:{x:715,y:36}},
-  {speed:28,lives:3,hint:'Faster lava — crumble platforms shake!',
-   plats:[
-    {x:0,y:400,w:120,c:false},{x:150,y:368,w:80,c:true},
-    {x:260,y:330,w:70,c:false},{x:360,y:292,w:80,c:true},
-    {x:470,y:255,w:70,c:false},{x:570,y:218,w:80,c:true},
-    {x:680,y:175,w:100,c:false},{x:540,y:125,w:90,c:true},
-    {x:400,y:82,w:100,c:false},{x:690,y:56,w:145,c:false},
-   ],exit:{x:705,y:14}},
-  {speed:40,lives:2,hint:'⚠️ Maximum heat — every move matters!',
-   plats:[
-    {x:0,y:405,w:100,c:false},{x:130,y:378,w:65,c:true},
-    {x:225,y:342,w:60,c:true},{x:315,y:305,w:70,c:false},
-    {x:415,y:268,w:60,c:true},{x:505,y:232,w:70,c:true},
-    {x:605,y:195,w:80,c:false},{x:475,y:155,w:85,c:true},
-    {x:340,y:115,w:80,c:false},{x:460,y:74,w:80,c:true},
-    {x:580,y:44,w:80,c:false},{x:700,y:50,w:150,c:false},
-   ],exit:{x:715,y:8}},
-];
+function _rng(seed){let s=seed*9301+49297;return()=>{s=(s*9301+49297)%233280;return s/233280;}}
+function makeLevel(n){
+  const r=_rng(n+1);
+  const speed=14+n*2.4;
+  const nP=5+Math.floor(n/2);
+  const crumble=Math.min(0.55,n/90);
+  const plats=[{x:0,y:395,w:Math.max(90,130-n),c:false}];
+  let x=0,y=385;
+  for(let i=0;i<nP;i++){
+    x+=Math.floor(r()*55)+55+Math.floor(n/5)*2;
+    if(x>780)break;
+    y-=Math.floor(r()*28)+14;
+    if(y<45)y=45+Math.floor(r()*30);
+    plats.push({x,y:Math.max(42,y),w:Math.floor(r()*65)+48,c:r()<crumble});
+  }
+  const last=plats[plats.length-1];
+  return{speed,lives:n<20?3:n<40?2:1,
+    hint:n<10?'Jump the gaps!':(n<25?'Watch for crumble platforms!':'⚠️ Maximum heat!'),
+    plats,exit:{x:Math.min(800,last.x+last.w-18),y:Math.max(18,last.y-42)}};
+}
+const LEVELS=Array.from({length:50},(_,i)=>makeLevel(i));
 
 let lvIdx,plats,player,lava,running,elapsed,lives,raf,lastT,waveT=0;
 
@@ -201,10 +194,10 @@ function draw(){
   const cx2=player.x+player.w/2;
   if(player.dir===-1){ctx.translate(cx2,0);ctx.scale(-1,1);ctx.translate(-cx2,0);}
   if(_charImg&&_charImg.complete&&_charImg.naturalWidth){
-    const iw=_charImg.naturalWidth,ih=_charImg.naturalHeight;
-    const dw=player.w+14,dh=player.h+10;
-    const sc2=Math.min(dw/iw,dh/ih);
-    ctx.drawImage(_charImg,0,0,iw,ih,player.x-4+(dw-iw*sc2)/2,player.y,iw*sc2,ih*sc2);
+    const dw=player.w+20,dh=player.h+14;
+    const sc=dw/_charImg.naturalWidth;
+    const srcH=Math.min(_charImg.naturalHeight,Math.round(dh/sc));
+    ctx.drawImage(_charImg,0,0,_charImg.naturalWidth,srcH,player.x-6,player.y,dw,dh);
   }else{
     ctx.font=`${player.h+4}px serif`;ctx.textAlign='left';
     ctx.fillText('🧑',player.x-4,player.y+player.h+2);
@@ -252,6 +245,7 @@ function fitCanvas(){
   cv.style.transform=`scale(${sc})`;cv.style.transformOrigin='top left';
 }
 window.addEventListener('resize',fitCanvas);fitCanvas();
+window.focus();
 initLevel(0);
 requestAnimationFrame(ts=>{lastT=ts;requestAnimationFrame(loop);});
 </script>
