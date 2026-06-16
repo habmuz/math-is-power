@@ -110,8 +110,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 /* ── BATTLE ── */
 #battle-screen{background:radial-gradient(ellipse at top,#1a0523 0%,#0d0d1f 55%,#0a0810 100%)}
 /* cave embers drifting up */
-#battle-screen{position:relative;overflow:hidden}
-#battle-screen::before{content:'🔥🔥🔥🔥🔥';position:absolute;bottom:-2rem;left:0;width:100%;font-size:1.1rem;
+#battle-screen::before{content:'🔥🔥🔥🔥🔥';position:fixed;bottom:-2rem;left:0;width:100%;font-size:1.1rem;
   letter-spacing:18vw;opacity:.18;pointer-events:none;animation:embersRise 6s linear infinite;z-index:0}
 @keyframes embersRise{0%{transform:translateY(0)}100%{transform:translateY(-100vh)}}
 .battle-arena{display:flex;flex-direction:column;height:100vh;max-height:100vh;overflow:hidden}
@@ -221,7 +220,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 #battle-timer-bar{width:70px;height:5px;background:rgba(255,255,255,.12);border-radius:3px}
 #battle-timer-fill{height:100%;background:linear-gradient(90deg,#22c55e,#f59e0b);border-radius:3px;transition:width 1s linear}
 /* Gear tray */
-#gear-tray{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:.4rem;padding:.6rem 1.25rem;border-top:1px solid var(--border);background:rgba(0,0,0,.4);flex-shrink:0}
+#gear-tray{display:flex;flex-wrap:wrap;gap:.4rem;padding:.6rem 1.25rem;border-top:1px solid var(--border);background:rgba(0,0,0,.4)}
 .gear-card{display:flex;flex-direction:column;align-items:center;gap:.15rem;padding:.35rem .4rem;
   background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.15);
   border-radius:.5rem;cursor:pointer;width:4.2rem;transition:all .2s;position:relative}
@@ -342,7 +341,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 /* Battle log */
 .b-log{background:rgba(255,255,255,.02);border:1px solid var(--border);border-radius:.7rem;
-  padding:.4rem .65rem;overflow-y:auto;max-height:48px}
+  padding:.4rem .65rem;overflow-y:auto;max-height:72px}
 .log-e{font-size:.72rem;color:var(--muted);padding:.15rem 0;border-bottom:1px solid rgba(255,255,255,.04);animation:fadein .25s ease}
 .log-e:last-child{border-bottom:none}
 .log-imp{color:var(--text)}
