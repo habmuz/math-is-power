@@ -1709,12 +1709,34 @@ function genMiniQ(type){
     const seq=[start,start+step,start+step*2,start+step*3];
     return{q:`${seq[0]}, ${seq[1]}, ${seq[2]}, ? = `,a:seq[3]};
   };
+  // POPped Your Mind — bigger ranges
+  const popAdd=()=>{const a=rnd(10,999),b=rnd(10,999);return{q:`${a} + ${b} = ?`,a:a+b}};
+  const popSub=()=>{const a=rnd(100,999),b=rnd(10,a);return{q:`${a} − ${b} = ?`,a:a-b}};
+  const popMul=()=>{const a=rnd(10,99),b=rnd(10,9999);return{q:`${a} × ${b} = ?`,a:a*b}};
+  const popDiv=()=>{const d=rnd(2,9),q=rnd(10,Math.floor(9999/d));return{q:`${d*q} ÷ ${d} = ?`,a:q}};
+  const popPal=()=>{
+    const gen=()=>{const n=rnd(100,9999);return String(n)};
+    const isPalStr=s=>s===s.split('').reverse().join('');
+    const pool=[];for(let i=0;i<6;i++){const s=gen();pool.push(s);}
+    const hasPal=pool.some(isPalStr),hasNon=pool.some(s=>!isPalStr(s));
+    if(!hasPal){const d=rnd(100,999);const h=String(d)[0];pool[0]=h+String(d).slice(1,String(d).length-1)+h;}
+    if(!hasNon){pool[1]=''+rnd(1,9)+rnd(0,9)+rnd(0,9)+'0';}
+    const isPal=Math.random()<.5;
+    const candidates=pool.filter(s=>isPalStr(s)===isPal);
+    const n=candidates[rnd(0,candidates.length-1)]||pool[0];
+    return{q:`Is ${n} a palindrome? (1=yes, 0=no)`,a:isPalStr(n)?1:0};
+  };
+  const popPat=()=>{
+    const start=rnd(1,50),step=rnd(2,15);
+    const seq=[start,start+step,start+step*2,start+step*3];
+    return{q:`${seq[0]}, ${seq[1]}, ${seq[2]}, ? = `,a:seq[3]};
+  };
   if(type==='lava')     return pick([add,sub,mul,div])();
   if(type==='ice')      return pat();
   if(type==='obstacle') return pick([add,mul])();
   if(type==='code')     return pick([pal,pat])();
   if(type==='maze')     return pick([add,sub,mul,div,pat])();
-  if(type==='pop')      return pick([add,sub,mul,div,pat,pal])();
+  if(type==='pop')      return pick([popAdd,popSub,popMul,popDiv,popPat,popPal])();
   return add();
 }
 const MINI_GAME_FILES={
