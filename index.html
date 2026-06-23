@@ -1047,6 +1047,7 @@ const G = {
   machineInput:'',
   machineAttempts:0,
   mpPlayers:[], // pre-selected characters for multiplayer [{playerName,gender,charName}]
+  partnerGears:[], // gears earned by the other device in multiplayer
   soloChar:{name:'Leo',gender:'boy',img:'chars/ad8d4e23-eec4-4ae2-9d31-76b420af265d.png'},
 };
 
@@ -1271,7 +1272,7 @@ function startChapter(){
     _cSendGame({type:'chapter_done',chapter:G.chapter});
     _pendingJoin=[];
   }
-  G.phase='questions'; G.streak=0; G.gears=[]; G.password=[];
+  G.phase='questions'; G.streak=0; G.gears=[]; G.password=[]; G.partnerGears=[];
   G.consC=0; G.consW=0; G.immunityUsed=false; G.defending=false;
   G.machineAttempts=0; $id('torn-paper').style.display='none'; $id('flip-zone').style.display='none'; $id('machine').classList.remove('visible');
   $id('q-flip-btn').style.display='none';
@@ -1327,7 +1328,20 @@ function renderGears(){
   }
 }
 function awardGear(){
-  const i=G.gears.length, gear=pickGear(i);
+  const i=G.gears.length;
+  let gear;
+  if(_mpCode&&G.mpPlayers&&G.mpPlayers[_myPlayer-1]){
+    const p=G.mpPlayers[_myPlayer-1];
+    const chars=(_CHARS[(p.gender||'boy')+'s']||[]);
+    const ch=chars.find(c=>c.name===p.charName);
+    const role=ch?ch.role:null;
+    if(role==='fighter')       gear=GEARS.t3[rnd(0,GEARS.t3.length-1)];
+    else if(role==='defender') gear=GEARS.t2[rnd(0,GEARS.t2.length-1)];
+    else if(role==='healer')   gear=GEARS.t1[rnd(0,GEARS.t1.length-1)];
+    else                       gear=ALL_G[rnd(0,ALL_G.length-1)];
+  }else{
+    gear=pickGear(i);
+  }
   G.gears.push(gear); G.allGears.push(gear);
   renderGears();
   const d=rnd(0,9); G.password.push(d);
@@ -1336,6 +1350,7 @@ function awardGear(){
   setFb(`🎉 ${gear.emoji} ${gear.name} earned! Digit ${d} revealed!`,'#8b4513');
   narrate('gear');
   updateFlipStrip();
+  if(_mpCode)_cSendGame({type:'gear_earned',gear});
 }
 
 // ═══════════════════════════════════════
@@ -1372,7 +1387,7 @@ function _execFlipToMachine(){
 
 function launchFightScene(){
   const pw=G.password.join('');
-  const allGears=[...G.gears,...(G.carryoverGears||[])];
+  const allGears=[...G.gears,...(G.carryoverGears||[]),...(G.partnerGears||[])];
   const gearsParam=encodeURIComponent(allGears.map(g=>g.name).join(','));
   const lvl=encodeURIComponent(G.level||'P3');
   let src;
@@ -2495,6 +2510,9 @@ function _cHandleGame(msg){
   } else if(msg.type==='battle_relay'){
     var iframe=$id('mp-iframe');
     if(iframe&&iframe.contentWindow)iframe.contentWindow.postMessage({type:'battle_relay',data:msg.data},'*');
+  } else if(msg.type==='gear_earned'){
+    if(!G.partnerGears)G.partnerGears=[];
+    G.partnerGears.push(msg.gear);
   } else if(msg.type==='sync_flip'){
     if(msg.target==='fight'&&_myPlayer>1){
       // Non-host player receives flip-to-fight signal
