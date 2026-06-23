@@ -6,33 +6,31 @@
 <title>🏛️ Ancient Temple</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:radial-gradient(ellipse at 50% 0%,#1a1200,#0a0800);
-  font-family:Georgia,serif;color:#e8c87a;
+body{font-family:Georgia,serif;color:#e8c87a;
   display:flex;flex-direction:column;align-items:center;
-  height:100vh;overflow:hidden;padding:8px;gap:6px}
+  height:100vh;overflow:hidden;padding:8px;gap:6px;position:relative}
+canvas#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+/* All UI above canvas */
+#hdr,#progress-bar,#floor-info,#tower-card{position:relative;z-index:2}
 #hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:700px}
 #hdr h1{font-size:1.1rem;color:#ffd700;letter-spacing:2px;text-shadow:0 0 12px #cc8800}
 #back-btn{background:none;border:1px solid #4a3800;color:#8b6914;
   border-radius:.4rem;padding:.22rem .55rem;font-size:.68rem;cursor:pointer}
 #back-btn:hover{color:#ffd700;border-color:#cc8800}
-/* Progress bar */
 #progress-bar{width:100%;max-width:700px;height:8px;background:#1a1000;border-radius:4px;overflow:hidden}
 #progress-fill{height:100%;background:linear-gradient(90deg,#cc8800,#ffd700);border-radius:4px;transition:width .5s ease}
-/* Floor indicator */
 #floor-info{font-size:.72rem;color:#8b6914;display:flex;justify-content:space-between;width:100%;max-width:700px}
-/* Tower card */
-#tower-card{background:linear-gradient(160deg,#1a1200,#0f0c00);
+#tower-card{background:rgba(15,10,0,.82);
   border:2px solid #5a3e00;border-radius:14px;padding:20px 24px;
   width:100%;max-width:700px;flex:1;display:flex;flex-direction:column;
-  gap:12px;box-shadow:0 0 30px rgba(200,140,0,.1);
-  background-image:repeating-linear-gradient(0deg,transparent,transparent 38px,rgba(200,140,0,.04) 39px)}
+  gap:12px;box-shadow:0 0 30px rgba(200,140,0,.15);backdrop-filter:blur(2px);
+  background-image:repeating-linear-gradient(0deg,transparent,transparent 38px,rgba(200,140,0,.03) 39px)}
 .floor-badge{font-size:.7rem;font-weight:700;letter-spacing:2px;color:#cc9900;
   text-transform:uppercase;padding:.2rem .6rem;border:1px solid #7a5500;
   border-radius:2rem;display:inline-block;width:fit-content}
 #q-text{font-size:1.15rem;font-weight:600;color:#ffe8a0;line-height:1.6;
   background:rgba(200,140,0,.06);border-radius:8px;padding:14px 16px;
   border:1px solid rgba(200,140,0,.2);white-space:pre-line}
-/* Choices */
 #choices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .choice-btn{padding:.65rem 1rem;background:rgba(200,140,0,.08);
   border:1.5px solid #5a3e00;border-radius:.6rem;color:#e8c87a;
@@ -40,7 +38,6 @@ body{background:radial-gradient(ellipse at 50% 0%,#1a1200,#0a0800);
 .choice-btn:hover{background:rgba(200,140,0,.2);border-color:#cc8800}
 .choice-btn.correct{background:rgba(0,200,80,.2);border-color:#00cc66;color:#aaffcc}
 .choice-btn.wrong{background:rgba(200,0,0,.2);border-color:#ff4444;color:#ffaaaa}
-/* Text input */
 #text-row{display:flex;gap:8px}
 #ans-inp{flex:1;background:rgba(200,140,0,.07);border:1.5px solid #5a3e00;
   border-radius:.55rem;padding:.55rem .9rem;color:#e8c87a;font-size:1rem;outline:none}
@@ -49,7 +46,6 @@ body{background:radial-gradient(ellipse at 50% 0%,#1a1200,#0a0800);
   border:2px solid #cc8800;border-radius:.55rem;color:#ffd700;font-size:.88rem;
   font-weight:700;cursor:pointer;transition:all .2s}
 #sub-btn:hover{background:linear-gradient(135deg,#cc8800,#7a5500)}
-/* Yes/No */
 #yn-row{display:flex;gap:12px}
 .yn-btn{flex:1;padding:.65rem;border-radius:.6rem;font-size:1rem;font-weight:700;
   cursor:pointer;transition:all .2s}
@@ -57,18 +53,14 @@ body{background:radial-gradient(ellipse at 50% 0%,#1a1200,#0a0800);
 .yn-yes:hover{background:rgba(0,200,80,.3)}
 .yn-no{background:rgba(200,0,60,.12);border:2px solid #aa0044;color:#ffaacc}
 .yn-no:hover{background:rgba(200,0,60,.25)}
-/* Feedback */
 #feedback{font-size:.88rem;min-height:1.2rem;font-weight:600;text-align:center}
 .fb-ok{color:#ffd700}.fb-no{color:#ff8888}.fb-hint{color:#ffcc44}
-/* Tries */
 #tries-dots{display:flex;gap:5px;justify-content:center}
 .tdot{width:9px;height:9px;border-radius:50%;background:#2a1800;border:1.5px solid #5a3e00}
 .tdot.used{background:#ff4444;border-color:#ff8888}
-/* Character mascot */
 #char-mascot{position:absolute;bottom:0;right:12px;width:72px;height:100px;
   object-fit:cover;object-position:0% 0%;
   filter:drop-shadow(0 0 8px rgba(200,140,0,.5));pointer-events:none}
-/* Win screen */
 #win-screen{display:none;position:absolute;inset:0;background:rgba(10,7,0,.96);
   flex-direction:column;align-items:center;justify-content:center;gap:16px;
   border-radius:14px}
@@ -82,14 +74,21 @@ body{background:radial-gradient(ellipse at 50% 0%,#1a1200,#0a0800);
   font-weight:700;cursor:pointer;transition:all .2s}
 .win-btn:hover{background:linear-gradient(135deg,#cc8800,#7a5500);
   box-shadow:0 0 16px rgba(200,140,0,.5)}
-/* Floor complete flash */
 #floor-flash{display:none;position:absolute;inset:0;background:rgba(200,140,0,.1);
   border-radius:14px;animation:flash .4s ease forwards}
 #floor-flash.show{display:block}
 @keyframes flash{0%{opacity:1}100%{opacity:0}}
+/* Stair animation overlay */
+#stair-overlay{display:none;position:fixed;inset:0;z-index:50;
+  background:rgba(0,0,0,.65);align-items:center;justify-content:center}
+#stair-overlay.show{display:flex}
+#stair-cv{border-radius:14px;border:2px solid #5a3e00;
+  box-shadow:0 0 40px rgba(200,140,0,.3)}
 </style>
 </head>
 <body>
+<canvas id="bg"></canvas>
+
 <div id="hdr">
   <button id="back-btn" onclick="goBack()">← Map</button>
   <h1>🏛️ Ancient Temple</h1>
@@ -107,7 +106,8 @@ body{background:radial-gradient(ellipse at 50% 0%,#1a1200,#0a0800);
   <div id="q-text"></div>
   <div id="choices"></div>
   <div id="text-row" style="display:none">
-    <input id="ans-inp" type="text" placeholder="Your answer..." autocomplete="off" onkeydown="if(event.key==='Enter')submitText()">
+    <input id="ans-inp" type="text" placeholder="Your answer…" autocomplete="off"
+      onkeydown="if(event.key==='Enter')submitText()">
     <button id="sub-btn" onclick="submitText()">Submit</button>
   </div>
   <div id="yn-row" style="display:none">
@@ -117,15 +117,20 @@ body{background:radial-gradient(ellipse at 50% 0%,#1a1200,#0a0800);
   <div id="feedback"></div>
   <div id="win-screen">
     <div class="win-badge">🏆</div>
-    <div class="win-title">Tower Complete!</div>
+    <div class="win-title">Temple Complete!</div>
     <div class="win-sub" id="win-sub"></div>
     <button class="win-btn" onclick="goBack()">🗺️ Back to Map</button>
   </div>
 </div>
 
+<!-- Stair climb animation -->
+<div id="stair-overlay">
+  <canvas id="stair-cv" width="320" height="210"></canvas>
+</div>
+
 <script>
+// ══ PUZZLES ══
 const PUZZLES=[
-  // ── FLOOR 1-10: Basic Patterns & P1-P2 Maths ──
   {q:'What comes next?\n2 → 4 → 6 → 8 → ?',type:'choice',choices:['9','10','11','12'],ans:'10',hint:'Count by 2s!'},
   {q:'5 + 7 = ?',type:'text',ans:'12',hint:'Count on from 5: 6,7,8,9,10,11,12'},
   {q:'Which is the biggest?\n3, 17, 9, 5',type:'choice',choices:['3','17','9','5'],ans:'17',hint:'Compare all four numbers!'},
@@ -136,7 +141,6 @@ const PUZZLES=[
   {q:'What shape has 3 sides?',type:'choice',choices:['Square','Circle','Triangle','Rectangle'],ans:'Triangle',hint:'Tri = three!'},
   {q:'20 ÷ 4 = ?',type:'text',ans:'5',hint:'How many groups of 4 make 20?'},
   {q:'What comes next?\n10 → 20 → 30 → 40 → ?',type:'choice',choices:['45','48','50','55'],ans:'50',hint:'Count by 10s!'},
-  // ── FLOOR 11-20: P3 Maths ──
   {q:'48 + 35 = ?',type:'text',ans:'83',hint:'48 + 30 = 78, then + 5'},
   {q:'7 × 8 = ?',type:'text',ans:'56',hint:'7 × 8: try 7 × 4 × 2 = 28 × 2'},
   {q:'What is ½ of 36?',type:'text',ans:'18',hint:'Divide 36 by 2'},
@@ -147,7 +151,6 @@ const PUZZLES=[
   {q:'Is 37 a prime number?',type:'yn',ans:'yes',hint:'Check: no number from 2 to 6 divides 37 evenly'},
   {q:'125 − 48 = ?',type:'text',ans:'77',hint:'125 − 50 = 75, then + 2'},
   {q:'What fraction of 20 is 5?',type:'choice',choices:['¼','⅓','½','⅕'],ans:'¼',hint:'5 × ? = 20 → ? = 4, so 1 out of 4'},
-  // ── FLOOR 21-30: P4 Maths ──
   {q:'24 × 5 = ?',type:'text',ans:'120',hint:'Multiply by 10 then halve: 240 ÷ 2'},
   {q:'What is the area of a rectangle 8 cm × 6 cm?',type:'choice',choices:['28 cm²','40 cm²','48 cm²','56 cm²'],ans:'48 cm²',hint:'Area = length × width'},
   {q:'⅔ + ⅓ = ?',type:'choice',choices:['1','5/6','3/6','4/6'],ans:'1',hint:'⅔ + ⅓ = 3/3 = 1'},
@@ -158,7 +161,6 @@ const PUZZLES=[
   {q:'What is 7² (7 squared)?',type:'text',ans:'49',hint:'7 × 7 = ?'},
   {q:'Convert: 2.5 kg = ___ g',type:'choice',choices:['250 g','2500 g','25 g','2050 g'],ans:'2500 g',hint:'1 kg = 1000 g, so 2.5 × 1000'},
   {q:'A shirt costs $24 after 20% discount.\nWhat was the original price?',type:'choice',choices:['$28','$29','$30','$32'],ans:'$30',hint:'$24 = 80% of original, so ÷0.8'},
-  // ── FLOOR 31-40: P5-P6 Maths ──
   {q:'Ratio of boys to girls is 3:2.\nIf there are 12 boys, how many girls?',type:'text',ans:'8',hint:'12 ÷ 3 = 1 part, × 2 = ?'},
   {q:'Find the average of 14, 18, 22, 26.',type:'text',ans:'20',hint:'Add all 4, then divide by 4'},
   {q:'What is 30% of 450?',type:'text',ans:'135',hint:'10% of 450 = 45, × 3 = ?'},
@@ -169,7 +171,6 @@ const PUZZLES=[
   {q:'A tap fills a tank in 6 hours.\nHow much fills in 1.5 hours?',type:'choice',choices:['¼','⅓','¼','⅔'],ans:'¼',hint:'1.5 ÷ 6 = 0.25 = ¼'},
   {q:'What is 5² + 12²?',type:'choice',choices:['144','149','169','196'],ans:'169',hint:'25 + 144 = ?'},
   {q:'Express 0.125 as a fraction.',type:'choice',choices:['⅛','¼','1/16','1/5'],ans:'⅛',hint:'0.125 = 125/1000 = 1/8'},
-  // ── FLOOR 41-50: Boss Floors ──
   {q:'A rectangle has perimeter 38 cm.\nIts length is 12 cm. What is its width?',type:'text',ans:'7',hint:'2(l+w)=38 → l+w=19 → w=19-12'},
   {q:'Peter has 3 times as many stickers as Amy.\nTogether they have 48. How many does Peter have?',type:'text',ans:'36',hint:'Amy=1 part, Peter=3 parts, 4 parts=48 → 1 part=12'},
   {q:'What is the next prime after 23?',type:'choice',choices:['25','27','29','31'],ans:'29',hint:'Check 25(÷5), 27(÷3), 29(prime!), 31(prime)'},
@@ -182,24 +183,157 @@ const PUZZLES=[
   {q:'🏛️ GRAND MASTER\nFind x: 4(x−3) = 2x + 6',type:'text',ans:'9',hint:'4x−12=2x+6 → 2x=18 → x=?'},
 ];
 
+// ══ BACKGROUND CANVAS — stone temple ══
+const bgCv=document.getElementById('bg'),bgCtx=bgCv.getContext('2d');
+let bgT=0,torchPhase=0;
+
+function resizeBg(){bgCv.width=innerWidth;bgCv.height=innerHeight;}
+window.addEventListener('resize',resizeBg);resizeBg();
+
+function drawBg(){
+  const W=bgCv.width,H=bgCv.height;
+  // Stone wall background
+  bgCtx.fillStyle='#0e0900';bgCtx.fillRect(0,0,W,H);
+  // Brick pattern
+  const bW=64,bH=28;
+  for(let row=0;row*bH<H+bH;row++){
+    const offset=row%2===0?0:bW/2;
+    for(let col=-1;col*bW<W+bW;col++){
+      const bx=col*bW+offset,by=row*bH;
+      const shade=0.8+0.12*Math.sin(row*2.7+col*1.9);
+      bgCtx.fillStyle=`rgba(${Math.round(38*shade)},${Math.round(22*shade)},${Math.round(6*shade)},1)`;
+      bgCtx.fillRect(bx+1,by+1,bW-2,bH-2);
+    }
+  }
+  // Mortar shadow lines
+  bgCtx.strokeStyle='rgba(0,0,0,.4)';bgCtx.lineWidth=1;
+  for(let row=0;row*bH<H;row++){bgCtx.beginPath();bgCtx.moveTo(0,row*bH);bgCtx.lineTo(W,row*bH);bgCtx.stroke();}
+  // Cracks on wall
+  bgCtx.strokeStyle='rgba(0,0,0,.3)';bgCtx.lineWidth=1.5;
+  [[W*0.15,H*0.2,W*0.18,H*0.4],[W*0.7,H*0.1,W*0.72,H*0.3],[W*0.4,H*0.6,W*0.38,H*0.8]].forEach(([x1,y1,x2,y2])=>{
+    bgCtx.beginPath();bgCtx.moveTo(x1,y1);bgCtx.lineTo((x1+x2)/2+8,( y1+y2)/2);bgCtx.lineTo(x2,y2);bgCtx.stroke();
+  });
+  // Left pillar
+  const pw=Math.min(80,W*0.1);
+  const lpG=bgCtx.createLinearGradient(0,0,pw,0);
+  lpG.addColorStop(0,'#3a2200');lpG.addColorStop(0.5,'#4e3000');lpG.addColorStop(1,'#2a1a00');
+  bgCtx.fillStyle=lpG;bgCtx.fillRect(0,0,pw,H);
+  for(let y=0;y<H;y+=32){bgCtx.strokeStyle='rgba(0,0,0,.3)';bgCtx.lineWidth=1;bgCtx.beginPath();bgCtx.moveTo(0,y);bgCtx.lineTo(pw,y);bgCtx.stroke();}
+  // Pillar capital left
+  bgCtx.fillStyle='#5a3800';bgCtx.fillRect(0,0,pw+8,18);bgCtx.fillRect(0,H-18,pw+8,18);
+  // Right pillar
+  const rpG=bgCtx.createLinearGradient(W-pw,0,W,0);
+  rpG.addColorStop(0,'#2a1a00');rpG.addColorStop(0.5,'#4e3000');rpG.addColorStop(1,'#3a2200');
+  bgCtx.fillStyle=rpG;bgCtx.fillRect(W-pw,0,pw,H);
+  for(let y=0;y<H;y+=32){bgCtx.beginPath();bgCtx.moveTo(W-pw,y);bgCtx.lineTo(W,y);bgCtx.stroke();}
+  bgCtx.fillStyle='#5a3800';bgCtx.fillRect(W-pw-8,0,pw+8,18);bgCtx.fillRect(W-pw-8,H-18,pw+8,18);
+  // Stone floor
+  const fG=bgCtx.createLinearGradient(0,H-36,0,H);
+  fG.addColorStop(0,'#3a2800');fG.addColorStop(1,'#1a1000');
+  bgCtx.fillStyle=fG;bgCtx.fillRect(0,H-36,W,36);
+  bgCtx.strokeStyle='#2a1800';bgCtx.lineWidth=1;
+  for(let x=0;x<W;x+=80){bgCtx.beginPath();bgCtx.moveTo(x,H-36);bgCtx.lineTo(x,H);bgCtx.stroke();}
+  // Torches
+  drawTorch(pw-12,H*0.3,torchPhase);
+  drawTorch(W-pw+12,H*0.3,torchPhase+1.5);
+  drawTorch(pw-12,H*0.7,torchPhase+0.8);
+  drawTorch(W-pw+12,H*0.7,torchPhase+2.1);
+  // Hieroglyphs on pillars
+  bgCtx.fillStyle='rgba(200,140,0,.18)';bgCtx.font='16px serif';bgCtx.textAlign='center';
+  ['𓀀','𓂀','𓃭','𓆙','𓇋'].forEach((g,i)=>{bgCtx.fillText(g,pw/2,H*0.2+i*36);bgCtx.fillText(g,W-pw/2,H*0.2+i*36);});
+  // Vignette
+  const vig=bgCtx.createRadialGradient(W/2,H/2,H*0.15,W/2,H/2,H*0.75);
+  vig.addColorStop(0,'rgba(0,0,0,0)');vig.addColorStop(1,'rgba(0,0,0,.65)');
+  bgCtx.fillStyle=vig;bgCtx.fillRect(0,0,W,H);
+  torchPhase+=0.06;bgT++;requestAnimationFrame(drawBg);
+}
+
+function drawTorch(x,y,phase){
+  // Bracket
+  bgCtx.fillStyle='#5a3800';bgCtx.fillRect(x-5,y,10,22);bgCtx.fillRect(x-12,y,24,6);
+  // Glow
+  const flicker=0.75+0.25*Math.sin(phase*4.5)+0.1*Math.sin(phase*9.1);
+  const r=45*flicker;
+  const glow=bgCtx.createRadialGradient(x,y-8,0,x,y-8,r);
+  glow.addColorStop(0,`rgba(255,200,60,${0.38*flicker})`);
+  glow.addColorStop(0.4,`rgba(255,100,0,${0.18*flicker})`);
+  glow.addColorStop(1,'rgba(255,60,0,0)');
+  bgCtx.fillStyle=glow;bgCtx.beginPath();bgCtx.arc(x,y-8,r,0,Math.PI*2);bgCtx.fill();
+  // Flame body
+  bgCtx.fillStyle=`rgba(255,170,0,${0.9*flicker})`;
+  bgCtx.beginPath();bgCtx.ellipse(x,y-12,5*flicker,11*flicker,0,0,Math.PI*2);bgCtx.fill();
+  bgCtx.fillStyle=`rgba(255,255,120,${0.85*flicker})`;
+  bgCtx.beginPath();bgCtx.ellipse(x,y-15,3*flicker,7*flicker,0,0,Math.PI*2);bgCtx.fill();
+}
+drawBg();
+
+// ══ STAIR ANIMATION ══
+const stairOv=document.getElementById('stair-overlay');
+const stairCv=document.getElementById('stair-cv');
+const sCtx=stairCv.getContext('2d');
+const _charSrc=new URLSearchParams(location.search).get('char');
+const _charImg=_charSrc?Object.assign(new Image(),{src:_charSrc}):null;
+
+function showStairs(floorNum,cb){
+  stairOv.classList.add('show');
+  let prog=0;
+  const SW=stairCv.width,SH=stairCv.height;
+  const STEPS=4,SW2=56,SH2=32;
+  const startX=24,startY=SH-60;
+
+  function frame(){
+    sCtx.fillStyle='#0e0900';sCtx.fillRect(0,0,SW,SH);
+    // Stone steps
+    for(let i=0;i<STEPS;i++){
+      const sx=startX+i*SW2,sy=startY-i*SH2;
+      const sg=sCtx.createLinearGradient(sx,sy,sx,sy+SH2);
+      sg.addColorStop(0,'#5a3800');sg.addColorStop(1,'#3a2200');
+      sCtx.fillStyle=sg;sCtx.fillRect(sx,sy,SW2,SH2);
+      sCtx.fillStyle='#7a5000';sCtx.fillRect(sx,sy,SW2,4);
+      sCtx.strokeStyle='#2a1800';sCtx.lineWidth=1;sCtx.strokeRect(sx,sy,SW2,SH2);
+    }
+    // Floor text
+    sCtx.fillStyle='#ffd700';sCtx.font='bold 15px Georgia';sCtx.textAlign='center';
+    sCtx.fillText(`Floor ${floorNum} ✨`,SW/2,28);
+    sCtx.fillStyle='#8b6914';sCtx.font='12px Georgia';
+    sCtx.fillText('Climbing to next floor…',SW/2,48);
+    // Character climbing
+    const step=Math.min(STEPS-1,Math.floor(prog*STEPS));
+    const subStep=(prog*STEPS)%1;
+    const cx=startX+step*SW2+subStep*SW2+SW2/2;
+    const cy=startY-step*SH2-subStep*SH2-4;
+    if(_charImg&&_charImg.complete&&_charImg.naturalWidth){
+      const iw=_charImg.naturalWidth,ih=_charImg.naturalHeight;
+      const cw=30,ch=Math.round(cw*ih/iw);
+      sCtx.drawImage(_charImg,0,0,iw,ih,cx-cw/2,cy-ch,cw,ch);
+    }else{
+      sCtx.font='26px serif';sCtx.textAlign='center';
+      sCtx.fillText('🧙',cx,cy);
+    }
+    prog+=0.022;
+    if(prog<1.15){requestAnimationFrame(frame);}
+    else{setTimeout(()=>{stairOv.classList.remove('show');cb();},200);}
+  }
+  frame();
+}
+
+// ══ GAME LOGIC ══
 let floor=0,tries=0,maxTries=3,score=0;
 
 function showFloor(i){
   floor=i;tries=0;
   const p=PUZZLES[i];
   document.getElementById('fl-cur').textContent=i+1;
-  document.getElementById('fl-badge').textContent=`Floor ${i+1} ${i===9?'⚡':''}`;
+  document.getElementById('fl-badge').textContent=`Floor ${i+1}${i===9?' ⚡':i===19?' 🔥':i===29?' 💫':i===39?' ⚔️':i===49?' 👑':''}`;
   document.getElementById('q-text').textContent=p.q;
-  document.getElementById('progress-fill').style.width=((i/10)*100)+'%';
+  document.getElementById('progress-fill').style.width=((i/PUZZLES.length)*100)+'%';
   document.getElementById('feedback').textContent='';
   document.getElementById('feedback').className='';
-  // Reset input areas
   document.getElementById('choices').innerHTML='';
   document.getElementById('text-row').style.display='none';
   document.getElementById('yn-row').style.display='none';
   document.getElementById('ans-inp').value='';
   renderTries();
-
   if(p.type==='choice'){
     p.choices.forEach(c=>{
       const btn=document.createElement('button');
@@ -226,10 +360,7 @@ function renderTries(){
   document.getElementById('fl-hint-row').textContent=tries>=maxTries-1&&PUZZLES[floor].hint?`💡 ${PUZZLES[floor].hint}`:'';
 }
 
-function checkAns(val){
-  const p=PUZZLES[floor];
-  return val.trim().toUpperCase()===p.ans.toUpperCase();
-}
+function checkAns(val){return val.trim().toUpperCase()===PUZZLES[floor].ans.toUpperCase();}
 
 function submitChoice(val,btn){
   if(tries>=maxTries)return;
@@ -240,10 +371,7 @@ function submitChoice(val,btn){
 }
 function submitText(){submitAny(document.getElementById('ans-inp').value);}
 function submitYN(v){submitAny(v);}
-function submitAny(val){
-  if(tries>=maxTries)return;
-  const ok=checkAns(val);feedback(ok);
-}
+function submitAny(val){if(tries>=maxTries)return;feedback(checkAns(val));}
 
 function feedback(ok){
   tries++;renderTries();
@@ -252,17 +380,15 @@ function feedback(ok){
     fb.textContent='✅ Correct!';fb.className='fb-ok';
     score++;
     flashFloor();
-    setTimeout(()=>{
-      if(floor>=PUZZLES.length-1)showWin();
-      else showFloor(floor+1);
-    },900);
+    const next=floor+1;
+    if(next>=PUZZLES.length){setTimeout(showWin,900);}
+    else{showStairs(floor+1,()=>showFloor(next));}
   }else{
     if(tries>=maxTries){
       fb.textContent=`❌ Answer: ${PUZZLES[floor].ans} — moving on!`;fb.className='fb-no';
-      setTimeout(()=>{
-        if(floor>=PUZZLES.length-1)showWin();
-        else showFloor(floor+1);
-      },1600);
+      const next=floor+1;
+      if(next>=PUZZLES.length){setTimeout(showWin,1600);}
+      else{setTimeout(()=>showStairs(floor+1,()=>showFloor(next)),1200);}
     }else{
       fb.textContent=`❌ Try again! (${maxTries-tries} left)`;fb.className='fb-no';
     }
@@ -276,7 +402,7 @@ function flashFloor(){
 
 function showWin(){
   document.getElementById('progress-fill').style.width='100%';
-  const stars=score>=9?'⭐⭐⭐':score>=7?'⭐⭐':score>=5?'⭐':'';
+  const stars=score>=45?'⭐⭐⭐':score>=35?'⭐⭐':score>=20?'⭐':'';
   document.getElementById('win-sub').textContent=`${stars}  ${score}/50 floors solved correctly!`;
   document.getElementById('win-screen').classList.add('show');
 }
@@ -286,7 +412,6 @@ function goBack(){
   else window.history.back();
 }
 
-// Character mascot
 const _cSrc=new URLSearchParams(location.search).get('char');
 if(_cSrc){
   const img=document.createElement('img');

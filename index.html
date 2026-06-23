@@ -1650,6 +1650,9 @@ function admSkipToEnd(){closeAdmin();endGame();}
 function admSkipToFight(){
   closeAdmin();
   if(!G.gears.length)G.gears=[{name:'Sword'},{name:'Water'},{name:'Lamp'}];
+  if(!G.password.length){
+    for(let i=0;i<3;i++){const d=rnd(0,9);G.password.push(d);const pd=$id('p'+i);if(pd){pd.textContent=d;pd.classList.add('shown');}}
+  }
   launchFightScene();
 }
 function admReset(){if(confirm('Reset ALL progress?')){clearSave();location.reload();}}
@@ -1745,6 +1748,7 @@ const MINI_GAME_FILES={
   obstacle:'obstacle-park.html',
   code:'puzzle-tower.html',
   maze:'maze-garden.html',
+  pop:'pop-game.html',
 };
 let mpStreak=0, mpCurQ=null, mpGame=null;
 function playMiniGame(type){
@@ -2043,10 +2047,11 @@ function initPeer(code){
     _myPeer.on('error',function(err){console.warn('PeerJS joiner error:',err.type);});
   }
 }
-// Battle relay: forward messages between battle.html iframe and PeerJS peer
+// Mini game + battle relay message handler
 window.addEventListener('message',function(e){
-  if(!e.data||e.data.type!=='battle_relay')return;
-  _cSendGame({type:'battle_relay',data:e.data.data});
+  if(!e.data)return;
+  if(e.data.type==='battle_relay')_cSendGame({type:'battle_relay',data:e.data.data});
+  if(e.data.type==='pop_gear_earned')awardGear();
 });
 function openMpBattle(inviteCode){
   $id('scroll-menu').classList.remove('open');

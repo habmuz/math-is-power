@@ -54,8 +54,9 @@ const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 const W=cv.width,H=cv.height;
 const _charSrc3=new URLSearchParams(location.search).get('char');
 const _charImg3=_charSrc3?Object.assign(new Image(),{src:_charSrc3}):null;
-const GROUND=320, PW=30, PH=42;
-const G=900, JUMP=-500;
+const GROUND=320, PW=40, PH=60;
+const G=860, JUMP=-760;
+const SPW=56, SPH=76; // sprite draw size (larger than hitbox)
 
 function makeCourse(n,speed){
   function rng(s){let v=(s*9301+49297)%233280;return{next:()=>{v=(v*9301+49297)%233280;return v/233280;}};}
@@ -222,19 +223,20 @@ function draw(){
     }
   }
 
-  // Player sprite
+  // Player sprite — feet always sit on GROUND line
   ctx.save();
-  const py=player.duck?GROUND-player.h:player.y;
   if(_charImg3&&_charImg3.complete&&_charImg3.naturalWidth){
-    const dw=player.duck?player.w+6:player.w+16;
-    const dh=player.duck?Math.round((player.h+16)*0.55):player.h+16;
-    const sc=dw/_charImg3.naturalWidth;
-    const srcH=Math.min(_charImg3.naturalHeight,Math.round(dh/sc));
-    if(player.duck){ctx.transform(1,0,0,0.55,0,py+dh*1.1);}
-    ctx.drawImage(_charImg3,0,0,_charImg3.naturalWidth,srcH,player.x-6,player.duck?-dh*0.1:py,dw,dh);
+    const iw=_charImg3.naturalWidth,ih=_charImg3.naturalHeight;
+    if(player.duck){
+      // Show bottom 55% of image squashed to duck height — looks like a crouch
+      const dh=Math.round(SPH*0.45);
+      ctx.drawImage(_charImg3,0,Math.round(ih*0.45),iw,Math.round(ih*0.55),player.x-8,GROUND-dh,SPW,dh);
+    }else{
+      ctx.drawImage(_charImg3,0,0,iw,ih,player.x-8,GROUND-SPH,SPW,SPH);
+    }
   }else{
-    ctx.font=`${player.duck?20:32}px serif`;ctx.textAlign='center';
-    ctx.fillText(player.duck?'🙇':'🏃',player.x+player.w/2,py+player.h-2);
+    ctx.font=`${player.duck?22:34}px serif`;ctx.textAlign='center';
+    ctx.fillText(player.duck?'🙇':'🏃',player.x+PW/2,GROUND-4);
   }
   ctx.restore();
 }

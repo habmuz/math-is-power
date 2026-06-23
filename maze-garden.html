@@ -89,7 +89,7 @@ function initLevel(i){
   // Place player near top-left
   player={x:1,y:1};
   // Place chests spread across quadrants
-  const nChests=2+Math.floor(i/10);
+  const nChests=3+Math.floor(i/10);
   chests=[];
   const quadrants=[
     (x,y)=>x<Math.floor(cols/2)&&y<Math.floor(rows/2),
@@ -185,7 +185,7 @@ function draw(){
         g.addColorStop(1,'transparent');
         ctx.fillStyle=g;ctx.beginPath();ctx.arc(px+CS/2,py+CS/2,CS/2,0,Math.PI*2);ctx.fill();
         if(CS>=14){ctx.font=`${CS-2}px serif`;ctx.textAlign='center';
-          ctx.fillText(collected>=3?'🌀':'🔒',px+CS/2,py+CS-2);}
+          ctx.fillText(collected>=chests.length?'🌀':'🔒',px+CS/2,py+CS-2);}
       }
     }
   }
