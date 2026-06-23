@@ -88,17 +88,25 @@ function initLevel(i){
   maze[cy][cx]=3; exit={x:cx,y:cy};
   // Place player near top-left
   player={x:1,y:1};
-  // Place chests (more at higher levels)
+  // Place chests spread across quadrants
   const nChests=2+Math.floor(i/10);
   chests=[];
-  const candidates=[];
-  for(let y=1;y<rows-1;y++)for(let x=1;x<cols-1;x++){
-    if(maze[y][x]===0&&!(x===1&&y===1)&&Math.abs(x-cx)+Math.abs(y-cy)>4)
-      candidates.push({x,y});
-  }
-  candidates.sort(()=>Math.random()-.5);
-  for(let ci=0;ci<nChests&&ci<candidates.length;ci++){
-    const c=candidates[ci];chests.push({x:c.x,y:c.y,found:false});maze[c.y][c.x]=4;
+  const quadrants=[
+    (x,y)=>x<Math.floor(cols/2)&&y<Math.floor(rows/2),
+    (x,y)=>x>=Math.floor(cols/2)&&y<Math.floor(rows/2),
+    (x,y)=>x<Math.floor(cols/2)&&y>=Math.floor(rows/2),
+    (x,y)=>x>=Math.floor(cols/2)&&y>=Math.floor(rows/2),
+  ];
+  const used=[];
+  for(let q=0;q<nChests;q++){
+    const qFn=quadrants[q%4];
+    const cands=[];
+    for(let y=1;y<rows-1;y++)for(let x=1;x<cols-1;x++){
+      if(maze[y][x]===0&&!(x===1&&y===1)&&Math.abs(x-cx)+Math.abs(y-cy)>3&&qFn(x,y)&&!used.find(u=>u.x===x&&u.y===y))
+        cands.push({x,y});
+    }
+    cands.sort(()=>Math.random()-.5);
+    if(cands.length){const c=cands[0];used.push(c);chests.push({x:c.x,y:c.y,found:false});maze[c.y][c.x]=4;}
   }
   // Fog of war array
   fog=Array.from({length:rows},()=>Array(cols).fill(true));
@@ -185,9 +193,10 @@ function draw(){
   const px=offX+player.x*CS,py=offY+player.y*CS;
   if(_charImg2&&_charImg2.complete&&_charImg2.naturalWidth){
     const iw=_charImg2.naturalWidth,ih=_charImg2.naturalHeight;
-    const sc2=Math.min(CS/iw,CS/ih);
+    const ds=Math.max(CS*2,28);
+    const sc2=Math.min(ds/iw,ds/ih);
     ctx.drawImage(_charImg2,0,0,iw,ih,px+(CS-iw*sc2)/2,py+(CS-ih*sc2)/2,iw*sc2,ih*sc2);
-  }else if(CS>=12){
+  }else if(CS>=8){
     ctx.font=`${CS}px serif`;ctx.textAlign='center';ctx.fillText('🧑',px+CS/2,py+CS-1);
   }else{ctx.fillStyle='#00ffaa';ctx.fillRect(px+2,py+2,CS-4,CS-4);}
   // Visited glow trail

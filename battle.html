@@ -330,11 +330,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 /* Invisibility */
 .roster.invisible-active .rcard{opacity:.25;filter:blur(.8px) brightness(1.5);transition:all .6s}
 /* Wearing overlays (armor/helmet/shield SVGs on character cards) */
-.wear-overlay{position:absolute;pointer-events:none;z-index:4;
+.wear-overlay{position:absolute;pointer-events:none;z-index:4;height:auto;
   animation:wearFadeIn .4s cubic-bezier(.34,1.56,.64,1)}
-.wear-shield {bottom:10%;left:5%;width:55%}
-.wear-armor  {top:30%;left:15%;width:70%}
-.wear-helmet {top:2%;left:20%;width:60%}
+.wear-shield {bottom:10%;left:5%;width:55%;height:auto}
+.wear-armor  {top:30%;left:15%;width:70%;height:auto}
+.wear-helmet {top:2%;left:20%;width:60%;height:auto}
 @keyframes wearFadeIn{
   0%  {opacity:0;transform:scale(.5)}
   100%{opacity:1;transform:scale(1)}
@@ -760,8 +760,41 @@ const _soloMode = _bParams.get('solo') === '1';
 const _soloPw   = _bParams.get('pw') || '';
 const _gearsParam = (_bParams.get('gears')||'').split(',').filter(Boolean);
 const _levelParam = _bParams.get('level')||'P3';
+const _isMpBattle = !!_bParams.get('invite');
+const _isBattleHost = _bParams.get('host') === '1';
 let numP = _soloMode ? 1 : 2;
 const pData = [];  // {playerName, gender, charName}
+
+// ── BATTLE RELAY (mirror state to other device via parent index.html) ──
+function _btRelay(type, payload){
+  if(!_isMpBattle||!_isBattleHost)return;
+  try{window.parent.postMessage({type:'battle_relay',data:{type,payload}},'*');}catch(e){}
+}
+function _btBroadcast(logEntry){
+  _btRelay('state',{
+    players:G.players,dragon:G.dragon,round:G.round,curIdx:G.curIdx,
+    streak:G.streak,done:G.done,gearItems:G.gearItems,
+    immunityUntil:G.immunityUntil,invisibleUntil:G.invisibleUntil,lampUntil:G.lampUntil,
+    log:logEntry||null,
+  });
+}
+function _btApplyRelay(type,payload){
+  if(type==='state'){
+    Object.assign(G,{
+      players:payload.players,dragon:payload.dragon,round:payload.round,
+      curIdx:payload.curIdx,streak:payload.streak,done:payload.done,
+      gearItems:payload.gearItems,immunityUntil:payload.immunityUntil||0,
+      invisibleUntil:payload.invisibleUntil||0,lampUntil:payload.lampUntil||0,
+    });
+    renderRoster();refreshActive();refreshDragon();renderGearTray();
+    updateHourglassBtn();updateCaveLight();
+    if(payload.log)log(payload.log.text,payload.log.cls);
+  }else if(type==='win'){winGame();}
+  else if(type==='lose'){loseGame();}
+}
+window.addEventListener('message',e=>{
+  if(e.data&&e.data.type==='battle_relay')_btApplyRelay(e.data.data.type,e.data.data.payload);
+});
 
 function r(a,b){return Math.floor(Math.random()*(b-a+1))+a}
 
@@ -892,9 +925,9 @@ let _winSent = false;
       if(ch) players.push({playerName:pn,character:ch});
     }
     if(players.length>0){
-      // Skip setup, go to gear select (or directly battle if gears already in URL)
+      // Skip setup, go straight to battle with earned gears
       document.getElementById('setup-screen').style.display='none';
-      setTimeout(()=>showGearSelect(players),200);
+      setTimeout(()=>startBattle(players),200);
     }
   }
 })();
@@ -934,7 +967,7 @@ document.getElementById('start-btn').onclick=()=>{
     const ch=(CHARS[d.gender+'s']||CHARS.boys).find(c=>c.name===d.charName);
     players.push({playerName:d.playerName.trim(),character:ch});
   }
-  showGearSelect(players);
+  startBattle(players);
 };
 
 initSetupData();renderSetup();
@@ -1217,6 +1250,19 @@ function dragonTurn(){
     const first=G.players.findIndex(p=>p.isAlive);if(first===-1){loseGame();return;}
     G.curIdx=first;refreshActive();renderRoster();renderActions();return;
   }
+  // Immunity gear — barrier absorbs all damage
+  if(G.immunityUntil&&Date.now()<G.immunityUntil){
+    G.round++;
+    log('🐉 ── Round '+G.round+': Dralioster attacks! ──','log-dmg');
+    const dSpr=document.getElementById('d-sprite');
+    if(dSpr){dSpr.classList.remove('dragon-attacking');void dSpr.offsetWidth;dSpr.classList.add('dragon-attacking');setTimeout(()=>dSpr.classList.remove('dragon-attacking'),920);}
+    log('💜 IMMUNITY BARRIER absorbs all damage! Heroes unharmed!','log-pwr');
+    const first=G.players.findIndex(p=>p.isAlive);if(first===-1){loseGame();return;}
+    G.curIdx=first;refreshActive();renderRoster();
+    if(!_soloMode&&G.players.length>1){showTurnTransition(G.players[first],()=>{if(!G.done)renderActions();});}
+    else{renderActions();}
+    return;
+  }
   G.round++;
   log('🐉 ── Round '+G.round+': Dralioster attacks! ──','log-dmg');
   const alive=G.players.filter(p=>p.isAlive);
@@ -1251,6 +1297,7 @@ function dragonTurn(){
   }
 
   renderRoster();
+  _btBroadcast({text:'🐉 Dragon attacked! Round '+G.round,cls:'log-dmg'});
   if(G.players.every(p=>!p.isAlive)){setTimeout(loseGame,500);return;}
 
   // Find first alive player for new round
@@ -1290,14 +1337,11 @@ function openQ(type){
   document.getElementById('sub-btn').disabled=!canAnswer;
   document.querySelectorAll('.yn-btn').forEach(b=>b.disabled=!canAnswer);
   const banner=document.getElementById('q-pass-banner');
-  if(_soloMode){
-    banner.style.display='none';
-  }else if(canAnswer){
-    banner.textContent='Pass device to '+specialist.playerName+' ('+specialist.character.name+')!';
-    banner.style.display='block';
-  }else{
+  if(!canAnswer){
     banner.textContent='No specialist alive — question will time out.';
     banner.style.display='block';
+  }else{
+    banner.style.display='none';
   }
   document.getElementById('q-modal').classList.remove('hidden');
   if(canAnswer&&qd.type!=='palindrome')setTimeout(()=>document.getElementById('ans-inp').focus(),120);
@@ -1346,6 +1390,7 @@ function submitAns(given){
 
   renderStreak();renderQProg();
   document.getElementById('q-pass-banner').style.display='none';
+  _btBroadcast(null);
 
   setTimeout(()=>{
     document.getElementById('q-modal').classList.add('hidden');
@@ -1585,6 +1630,7 @@ function useGear(name){
     setTimeout(function(){G.lampUntil=0;updateCaveLight();log('Lamp faded.','');},60000);
   }
   renderGearTray();renderRoster();refreshActive();updateHourglassBtn();
+  _btBroadcast(null);
   if(G.dragon.hp<=0){setTimeout(winGame,500);return;}
   if(!isFreeAction)endTurn();
 }
@@ -1747,6 +1793,7 @@ function winGame(){
   if(G.done)return;G.done=true;
   clearInterval(_btInterval);clearInterval(_qTimerInterval);
   updateCaveLight(true);
+  _btRelay('win',{});
   log('DRALIOSTER DEFEATED! Heroes WIN!','log-pwr');
   const alive=G.players.filter(p=>p.isAlive).length;
   document.getElementById('v-sub').textContent='The Dralioster falls! '+alive+' hero'+(alive!==1?'es':'')+' survived.';
@@ -1763,6 +1810,7 @@ function loseGame(){
   if(G.done)return;G.done=true;
   clearInterval(_btInterval);clearInterval(_qTimerInterval);
   updateCaveLight(true);
+  _btRelay('lose',{});
   log('All heroes have fallen…','log-dmg');
   showScreen('defeat-screen');
 }

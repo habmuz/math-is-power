@@ -813,7 +813,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
 </div><!-- /scene -->
 
 <!-- ══ MINI GAME SCENE (full-screen iframe) ══ -->
-<div id="mini-game-scene" style="position:absolute;inset:0;display:none;z-index:85;background:#000">
+<div id="mini-game-scene" style="position:fixed;inset:0;display:none;z-index:85;background:#000">
   <iframe id="mini-game-iframe" src=""
     style="width:100%;height:100%;border:none;display:block"></iframe>
 </div>
@@ -869,11 +869,11 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="pin-base"></div>
     </div>
 
-    <!-- 🔐 Code — YELLOW — bottom-right -->
+    <!-- 🏛️ Ancient Temple — GOLD — bottom-right -->
     <div class="map-pin" style="left:610px;top:375px" onclick="playMiniGame('code')">
       <div class="pin-flag" style="background:#997700;--fc:#997700;--fg:rgba(255,215,0,.7)">
-        <div class="pin-icon">🔐</div>
-        <div class="pin-fname">PUZZLE TOWER</div>
+        <div class="pin-icon">🏛️</div>
+        <div class="pin-fname">ANCIENT TEMPLE</div>
       </div>
       <div class="pin-pole"></div>
       <div class="pin-base"></div>
@@ -1377,7 +1377,7 @@ function launchFightScene(){
   const lvl=encodeURIComponent(G.level||'P3');
   let src;
   if(_mpCode&&G.mpPlayers&&G.mpPlayers.length>=2){
-    src='battle.html?invite='+_mpCode+'&pw='+pw+'&autostart=1&gears='+gearsParam+'&level='+lvl;
+    src='battle.html?invite='+_mpCode+'&pw='+pw+'&autostart=1&host='+(_myPlayer===1?'1':'0')+'&gears='+gearsParam+'&level='+lvl;
     G.mpPlayers.forEach((p,i)=>{
       src+='&p'+(i+1)+'n='+encodeURIComponent(p.playerName)
           +'&p'+(i+1)+'g='+p.gender
@@ -2006,6 +2006,11 @@ function initPeer(code){
     _myPeer.on('error',function(err){console.warn('PeerJS joiner error:',err.type);});
   }
 }
+// Battle relay: forward messages between battle.html iframe and PeerJS peer
+window.addEventListener('message',function(e){
+  if(!e.data||e.data.type!=='battle_relay')return;
+  _cSendGame({type:'battle_relay',data:e.data.data});
+});
 function openMpBattle(inviteCode){
   $id('scroll-menu').classList.remove('open');
   var src='battle.html'+(inviteCode?'?invite='+inviteCode:'');
@@ -2487,6 +2492,9 @@ function _cHandleGame(msg){
       btn.disabled=false;
       if(G.flipMode==='auto') setTimeout(()=>doMpBattle(),1400);
     }
+  } else if(msg.type==='battle_relay'){
+    var iframe=$id('mp-iframe');
+    if(iframe&&iframe.contentWindow)iframe.contentWindow.postMessage({type:'battle_relay',data:msg.data},'*');
   } else if(msg.type==='sync_flip'){
     if(msg.target==='fight'&&_myPlayer>1){
       // Non-host player receives flip-to-fight signal

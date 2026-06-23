@@ -57,17 +57,17 @@ canvas{border-radius:8px;border:2px solid #3a1100;display:block;
 <script>
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 const W=cv.width,H=cv.height;
-const G=900,SPEED=200,JUMP=-490,CS=20;
+const G=900,SPEED=200,JUMP=-490,CS=20,PLW=36,PLH=44;
 const _charSrc=new URLSearchParams(location.search).get('char');
 const _charImg=_charSrc?Object.assign(new Image(),{src:_charSrc}):null;
 
 function _rng(seed){let s=seed*9301+49297;return()=>{s=(s*9301+49297)%233280;return s/233280;}}
 function makeLevel(n){
   const r=_rng(n+1);
-  const speed=14+n*2.4;
+  const speed=n===0?6:8+n*2.2;
   const nP=5+Math.floor(n/2);
   const crumble=Math.min(0.55,n/90);
-  const plats=[{x:0,y:395,w:Math.max(90,130-n),c:false}];
+  const plats=[{x:0,y:395,w:Math.max(90,160-n),c:false}];
   let x=0,y=385;
   for(let i=0;i<nP;i++){
     x+=Math.floor(r()*55)+55+Math.floor(n/5)*2;
@@ -98,7 +98,7 @@ function initLevel(i){
   hide();
 }
 function spawnPlayer(){
-  player={x:20,y:355,vx:0,vy:0,w:26,h:32,onG:false,dir:1};
+  player={x:20,y:355,vx:0,vy:0,w:PLW,h:PLH,onG:false,dir:1};
 }
 
 const keys={};
