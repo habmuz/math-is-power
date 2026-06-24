@@ -89,7 +89,7 @@ function initLevel(i){
   // Place player near top-left
   player={x:1,y:1};
   // Place chests spread across quadrants
-  const nChests=3+Math.floor(i/10);
+  const nChests=2;
   chests=[];
   const quadrants=[
     (x,y)=>x<Math.floor(cols/2)&&y<Math.floor(rows/2),
@@ -110,7 +110,7 @@ function initLevel(i){
   }
   // Fog of war array
   fog=Array.from({length:rows},()=>Array(cols).fill(true));
-  revealFog(player.x,player.y);
+  revealFog(player.x,player.y,4);
   document.getElementById('lv').textContent=i+1;
   document.getElementById('chests').textContent='0';
   document.getElementById('ctotal').textContent=nChests;
@@ -138,6 +138,8 @@ function move(dx,dy){
   if(cell===4){
     maze[ny][nx]=0;collected++;
     document.getElementById('chests').textContent=collected;
+    const rem=chests.length-collected;
+    document.getElementById('ctrl').textContent=rem>0?`✅ Chest found! ${rem} more to go — keep exploring!`:'✅ Both chests found! Reach the 🌀 center to win!';
   }
   // Reach exit
   if(cell===3&&collected>=chests.length){

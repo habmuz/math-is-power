@@ -157,7 +157,7 @@ function makeFrostLevel(n){
   const gears=[],doors=[];
   for(let g=0;g<nG;g++){
     const gx=1+Math.floor(g*(cols-3)/(nG));
-    const need=1+(g%3);
+    const need=1;
     // Door on vertical corridor (row between gear row and bottom, vary by g)
     const dy=gearRow+1+Math.floor(g*(rows-gearRow-3)/Math.max(1,nG-1));
     if(dy>=1&&dy<rows-1){

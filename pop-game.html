@@ -157,45 +157,18 @@ drawBg();
 function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}
 function pick(a){return a[Math.floor(Math.random()*a.length)]}
 
-const TYPES=['add','sub','mul','div','pal','pat'];
-let curQ=null,streak=0,score=0,isPalQ=false;
+const TYPES=['add','sub','mul','div','pat'];
+let curQ=null,streak=0,score=0;
 
 function genQ(){
   const t=pick(TYPES);
-  if(t==='add'){
-    const a=rnd(10,999),b=rnd(10,999);
-    return{type:'Addition',q:`${a} + ${b} = ?`,a:String(a+b),yn:false};
-  }
-  if(t==='sub'){
-    const a=rnd(100,999),b=rnd(10,a);
-    return{type:'Subtraction',q:`${a} − ${b} = ?`,a:String(a-b),yn:false};
-  }
-  if(t==='mul'){
-    const a=rnd(10,99),b=rnd(10,9999);
-    return{type:'Multiplication',q:`${a} × ${b} = ?`,a:String(a*b),yn:false};
-  }
-  if(t==='div'){
-    const d=rnd(2,9),q=rnd(10,Math.floor(9999/d));
-    return{type:'Division',q:`${d*q} ÷ ${d} = ?`,a:String(q),yn:false};
-  }
-  if(t==='pal'){
-    const isPalStr=s=>s===s.split('').reverse().join('');
-    const isPal=Math.random()<.5;
-    let n;
-    if(isPal){
-      // Generate palindrome 3-4 digits
-      if(Math.random()<.5){const d=rnd(1,9);const m=rnd(0,9);n=String(d)+m+d;}
-      else{const d=rnd(1,9);const m=rnd(0,9);n=String(d)+m+m+d;}
-    }else{
-      // Non-palindrome 3-4 digits
-      do{n=String(rnd(100,9999));}while(isPalStr(n));
-    }
-    return{type:'Palindrome',q:`Is ${n} a palindrome?\n(type 1 for YES, 0 for NO)`,a:isPal?'1':'0',yn:false};
-  }
-  // pat
-  const start=rnd(1,50),step=rnd(2,15);
+  if(t==='add'){const a=rnd(10,500),b=rnd(10,500);return{type:'Addition',q:`${a} + ${b} = ?`,a:String(a+b),yn:false};}
+  if(t==='sub'){const a=rnd(20,500),b=rnd(5,Math.min(a-1,300));return{type:'Subtraction',q:`${a} − ${b} = ?`,a:String(a-b),yn:false};}
+  if(t==='mul'){const a=rnd(2,25),b=rnd(2,25);return{type:'Multiplication',q:`${a} × ${b} = ?`,a:String(a*b),yn:false};}
+  if(t==='div'){const d=rnd(2,9),q=rnd(2,30);return{type:'Division',q:`${d*q} ÷ ${d} = ?`,a:String(q),yn:false};}
+  const start=rnd(1,50),step=rnd(1,10);
   const seq=[start,start+step,start+step*2,start+step*3];
-  return{type:'Pattern',q:`${seq[0]},  ${seq[1]},  ${seq[2]},  ?\n= `,a:String(seq[3]),yn:false};
+  return{type:'Pattern',q:`What comes next?\n${seq[0]},  ${seq[1]},  ${seq[2]},  ${seq[3]},  ?`,a:String(start+step*4),yn:false};
 }
 
 function showQ(){

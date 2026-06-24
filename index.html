@@ -668,14 +668,27 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     <!-- Intro panel -->
     <div class="rp-panel active" id="panel-intro">
       <h2>Hello, Young Scholar! ✨</h2>
-      <div class="inst">📚 Answer 9 math questions to collect Gears</div>
-      <div class="inst">🔥 3 correct in a row = 1 ⚙️ Gear + 1 Password Digit</div>
-      <div class="inst">⚙️ Collect 3 Gears → flip page → Dragon Battle!</div>
-      <div class="inst">🐉 Defeat the Dragon → flip page → Password Machine</div>
-      <div class="inst">🔐 Enter the 3-digit password → unlock next Chapter</div>
-      <div class="inst">🎮 Mini Games unlocked after Chapter 1!</div>
+      <div class="inst">📝 Each round = 3 questions. Answer all 3 to earn a Gear + Password Digit!</div>
+      <div class="inst">🏆 ALL 3 correct → Type 3 Gear ⚔️ (strongest attack!)</div>
+      <div class="inst">⭐⭐ 2 out of 3 correct → Type 2 Gear 🛡️ (defence!)</div>
+      <div class="inst">⭐ 1 out of 3 correct → Type 1 Gear 💡 (power-up!)</div>
+      <div class="inst">😔 0 correct → No Gear this round (but password digit still saved!)</div>
+      <div class="inst">⚙️ Collect 3 Gears → FLIP PAGE → Dragon Battle!</div>
+      <div class="inst">🐉 Defeat the Dragon → FLIP PAGE → Password Machine</div>
+      <div class="inst">🔐 Enter the 3-digit Password → unlock next Chapter!</div>
+      <div class="inst">🪙 Earn 5 Tokens each chapter — spend 1 Token to play a Mini Game!</div>
+      <div class="inst">🎮 Mini Games unlock after Chapter 1!</div>
       <select id="level-select" onchange="G.level=this.value;if(G.phase==='questions'&&curQ)nextQ()">
-        <option value="P1">P1 – Primary 1</option><option value="P2">P2 – Primary 2</option><option value="P3" selected>P3 – Primary 3</option><option value="P4">P4 – Primary 4</option><option value="P5">P5 – Primary 5</option><option value="P6">P6 – Primary 6</option>
+        <option value="P1">P1 – Add (No Rename)</option>
+        <option value="P2">P2 – Subtract (No Rename)</option>
+        <option value="P3" selected>P3 – × by 2, 5, 10</option>
+        <option value="P4">P4 – Divide 2÷1</option>
+        <option value="P5">P5 – Add with Rename</option>
+        <option value="P6">P6 – Subtract with Rename</option>
+        <option value="P7">P7 – × by 2, 4 (under 1000)</option>
+        <option value="P8">P8 – Divide 3÷1</option>
+        <option value="P9">P9 – Mixed (Easy)</option>
+        <option value="P10">P10 – Patterns</option>
       </select>
       <button id="friend-btn" onclick="openMpOverlay()">🔗 Play with Friend</button>
       <button id="solo-player-btn" onclick="openSoloPicker()">🧩 Solo Player</button>
@@ -694,11 +707,11 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       </div>
       <div id="feedback"></div>
       <div id="streak-row">
-        <span class="slabel">Streak:</span>
+        <span class="slabel">Set:</span>
         <div class="sdot" id="d1"></div>
         <div class="sdot" id="d2"></div>
         <div class="sdot" id="d3"></div>
-        <span class="slabel">= 1 Gear + Digit</span>
+        <span class="slabel">→ Gear + Digit!</span>
       </div>
       <div>
         <div id="gear-label">⚙️ GEARS</div>
@@ -784,7 +797,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <h3>🔖 BOOKMARK</h3>
       <div class="si"><label>Level</label>
         <select onchange="G.level=this.value;document.getElementById('level-select').value=this.value;updateBadge();if(G.phase==='questions'&&curQ)nextQ()">
-          <option value="P1">P1</option><option value="P2">P2</option><option value="P3" selected>P3</option><option value="P4">P4</option><option value="P5">P5</option><option value="P6">P6</option>
+          <option value="P1">P1</option><option value="P2">P2</option><option value="P3" selected>P3</option><option value="P4">P4</option><option value="P5">P5</option><option value="P6">P6</option><option value="P7">P7</option><option value="P8">P8</option><option value="P9">P9</option><option value="P10">P10</option>
         </select>
       </div>
       <div class="si"><label>Narrator</label><button class="smb act" id="narr-btn" onclick="toggleNarr()">ON</button></div>
@@ -792,6 +805,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="si"><label>Mini Games</label><button class="smb" id="mini-btn" onclick="openMiniMap()" disabled>🔒 After Ch.1</button></div>
       <div class="si"><label>Gear Base</label><button class="smb" onclick="openGearRoom();toggleScroll()">🏠 View Gears</button></div>
       <div class="si"><label>Directions</label><button class="smb" onclick="showDirs()">📖 How to Play</button></div>
+      <div class="si"><label>Tokens</label><div style="font-size:11px;color:#ffd700;font-weight:bold">🪙 <span id="token-count">0</span> tokens</div></div>
       <div class="si"><label>Admin</label><button class="smb" onclick="adminLogin()">🔐 Admin</button></div>
       <div class="si"><label>Multiplayer</label><button class="smb" onclick="openMpOverlay();toggleScroll()">🔗 Invite Friend</button></div>
       <button id="close-sm" onclick="toggleScroll()">✕ Close</button>
@@ -1033,22 +1047,24 @@ function sfx(type) {
 const G = {
   chapter:1, level:'P3', tier:'easy',
   streak:0, gears:[], password:[],
-  phase:'questions', // questions | battle | machine
+  phase:'questions',
   narrator:true, flipMode:'manual',
   miniUnlocked:false,
   consC:0, consW:0,
   player:{hp:0,maxHp:0,heals:3},
   dragon:{hp:0,maxHp:0},
   defending:false, immunityUsed:false,
-  allGears:[], // all gears ever earned (for gear base)
-  carryoverGears:[], // unused gears from previous battle
+  allGears:[],
+  carryoverGears:[],
   dialogCb:null,
   mpGame:null, mpStreak:0, mpQ:null,
   machineInput:'',
   machineAttempts:0,
-  mpPlayers:[], // pre-selected characters for multiplayer [{playerName,gender,charName}]
-  partnerGears:[], // gears earned by the other device in multiplayer
+  mpPlayers:[],
+  partnerGears:[],
   soloChar:{name:'Leo',gender:'boy',img:'chars/ad8d4e23-eec4-4ae2-9d31-76b420af265d.png'},
+  setQ:0, setCorrect:0,
+  tokens:0,
 };
 
 // ═══════════════════════════════════════
@@ -1078,38 +1094,55 @@ function $id(id){return document.getElementById(id)}
 // SINGAPORE MATH QUESTIONS
 // ═══════════════════════════════════════
 const QQ = {
-  P1:{
-    easy:()=>{const a=rnd(1,9),b=rnd(1,9);return{q:`${a} + ${b} = ?`,a:a+b,h:`Count on from ${a}`}},
-    medium:()=>pick([
-      ()=>{const a=rnd(10,20),b=rnd(1,9);return{q:`${a} + ${b} = ?`,a:a+b,h:`Start at ${a}`}},
-      ()=>{const a=rnd(10,20),b=rnd(1,10);return{q:`${a} − ${b} = ?`,a:a-b,h:`Count back ${b}`}},
-    ])(),
-    hard:()=>{const a=rnd(20,40),b=rnd(5,15);return pick([{q:`${a}+${b}=?`,a:a+b,h:'Add tens first'},{q:`${a}−${b}=?`,a:a-b,h:'Subtract ones then tens'}])}
+  P1:{  // Addition, no rename (no carrying) — max 3000
+    easy:()=>{const a1=rnd(1,4),b1=rnd(1,9-a1),a=rnd(1,4)*10+a1,b=rnd(1,4)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:`Ones: ${a1}+${b1}=${a1+b1} — no carrying!`}},
+    medium:()=>{const a1=rnd(0,4),b1=rnd(0,9-a1),a=rnd(1,3)*100+rnd(0,4)*10+a1,b=rnd(1,3)*100+rnd(0,4)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:'Add each column — no carrying'}},
+    hard:()=>{const a1=rnd(0,4),b1=rnd(0,9-a1),a=rnd(1,9)*100+rnd(0,4)*10+a1,b=rnd(1,9)*100+rnd(0,4)*10+b1;const s=a+b;if(s>3000)return QQ.P1.medium();return{q:`${a} + ${b} = ?`,a:s,h:'No carrying needed'}}
   },
-  P2:{
-    easy:()=>{const a=rnd(10,50),b=rnd(10,50);return{q:`${a} + ${b} = ?`,a:a+b,h:'Add tens first'}},
-    medium:()=>{const t=pick([2,3,4,5,10]),m=rnd(2,10);return{q:`${t} × ${m} = ?`,a:t*m,h:`${t} groups of ${m}`}},
-    hard:()=>{const t=rnd(2,10),m=rnd(2,12),p=t*m;return pick([{q:`${t}×${m}=?`,a:p,h:'Times tables'},{q:`${p}÷${t}=?`,a:m,h:`How many ${t}s in ${p}?`}])}
+  P2:{  // Subtraction, no rename (no borrowing)
+    easy:()=>{const b1=rnd(1,4),a1=rnd(b1,9),b10=rnd(1,4),a10=rnd(b10,9);const a=a10*10+a1,b=b10*10+b1;return{q:`${a} − ${b} = ?`,a:a-b,h:`Ones: ${a1}-${b1} — no borrowing!`}},
+    medium:()=>{const b1=rnd(0,3),a1=rnd(b1,9),b10=rnd(0,3),a10=rnd(b10,9),b100=rnd(1,4),a100=rnd(b100,9);const a=a100*100+a10*10+a1,b=b100*100+b10*10+b1;return{q:`${a} − ${b} = ?`,a:a-b,h:'No borrowing needed'}},
+    hard:()=>{const b1=rnd(0,3),a1=rnd(b1,9),b10=rnd(0,3),a10=rnd(b10,9),b100=rnd(1,4),a100=rnd(b100,9);const a=a100*100+a10*10+a1,b=b100*100+b10*10+b1;if(a>2000)return QQ.P2.medium();return{q:`${a} − ${b} = ?`,a:a-b,h:'Subtract without borrowing'}}
   },
-  P3:{
-    easy:()=>{const a=rnd(100,500),b=rnd(100,400);return{q:`${a} + ${b} = ?`,a:a+b,h:'Add hundreds first'}},
-    medium:()=>{const w=rnd(2,12),h2=rnd(2,12);return pick([{q:`Area of ${w}×${h2} rectangle = ?`,a:w*h2,h:'L × W'},{q:`Perimeter of ${w}×${h2} rectangle = ?`,a:2*(w+h2),h:'2×(L+W)'}])},
-    hard:()=>{const a=rnd(3,9),b=rnd(3,9),c=rnd(2,10);return{q:`${a} × ${b} + ${c} = ?`,a:a*b+c,h:'Multiply first!'}}
+  P3:{  // Multiplication by 2, 5, 10
+    easy:()=>{const m=pick([2,5,10]),n=rnd(1,10);return{q:`${n} × ${m} = ?`,a:n*m,h:`Count by ${m}s`}},
+    medium:()=>{const m=pick([2,5,10]),n=rnd(5,20);return{q:`${n} × ${m} = ?`,a:n*m,h:`${m} times table`}},
+    hard:()=>{const m=pick([2,5,10]),n=rnd(10,30);if(n*m>3000)return QQ.P3.medium();return{q:`${n} × ${m} = ?`,a:n*m,h:`Multiply by ${m}`}}
   },
-  P4:{
-    easy:()=>{const a=rnd(100,500),b=rnd(100,500);return pick([{q:`${a} + ${b} = ?`,a:a+b,h:'Add hundreds'},{q:`${a+b} − ${b} = ?`,a:a,h:'Subtract hundreds'}])},
-    medium:()=>{const a=rnd(10,99),b=rnd(2,9);return pick([{q:`${a} × ${b} = ?`,a:a*b,h:'Multiply'},{q:`${a*b} ÷ ${b} = ?`,a:a,h:'Divide'}])},
-    hard:()=>{const a=rnd(100,999),b=rnd(2,9),prod=a*b;return pick([{q:`${a} × ${b} = ?`,a:prod,h:'Multiply'},{q:`${prod} ÷ ${b} = ?`,a:a,h:'Divide'}])}
+  P4:{  // Division, 2-digit ÷ 1-digit
+    easy:()=>{const d=pick([2,5,10]),q=rnd(1,9);return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`How many ${d}s in ${d*q}?`}},
+    medium:()=>{const d=pick([2,3,4,5]),q=rnd(2,9);return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`Share ${d*q} into groups of ${d}`}},
+    hard:()=>{const d=pick([2,3,4,5,6]),q=rnd(5,15);return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`Divide ${d*q} by ${d}`}}
   },
-  P5:{
-    easy:()=>{const a=rnd(1000,5000),b=rnd(1000,5000);return pick([{q:`${a} + ${b} = ?`,a:a+b,h:'Add thousands'},{q:`${a+b} − ${b} = ?`,a:a,h:'Subtract'}])},
-    medium:()=>{const a=rnd(100,999),b=rnd(2,12),prod=a*b;return pick([{q:`${a} × ${b} = ?`,a:prod,h:'Multiply'},{q:`${prod} ÷ ${b} = ?`,a:a,h:'Divide'}])},
-    hard:()=>{const a=rnd(1000,9999),b=rnd(2,9),prod=a*b;return pick([{q:`${a} × ${b} = ?`,a:prod,h:'Multiply'},{q:`${prod} ÷ ${b} = ?`,a:a,h:'Divide'}])}
+  P5:{  // Addition with rename (carrying)
+    easy:()=>{const a1=rnd(5,9),b1=rnd(10-a1,9),a=rnd(1,4)*10+a1,b=rnd(1,4)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:`Ones: ${a1}+${b1}=${a1+b1} — carry the 1!`}},
+    medium:()=>{const a=rnd(25,199),b=rnd(25,199);if(a+b>3000)return QQ.P5.easy();return{q:`${a} + ${b} = ?`,a:a+b,h:'Remember to carry!'}},
+    hard:()=>{const a=rnd(100,999),b=rnd(100,999);if(a+b>3000)return QQ.P5.medium();return{q:`${a} + ${b} = ?`,a:a+b,h:'Add with carrying'}}
   },
-  P6:{
-    easy:()=>{const a=rnd(1000,9999),b=rnd(1000,9999);return pick([{q:`${a} + ${b} = ?`,a:a+b,h:'Add'},{q:`${a+b} − ${b} = ?`,a:a,h:'Subtract'}])},
-    medium:()=>{const a=rnd(1000,9999),b=rnd(10,99),prod=a*b;return{q:`${a} × ${b} = ?`,a:prod,h:'Multiply'}},
-    hard:()=>{const a=rnd(10000,99999),b=rnd(2,9);return pick([{q:`${a} × ${b} = ?`,a:a*b,h:'Multiply'},{q:`${a*b} ÷ ${b} = ?`,a:a,h:'Divide'}])}
+  P6:{  // Subtraction with rename (borrowing)
+    easy:()=>{const a=rnd(11,50),b=rnd(1,a-1);return{q:`${a} − ${b} = ?`,a:a-b,h:'You may need to borrow!'}},
+    medium:()=>{const a=rnd(50,299),b=rnd(10,a-1);return{q:`${a} − ${b} = ?`,a:a-b,h:'Borrow when needed'}},
+    hard:()=>{const a=rnd(200,1500),b=rnd(50,a-1);return{q:`${a} − ${b} = ?`,a:a-b,h:'Subtract carefully'}}
+  },
+  P7:{  // Multiply by 2,4 (product<1000); 2,4,6,8 times tables
+    easy:()=>{const t=pick([2,4,6,8]),n=rnd(1,12);return{q:`${t} × ${n} = ?`,a:t*n,h:`${t} times table`}},
+    medium:()=>{const m=pick([2,4]),n=rnd(10,50);if(m*n>1000)return QQ.P7.easy();return{q:`${n} × ${m} = ?`,a:n*m,h:`Multiply by ${m} — answer under 1000`}},
+    hard:()=>{const m=pick([2,4,6,8]),n=rnd(10,100);if(m*n>1000)return QQ.P7.medium();return{q:`${n} × ${m} = ?`,a:n*m,h:`${m} times table — product under 1000`}}
+  },
+  P8:{  // Division, 3-digit ÷ 1-digit
+    easy:()=>{const d=pick([2,5,10]),q=rnd(10,50);return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`Divide by ${d}`}},
+    medium:()=>{const d=pick([2,3,4,5]),q=rnd(10,50);if(d*q>3000)return QQ.P8.easy();return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`How many ${d}s?`}},
+    hard:()=>{const d=pick([2,3,4,5,6]),q=rnd(20,100);if(d*q>3000)return QQ.P8.medium();return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`Divide ${d*q} by ${d}`}}
+  },
+  P9:{  // Mixed, easy
+    easy:()=>pick([QQ.P1.easy,QQ.P2.easy,QQ.P3.easy,QQ.P4.easy])(),
+    medium:()=>pick([QQ.P5.easy,QQ.P6.easy,QQ.P7.easy,QQ.P8.easy])(),
+    hard:()=>pick([QQ.P1.medium,QQ.P2.medium,QQ.P3.medium,QQ.P4.medium])()
+  },
+  P10:{ // Addition + number patterns (5 numbers, max 3000)
+    easy:()=>{if(Math.random()<0.5){const s=rnd(1,15),d=rnd(1,5);const seq=[s,s+d,s+d*2,s+d*3,s+d*4];return{q:`What comes next?\n${seq.join(',  ')},  ?`,a:s+d*5,h:`Add ${d} each time`};}const a=rnd(1,50),b=rnd(1,50);return{q:`${a} + ${b} = ?`,a:a+b,h:'Simple addition'}},
+    medium:()=>{if(Math.random()<0.5){const s=rnd(2,40),d=rnd(2,8);const seq=[s,s+d,s+d*2,s+d*3,s+d*4];return{q:`What comes next?\n${seq.join(',  ')},  ?`,a:s+d*5,h:`Step is +${d}`};}const a=rnd(10,200),b=rnd(10,200);if(a+b>3000)return QQ.P10.easy();return{q:`${a} + ${b} = ?`,a:a+b,h:'Add the numbers'}},
+    hard:()=>{if(Math.random()<0.5){const s=rnd(5,80),d=rnd(5,15);const seq=[s,s+d,s+d*2,s+d*3,s+d*4];return{q:`What comes next?\n${seq.join(',  ')},  ?`,a:s+d*5,h:`Step is +${d}`};}const a=rnd(100,800),b=rnd(100,800);if(a+b>3000)return QQ.P10.medium();return{q:`${a} + ${b} = ?`,a:a+b,h:'Add carefully'}}
   }
 };
 function genQ(){return(QQ[G.level]?.[G.tier]||QQ.P3.easy)()}
@@ -1149,6 +1182,7 @@ function saveGame(){
     level:G.level,
     miniUnlocked:G.miniUnlocked,
     allGears:G.allGears,
+    tokens:G.tokens,
     savedAt:new Date().toLocaleDateString(),
   };
   localStorage.setItem(SAVE_KEY,JSON.stringify(data));
@@ -1163,6 +1197,7 @@ function continueGame(){
   G.level=save.level;
   G.miniUnlocked=save.miniUnlocked;
   G.allGears=save.allGears||[];
+  G.tokens=save.tokens||0;
   if(G.miniUnlocked){$id('mini-btn').disabled=false;$id('mini-btn').textContent='🎮 Play';}
   $id('level-select').value=G.level;
   openBook();
@@ -1214,7 +1249,7 @@ function openBook(){
   },400);
 }
 function updateBadge(){
-  const n={P1:'Primary 1',P2:'Primary 2',P3:'Primary 3',P4:'Primary 4',P5:'Primary 5',P6:'Primary 6',S1:'Secondary 1',S2:'Secondary 2',S3:'Secondary 3',S4:'Secondary 4'};
+  const n={P1:'Add (No Rename)',P2:'Subtract (No Rename)',P3:'× by 2,5,10',P4:'Divide 2÷1',P5:'Add with Rename',P6:'Subtract with Rename',P7:'× by 2,4 (< 1000)',P8:'Divide 3÷1',P9:'Mixed (Easy)',P10:'Patterns'};
   $id('level-badge').textContent=`${G.level} — ${n[G.level]||G.level}`;
 }
 
@@ -1274,6 +1309,7 @@ function startChapter(){
   }
   G.phase='questions'; G.streak=0; G.gears=[]; G.password=[]; G.partnerGears=[];
   G.consC=0; G.consW=0; G.immunityUsed=false; G.defending=false;
+  G.setQ=0; G.setCorrect=0;
   G.machineAttempts=0; $id('torn-paper').style.display='none'; $id('flip-zone').style.display='none'; $id('machine').classList.remove('visible');
   $id('q-flip-btn').style.display='none';
   $id('bm-chapter').textContent='CH '+G.chapter;
@@ -1296,23 +1332,49 @@ function updateDots(){for(let i=1;i<=3;i++)$id('d'+i).classList.toggle('on',i<=G
 // ═══════════════════════════════════════
 // ANSWER SUBMISSION
 // ═══════════════════════════════════════
+function updateSetDots(){for(let i=1;i<=3;i++)$id('d'+i).classList.toggle('on',i<=G.setQ);}
+
 function submitAns(){
   if(G.phase!=='questions')return;
-  const raw=$id('a-input').value.trim(); if(raw==='')return;
+  const raw=$id('a-input').value.trim();if(raw==='')return;
   const ok=Math.abs(parseFloat(raw)-curQ.a)<.06;
   adapt(ok);
-  if(ok){
-    sfx('correct'); narrate('correct'); G.streak++;
-    updateDots();
-    if(G.streak>=3){awardGear();G.streak=0;updateDots();
-      if(G.gears.length>=3){setTimeout(goToBattlePage,1400);return}
-      setTimeout(nextQ,1400);return}
-    setFb('✅ Correct! Keep going!','#2d6a00');
-  } else {
-    sfx('wrong'); narrate('wrong'); G.streak=0; updateDots();
-    setFb(`❌ Hint: ${curQ.h}`,'#8b0000');
+  if(_mpCode){
+    // Multiplayer: keep streak system
+    if(ok){sfx('correct');narrate('correct');G.streak++;updateDots();if(G.streak>=3){awardGear();G.streak=0;updateDots();if(G.gears.length>=3){setTimeout(goToBattlePage,1400);return}setTimeout(nextQ,1400);return}setFb('✅ Correct! Keep going!','#2d6a00');}
+    else{sfx('wrong');narrate('wrong');G.streak=0;updateDots();setFb(`❌ Hint: ${curQ.h}`,'#8b0000');}
+    setTimeout(nextQ,900);
+  }else{
+    // Solo: set of 3 questions — correct green, wrong red
+    if(ok){sfx('correct');narrate('correct');G.setCorrect++;setFb('✅ Correct!','#2d6a00');}
+    else{sfx('wrong');narrate('wrong');setFb(`❌ Answer: ${curQ.a}   💡 ${curQ.h}`,'#8b0000');}
+    G.setQ++;updateSetDots();
+    if(G.setQ>=3){const c=G.setCorrect;G.setQ=0;G.setCorrect=0;setTimeout(()=>awardGearBySet(c),950);}
+    else{setTimeout(nextQ,950);}
   }
-  setTimeout(nextQ,900);
+}
+
+function awardGearBySet(correct){
+  const i=G.gears.length;
+  let gear=null;
+  if(correct===1)gear=GEARS.t1[rnd(0,GEARS.t1.length-1)];
+  else if(correct===2)gear=GEARS.t2[rnd(0,GEARS.t2.length-1)];
+  else if(correct===3)gear=GEARS.t3[rnd(0,GEARS.t3.length-1)];
+  const d=rnd(0,9);G.password.push(d);
+  const pd=$id('p'+i);if(pd){pd.textContent=d;pd.classList.add('shown');}
+  if(gear){
+    G.gears.push(gear);G.allGears.push(gear);renderGears();sfx('gear');
+    const t=GEARS.t3.some(g=>g.name===gear.name)?3:GEARS.t2.some(g=>g.name===gear.name)?2:1;
+    const stars=['','⭐','⭐⭐','🏆'][correct];
+    setFb(`${stars} ${correct}/3 correct! ${gear.emoji} ${gear.name} (Type ${t} Gear) earned!`,'#8b4513');
+  }else{
+    sfx('wrong');
+    setFb('😔 0/3 correct — no gear this round. Password digit still saved!','#660000');
+  }
+  narrate('gear');updateSetDots();updateFlipStrip();
+  if(_mpCode)_cSendGame({type:'gear_earned',gear});
+  if(G.gears.length>=3){setTimeout(goToBattlePage,1600);}
+  else{setTimeout(nextQ,1900);}
 }
 function renderGears(){
   const row=$id('gear-row'); row.innerHTML='';
@@ -1560,6 +1622,7 @@ function mEnter(){
     sfx('victory'); $id('m-msg').textContent='✅ CODE ACCEPTED! Chapter complete!';
     for(let i=0;i<3;i++)$id('ms-'+i).style.background='#003300';
     if(G.chapter===1){G.miniUnlocked=true;$id('mini-btn').disabled=false;$id('mini-btn').textContent='🎮 Play'}
+    G.tokens+=5;updateTokenDisplay();
     setTimeout(()=>{
       if(G.chapter>=12){clearSave();endGame();return}
       G.chapter++;
@@ -1591,9 +1654,10 @@ function mEnter(){
 // ═══════════════════════════════════════
 // SCROLL MENU
 // ═══════════════════════════════════════
+function updateTokenDisplay(){const el=$id('token-count');if(el)el.textContent=G.tokens;}
+
 function toggleScroll(){
   const isOpen=$id('scroll-menu').classList.toggle('open');
-  // bookmark disappears when menu is open, reappears when closed
   $id('bookmark').classList.toggle('hidden', isOpen);
 }
 function toggleNarr(){G.narrator=!G.narrator;const b=$id('narr-btn');b.textContent=G.narrator?'ON':'OFF';b.classList.toggle('act',G.narrator);$id('narrator').style.display=G.narrator?'':'none'}
@@ -1706,40 +1770,24 @@ function genMiniQ(type){
     const n=isPal?pick(nums):pick(non);
     return{q:`Is ${n} a palindrome? (1=yes, 0=no)`,a:isPal?1:0};
   };
-  // pattern: next number in sequence
+  // pattern: next number in sequence (5 numbers shown)
   const pat=()=>{
-    const start=rnd(1,10),step=rnd(1,8);
-    const seq=[start,start+step,start+step*2,start+step*3];
-    return{q:`${seq[0]}, ${seq[1]}, ${seq[2]}, ? = `,a:seq[3]};
+    const start=rnd(1,20),step=rnd(1,8);
+    const seq=[start,start+step,start+step*2,start+step*3,start+step*4];
+    return{q:`What comes next?\n${seq.join(', ')},  ?`,a:start+step*5};
   };
   // POPped Your Mind — bigger ranges
-  const popAdd=()=>{const a=rnd(10,999),b=rnd(10,999);return{q:`${a} + ${b} = ?`,a:a+b}};
-  const popSub=()=>{const a=rnd(100,999),b=rnd(10,a);return{q:`${a} − ${b} = ?`,a:a-b}};
-  const popMul=()=>{const a=rnd(10,99),b=rnd(10,9999);return{q:`${a} × ${b} = ?`,a:a*b}};
-  const popDiv=()=>{const d=rnd(2,9),q=rnd(10,Math.floor(9999/d));return{q:`${d*q} ÷ ${d} = ?`,a:q}};
-  const popPal=()=>{
-    const gen=()=>{const n=rnd(100,9999);return String(n)};
-    const isPalStr=s=>s===s.split('').reverse().join('');
-    const pool=[];for(let i=0;i<6;i++){const s=gen();pool.push(s);}
-    const hasPal=pool.some(isPalStr),hasNon=pool.some(s=>!isPalStr(s));
-    if(!hasPal){const d=rnd(100,999);const h=String(d)[0];pool[0]=h+String(d).slice(1,String(d).length-1)+h;}
-    if(!hasNon){pool[1]=''+rnd(1,9)+rnd(0,9)+rnd(0,9)+'0';}
-    const isPal=Math.random()<.5;
-    const candidates=pool.filter(s=>isPalStr(s)===isPal);
-    const n=candidates[rnd(0,candidates.length-1)]||pool[0];
-    return{q:`Is ${n} a palindrome? (1=yes, 0=no)`,a:isPalStr(n)?1:0};
-  };
-  const popPat=()=>{
-    const start=rnd(1,50),step=rnd(2,15);
-    const seq=[start,start+step,start+step*2,start+step*3];
-    return{q:`${seq[0]}, ${seq[1]}, ${seq[2]}, ? = `,a:seq[3]};
-  };
+  const popAdd=()=>{const a=rnd(10,500),b=rnd(10,500);return{q:`${a} + ${b} = ?`,a:a+b}};
+  const popSub=()=>{const a=rnd(20,500),b=rnd(5,Math.min(a-1,300));return{q:`${a} − ${b} = ?`,a:a-b}};
+  const popMul=()=>{const a=rnd(2,25),b=rnd(2,25);return{q:`${a} × ${b} = ?`,a:a*b}};
+  const popDiv=()=>{const d=rnd(2,9),q=rnd(2,30);return{q:`${d*q} ÷ ${d} = ?`,a:q}};
+  const popPat=()=>{const start=rnd(1,40),step=rnd(1,8);const seq=[start,start+step,start+step*2,start+step*3];return{q:`What comes next?\n${seq[0]}, ${seq[1]}, ${seq[2]}, ${seq[3]}, ?`,a:seq[3]+step};};
   if(type==='lava')     return pick([add,sub,mul,div])();
   if(type==='ice')      return pat();
   if(type==='obstacle') return pick([add,mul])();
-  if(type==='code')     return pick([pal,pat])();
+  if(type==='code')     return pat();
   if(type==='maze')     return pick([add,sub,mul,div,pat])();
-  if(type==='pop')      return pick([popAdd,popSub,popMul,popDiv,popPat,popPal])();
+  if(type==='pop')      return pick([popAdd,popSub,popMul,popDiv,popPat])();
   return add();
 }
 const MINI_GAME_FILES={
@@ -1753,6 +1801,8 @@ const MINI_GAME_FILES={
 let mpStreak=0, mpCurQ=null, mpGame=null;
 function playMiniGame(type){
   if(MINI_GAME_FILES[type]){
+    if(G.tokens<=0){showDialog('🪙 No Tokens!','You need 1 token to play a Mini Game.\nEarn 5 tokens by completing a chapter!','OK',()=>{});return;}
+    G.tokens--;updateTokenDisplay();
     openMiniGameScene(MINI_GAME_FILES[type]);
     return;
   }

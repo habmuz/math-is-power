@@ -39,7 +39,7 @@ canvas{border-radius:8px;border:2px solid #3a1100;display:block;
 <div id="hdr">
   <button id="back-btn" onclick="goBack()">← Map</button>
   <h1>🌋 Lava Ruins</h1>
-  <div id="stats">Lv <b id="lv">1</b>/50 &nbsp;|&nbsp; <b id="timer">0.0</b>s &nbsp;|&nbsp; Lives: <b id="lives">3</b></div>
+  <div id="stats">Lv <b id="lv">1</b>/50 &nbsp;|&nbsp; <b id="timer">0.0</b>s &nbsp;|&nbsp; Lives: <b id="lives">3</b> &nbsp;|&nbsp; Score: <b id="score">0</b></div>
 </div>
 <div id="hint"></div>
 <div style="position:relative">
@@ -64,26 +64,33 @@ const _charImg=_charSrc?Object.assign(new Image(),{src:_charSrc}):null;
 function _rng(seed){let s=seed*9301+49297;return()=>{s=(s*9301+49297)%233280;return s/233280;}}
 function makeLevel(n){
   const r=_rng(n+1);
-  const speed=n===0?6:8+n*2.2;
-  const nP=5+Math.floor(n/2);
-  const crumble=Math.min(0.55,n/90);
-  const plats=[{x:0,y:395,w:Math.max(90,160-n),c:false}];
+  // Cap difficulty at level 28 (level 29 in UI). Slower after 25.
+  const nc=Math.min(n,28);
+  let speed;
+  if(n===0)speed=4;
+  else if(n<25)speed=5+n*1.4;
+  else if(n<29)speed=5+24*1.4+(n-24)*0.5;
+  else speed=5+24*1.4+4*0.5; // hard cap
+  const nP=4+Math.floor(nc/3);
+  const crumble=Math.min(0.30,nc/110);
+  const gap=50+Math.floor(nc/5)*2;
+  const plats=[{x:0,y:395,w:Math.max(110,180-nc*2),c:false}];
   let x=0,y=385;
   for(let i=0;i<nP;i++){
-    x+=Math.floor(r()*55)+55+Math.floor(n/5)*2;
+    x+=Math.floor(r()*40)+gap;
     if(x>780)break;
-    y-=Math.floor(r()*28)+14;
-    if(y<45)y=45+Math.floor(r()*30);
-    plats.push({x,y:Math.max(42,y),w:Math.floor(r()*65)+48,c:r()<crumble});
+    y-=Math.floor(r()*22)+10;
+    if(y<60)y=60+Math.floor(r()*30);
+    plats.push({x,y:Math.max(55,y),w:Math.floor(r()*55)+55,c:r()<crumble});
   }
   const last=plats[plats.length-1];
-  return{speed,lives:n<20?3:n<40?2:1,
-    hint:n<10?'Jump the gaps!':(n<25?'Watch for crumble platforms!':'⚠️ Maximum heat!'),
+  return{speed,lives:3,
+    hint:n<10?'Jump the gaps!':(n<20?'Watch for crumble platforms!':(n<29?'Stay fast!':'⚠️ Max difficulty reached!')),
     plats,exit:{x:Math.min(800,last.x+last.w-18),y:Math.max(18,last.y-42)}};
 }
 const LEVELS=Array.from({length:50},(_,i)=>makeLevel(i));
 
-let lvIdx,plats,player,lava,running,elapsed,lives,raf,lastT,waveT=0;
+let lvIdx,plats,player,lava,running,elapsed,lives,raf,lastT,waveT=0,totalScore=0;
 
 function initLevel(i){
   lvIdx=i;
@@ -218,6 +225,7 @@ function draw(){
 
 function over(win,title,sub,isLast){
   running=false;
+  if(win){const pts=Math.max(0,Math.round(500-elapsed*25));totalScore+=pts;document.getElementById('score').textContent=totalScore;sub+=`  (+${pts} pts)`;}
   document.getElementById('ov-t').textContent=title;
   document.getElementById('ov-s').textContent=sub;
   document.getElementById('btn-retry').style.display=win&&isLast?'none':'inline-block';
