@@ -668,16 +668,15 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     <!-- Intro panel -->
     <div class="rp-panel active" id="panel-intro">
       <h2>Hello, Young Scholar! ✨</h2>
-      <div class="inst">📝 Each round = 3 questions. Answer all 3 to earn a Gear + Password Digit!</div>
-      <div class="inst">🏆 ALL 3 correct → Type 3 Gear ⚔️ (strongest attack!)</div>
-      <div class="inst">⭐⭐ 2 out of 3 correct → Type 2 Gear 🛡️ (defence!)</div>
-      <div class="inst">⭐ 1 out of 3 correct → Type 1 Gear 💡 (power-up!)</div>
-      <div class="inst">😔 0 correct → No Gear this round (but password digit still saved!)</div>
+      <div class="inst">📖 10 Chapters — each chapter teaches a different topic!</div>
+      <div class="inst">Ch1: Add · Ch2: Subtract · Ch3: ×2,5,10 · Ch4: ÷ · Ch5: Add+Carry · Ch6: Sub+Borrow · Ch7: ×2,4,6,8 · Ch8: ÷3÷1 · Ch9: Mixed · Ch10: All+Patterns</div>
+      <div class="inst">📝 Each round = 3 questions → earn 1 Gear + 1 Password Digit!</div>
+      <div class="inst">🏆 ALL 3 correct → Type 3 Gear ⚔️ &nbsp; ⭐⭐ 2/3 → Type 2 Gear 🛡️ &nbsp; ⭐ 1/3 → Type 1 Gear 💡</div>
+      <div class="inst">😔 0 correct → No Gear (but password digit still saved!)</div>
       <div class="inst">⚙️ Collect 3 Gears → FLIP PAGE → Dragon Battle!</div>
       <div class="inst">🐉 Defeat the Dragon → FLIP PAGE → Password Machine</div>
       <div class="inst">🔐 Enter the 3-digit Password → unlock next Chapter!</div>
-      <div class="inst">🪙 Earn 5 Tokens each chapter — spend 1 Token to play a Mini Game!</div>
-      <div class="inst">🎮 Mini Games unlock after Chapter 1!</div>
+      <div class="inst">🪙 Earn 5 Tokens per chapter — spend 1 to play a Mini Game!</div>
       <select id="level-select" onchange="G.level=this.value;if(G.phase==='questions'&&curQ)nextQ()">
         <option value="P1">P1 – Add (No Rename)</option>
         <option value="P2">P2 – Subtract (No Rename)</option>
@@ -1087,41 +1086,84 @@ function pick(a){return a[rnd(0,a.length-1)]}
 function $id(id){return document.getElementById(id)}
 
 // ═══════════════════════════════════════
-// SINGAPORE MATH QUESTIONS
+// QUESTIONS — Chapter = topic, P-level = number size (all easy!)
 // ═══════════════════════════════════════
-const QQ = {
-  P1:{  // Addition, no rename (no carrying) — 2-digit only, e.g. 23 + 14
-    easy:()=>{const a1=rnd(1,4),b1=rnd(1,9-a1),a=rnd(1,4)*10+a1,b=rnd(1,4)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:`Ones: ${a1}+${b1}=${a1+b1}, tens add up — no carrying!`}},
-    medium:()=>{const a1=rnd(0,4),b1=rnd(0,9-a1),a=rnd(2,6)*10+a1,b=rnd(1,4)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:'Add ones first, then tens — no carrying'}},
-    hard:()=>{const a1=rnd(0,3),b1=rnd(0,9-a1),a=rnd(2,7)*10+a1,b=rnd(1,5)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:'No carrying needed'}}
-  },
-  P2:{  // Subtraction, no rename (no borrowing) — 2-digit, e.g. 47 − 23
-    easy:()=>{const b1=rnd(1,3),a1=rnd(b1,9),b10=rnd(1,3),a10=rnd(b10,7);const a=a10*10+a1,b=b10*10+b1;return{q:`${a} − ${b} = ?`,a:a-b,h:`Ones: ${a1}−${b1}=${a1-b1} — no borrowing!`}},
-    medium:()=>{const b1=rnd(0,3),a1=rnd(b1,9),b10=rnd(1,3),a10=rnd(b10+1,7);const a=a10*10+a1,b=b10*10+b1;return{q:`${a} − ${b} = ?`,a:a-b,h:'Subtract ones first, then tens'}},
-    hard:()=>{const b1=rnd(0,4),a1=rnd(b1,9),b10=rnd(1,4),a10=rnd(b10+1,9);const a=a10*10+a1,b=b10*10+b1;return{q:`${a} − ${b} = ?`,a:a-b,h:'No borrowing needed'}}
-  },
-  P3:{  // Multiplication by 2, 5, 10 — small e.g. 4 × 5 = 20
-    easy:()=>{const m=pick([2,5,10]),n=rnd(1,6);return{q:`${n} × ${m} = ?`,a:n*m,h:`Count by ${m}s, ${n} times`}},
-    medium:()=>{const m=pick([2,5,10]),n=rnd(3,9);return{q:`${n} × ${m} = ?`,a:n*m,h:`${m} times table`}},
-    hard:()=>{const m=pick([2,5,10]),n=rnd(4,12);return{q:`${n} × ${m} = ?`,a:n*m,h:`${m} times table`}}
-  },
-  P4:{  // Division 2÷1 — e.g. 20 ÷ 5 = 4
-    easy:()=>{const d=pick([2,5,10]),q=rnd(1,6);return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`How many ${d}s in ${d*q}?`}},
-    medium:()=>{const d=pick([2,5,10]),q=rnd(2,9);return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`Share equally into groups of ${d}`}},
-    hard:()=>{const d=pick([2,3,4,5]),q=rnd(2,9);return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`Divide ${d*q} by ${d}`}}
-  },
-  P5:{  // Addition WITH rename (carrying) — 2-digit, e.g. 37 + 45 = 82
-    easy:()=>{const a1=rnd(5,9),b1=rnd(10-a1,9),a=rnd(1,4)*10+a1,b=rnd(1,3)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:`Ones: ${a1}+${b1}=${a1+b1} — write ${(a1+b1)%10} carry 1!`}},
-    medium:()=>{const a1=rnd(4,9),b1=rnd(10-a1,9),a=rnd(2,5)*10+a1,b=rnd(1,4)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:'Carry the 1 to the tens!'}},
-    hard:()=>{const a1=rnd(3,9),b1=rnd(10-a1,9),a=rnd(2,7)*10+a1,b=rnd(1,5)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:'Add and carry'}}
-  },
-  P6:{  // Subtraction WITH rename (borrowing) — 2-digit, e.g. 63 − 27 = 36
-    easy:()=>{const b1=rnd(4,9),a1=rnd(0,b1-1),b10=rnd(1,3),a10=rnd(b10+1,7);const a=a10*10+a1,b=b10*10+b1;return{q:`${a} − ${b} = ?`,a:a-b,h:`Ones: can't do ${a1}−${b1}, borrow from tens!`}},
-    medium:()=>{const b1=rnd(3,9),a1=rnd(0,b1-1),b10=rnd(1,4),a10=rnd(b10+1,8);const a=a10*10+a1,b=b10*10+b1;return{q:`${a} − ${b} = ?`,a:a-b,h:'Borrow 10 from the tens column'}},
-    hard:()=>{const b1=rnd(2,9),a1=rnd(0,b1-1),b10=rnd(1,5),a10=rnd(b10+1,9);const a=a10*10+a1,b=b10*10+b1;return{q:`${a} − ${b} = ?`,a:a-b,h:'Borrow and subtract'}}
-  },
-};
-function genQ(){return(QQ[G.level]?.[G.tier]||QQ.P3.easy)()}
+
+// s = scale 1(P1)–6(P6), controls how big numbers are, but always easy
+function _sc(s){return {P1:1,P2:2,P3:3,P4:4,P5:5,P6:6}[s]||3;}
+
+function _addNoRename(s){
+  // e.g. P1: 12+13, P6: 34+52 — ones never carry
+  const t=_sc(s);const maxA=2+t,maxB=1+t;
+  const a1=rnd(1,4),b1=rnd(1,9-a1),a=rnd(1,maxA)*10+a1,b=rnd(1,Math.min(maxB,9-Math.floor(a/10)))*10+b1;
+  return{q:`${a} + ${b} = ?`,a:a+b,h:`Add ones first: ${a1}+${b1}=${a1+b1}, then tens — no carrying!`};
+}
+function _subNoRename(s){
+  // e.g. P1: 24−12, P6: 76−43 — never need to borrow
+  const t=_sc(s);const max=3+t;
+  const b1=rnd(1,3),a1=rnd(b1,9),b10=rnd(1,Math.min(max-1,4)),a10=rnd(b10+1,Math.min(max,9));
+  const a=a10*10+a1,b=b10*10+b1;
+  return{q:`${a} − ${b} = ?`,a:a-b,h:`Ones: ${a1}−${b1}=${a1-b1}, tens: ${a10}−${b10}=${a10-b10} — no borrowing!`};
+}
+function _mulSimple(s){
+  // ×2,5,10 only — e.g. 3×5=15, 7×10=70
+  const t=_sc(s);const m=pick([2,5,10]),n=rnd(1,Math.min(2+t,12));
+  return{q:`${n} × ${m} = ?`,a:n*m,h:`Count by ${m}s, ${n} times`};
+}
+function _div2by1(s){
+  // 2-digit ÷ 1-digit — e.g. 20÷5=4, 18÷2=9
+  const t=_sc(s);const d=pick([2,5,10]),q=rnd(1,Math.min(1+t,9));
+  return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`How many ${d}s make ${d*q}?`};
+}
+function _addRename(s){
+  // Add WITH carrying — e.g. 37+45=82
+  const t=_sc(s);const a1=rnd(5,9),b1=rnd(10-a1,9),a=rnd(1,Math.min(1+t,6))*10+a1,b=rnd(1,Math.min(t,5))*10+b1;
+  return{q:`${a} + ${b} = ?`,a:a+b,h:`Ones: ${a1}+${b1}=${a1+b1} → write ${(a1+b1)%10}, carry 1 to tens!`};
+}
+function _subRename(s){
+  // Subtract WITH borrowing — e.g. 63−28=35
+  const t=_sc(s);const b1=rnd(4,9),a1=rnd(0,b1-1),b10=rnd(1,Math.min(t,4)),a10=rnd(b10+1,Math.min(t+2,9));
+  const a=a10*10+a1,b=b10*10+b1;
+  return{q:`${a} − ${b} = ?`,a:a-b,h:`Can't do ${a1}−${b1}! Borrow 10 from the ${a10} tens → now ${a1+10}−${b1}=${a1+10-b1}`};
+}
+function _mulBy24(s){
+  // ×2,4 for P1/P2; 2,4,6,8 tables for P3+ — product stays small
+  const t=_sc(s);const opts=t<=2?[2,4]:[2,4,6,8];const m=pick(opts),n=rnd(1,Math.min(1+t,12));
+  if(n*m>100)return _mulBy24(s);
+  return{q:`${n} × ${m} = ?`,a:n*m,h:`${m} times table — ${n}×${m}`};
+}
+function _div3by1(s){
+  // 3-digit ÷ 1-digit — e.g. 60÷3=20, 84÷4=21
+  const t=_sc(s);const d=pick([2,3,4,5]),q=rnd(5,Math.min(5+t*2,20));
+  return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`Divide ${d*q} by ${d}`};
+}
+function _pattern(s){
+  // Number pattern — 5 numbers, find the 6th
+  const t=_sc(s);const step=rnd(1,Math.min(t,6)),start=rnd(1,Math.min(t*2,15));
+  const seq=[start,start+step,start+step*2,start+step*3,start+step*4];
+  return{q:`What comes next?\n${seq.join(', ')},  ?`,a:start+step*5,h:`Adding ${step} each time`};
+}
+function _mixed(s){
+  return pick([_addNoRename,_subNoRename,_mulSimple,_div2by1,_addRename,_subRename].map(f=>()=>f(s)))();
+}
+
+// Chapter determines the TOPIC — P-level scales the numbers (all still easy)
+function genQ(){
+  const s=G.level||'P3';
+  switch(G.chapter){
+    case 1:  return _addNoRename(s);
+    case 2:  return _subNoRename(s);
+    case 3:  return _mulSimple(s);
+    case 4:  return _div2by1(s);
+    case 5:  return _addRename(s);
+    case 6:  return _subRename(s);
+    case 7:  return _mulBy24(s);
+    case 8:  return _div3by1(s);
+    case 9:  return _mixed(s);
+    case 10: return Math.random()<0.4?_pattern(s):_mixed(s);
+    default: return _addNoRename(s);
+  }
+}
 
 // ═══════════════════════════════════════
 // NARRATOR
@@ -1133,14 +1175,7 @@ const NL={
   battle:['🐉 The dragon ROARS!','⚡ The cave shakes — FIGHT!','🔥 Battle begins!'],
 };
 function narrate(k){if(!G.narrator)return;$id('narrator').textContent=pick(NL[k]||NL.correct)}
-
-// ═══════════════════════════════════════
-// ADAPTIVE DIFFICULTY
-// ═══════════════════════════════════════
-function adapt(ok){
-  if(ok){G.consW=0;G.consC++;if(G.consC>=4){if(G.tier==='easy'){G.tier='medium';$id('narrator').textContent+=' 📈'}else if(G.tier==='medium'){G.tier='hard';$id('narrator').textContent+=' 🔥'}G.consC=0}}
-  else{G.consC=0;G.consW++;if(G.consW>=3){if(G.tier==='hard')G.tier='medium';else if(G.tier==='medium')G.tier='easy';G.consW=0}}
-}
+function adapt(ok){} // kept for compatibility — chapter now controls topic, not tier
 
 // ═══════════════════════════════════════
 // BOOK COVER WAKE SEQUENCE
@@ -1273,7 +1308,6 @@ function doFlip(onMid, onDone){
 function startGame(){
   G.level=$id('level-select').value;
   updateBadge();
-  $id('chapter-title').textContent=`📖 Chapter 1 of 10`;
   showPanel('q');
   startChapter();
 }
@@ -1289,15 +1323,16 @@ function startChapter(){
   G.machineAttempts=0; $id('torn-paper').style.display='none'; $id('flip-zone').style.display='none'; $id('machine').classList.remove('visible');
   $id('q-flip-btn').style.display='none';
   $id('bm-chapter').textContent='CH '+G.chapter;
-  G.tier=G.chapter<=4?'easy':G.chapter<=8?'medium':'hard';
+  const _chTopics=['','Add (No Rename)','Subtract (No Rename)','× by 2, 5, 10','Divide 2÷1','Add with Rename','Subtract with Rename','× by 2, 4, 6, 8','Divide 3÷1','Mixed','All + Patterns'];
+  $id('chapter-title').textContent=`📖 Chapter ${G.chapter} — ${_chTopics[G.chapter]||''}`;
   // Reset gear display and password digits
   renderGears();
   for(let i=0;i<3;i++){const pd=$id('p'+i);pd.textContent='—';pd.classList.remove('shown');}
-  updateDots();
+  updateSetDots();
   // Cave scene
   $id('cave-scene').style.display='flex';
   $id('battle-scene').style.display='none';
-  if(G.narrator)$id('narrator').textContent=`📖 Chapter ${G.chapter}! Collect 3 gears to face the dragon…`;
+  if(G.narrator)$id('narrator').textContent=`📖 Chapter ${G.chapter}: ${_chTopics[G.chapter]||''}! Collect 3 gears to face the dragon…`;
   nextQ();
 }
 let curQ=null;
