@@ -685,10 +685,6 @@ body.sharp-off #pcp-img-wrap img{filter:none}
         <option value="P4">P4 – Divide 2÷1</option>
         <option value="P5">P5 – Add with Rename</option>
         <option value="P6">P6 – Subtract with Rename</option>
-        <option value="P7">P7 – × by 2, 4 (under 1000)</option>
-        <option value="P8">P8 – Divide 3÷1</option>
-        <option value="P9">P9 – Mixed (Easy)</option>
-        <option value="P10">P10 – Patterns</option>
       </select>
       <button id="friend-btn" onclick="openMpOverlay()">🔗 Play with Friend</button>
       <button id="solo-player-btn" onclick="openSoloPicker()">🧩 Solo Player</button>
@@ -797,7 +793,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <h3>🔖 BOOKMARK</h3>
       <div class="si"><label>Level</label>
         <select onchange="G.level=this.value;document.getElementById('level-select').value=this.value;updateBadge();if(G.phase==='questions'&&curQ)nextQ()">
-          <option value="P1">P1</option><option value="P2">P2</option><option value="P3" selected>P3</option><option value="P4">P4</option><option value="P5">P5</option><option value="P6">P6</option><option value="P7">P7</option><option value="P8">P8</option><option value="P9">P9</option><option value="P10">P10</option>
+          <option value="P1">P1</option><option value="P2">P2</option><option value="P3" selected>P3</option><option value="P4">P4</option><option value="P5">P5</option><option value="P6">P6</option>
         </select>
       </div>
       <div class="si"><label>Narrator</label><button class="smb act" id="narr-btn" onclick="toggleNarr()">ON</button></div>
@@ -1124,26 +1120,6 @@ const QQ = {
     medium:()=>{const a=rnd(50,299),b=rnd(10,a-1);return{q:`${a} − ${b} = ?`,a:a-b,h:'Borrow when needed'}},
     hard:()=>{const a=rnd(200,1500),b=rnd(50,a-1);return{q:`${a} − ${b} = ?`,a:a-b,h:'Subtract carefully'}}
   },
-  P7:{  // Multiply by 2,4 (product<1000); 2,4,6,8 times tables
-    easy:()=>{const t=pick([2,4,6,8]),n=rnd(1,12);return{q:`${t} × ${n} = ?`,a:t*n,h:`${t} times table`}},
-    medium:()=>{const m=pick([2,4]),n=rnd(10,50);if(m*n>1000)return QQ.P7.easy();return{q:`${n} × ${m} = ?`,a:n*m,h:`Multiply by ${m} — answer under 1000`}},
-    hard:()=>{const m=pick([2,4,6,8]),n=rnd(10,100);if(m*n>1000)return QQ.P7.medium();return{q:`${n} × ${m} = ?`,a:n*m,h:`${m} times table — product under 1000`}}
-  },
-  P8:{  // Division, 3-digit ÷ 1-digit
-    easy:()=>{const d=pick([2,5,10]),q=rnd(10,50);return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`Divide by ${d}`}},
-    medium:()=>{const d=pick([2,3,4,5]),q=rnd(10,50);if(d*q>3000)return QQ.P8.easy();return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`How many ${d}s?`}},
-    hard:()=>{const d=pick([2,3,4,5,6]),q=rnd(20,100);if(d*q>3000)return QQ.P8.medium();return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`Divide ${d*q} by ${d}`}}
-  },
-  P9:{  // Mixed, easy
-    easy:()=>pick([QQ.P1.easy,QQ.P2.easy,QQ.P3.easy,QQ.P4.easy])(),
-    medium:()=>pick([QQ.P5.easy,QQ.P6.easy,QQ.P7.easy,QQ.P8.easy])(),
-    hard:()=>pick([QQ.P1.medium,QQ.P2.medium,QQ.P3.medium,QQ.P4.medium])()
-  },
-  P10:{ // Addition + number patterns (5 numbers, max 3000)
-    easy:()=>{if(Math.random()<0.5){const s=rnd(1,15),d=rnd(1,5);const seq=[s,s+d,s+d*2,s+d*3,s+d*4];return{q:`What comes next?\n${seq.join(',  ')},  ?`,a:s+d*5,h:`Add ${d} each time`};}const a=rnd(1,50),b=rnd(1,50);return{q:`${a} + ${b} = ?`,a:a+b,h:'Simple addition'}},
-    medium:()=>{if(Math.random()<0.5){const s=rnd(2,40),d=rnd(2,8);const seq=[s,s+d,s+d*2,s+d*3,s+d*4];return{q:`What comes next?\n${seq.join(',  ')},  ?`,a:s+d*5,h:`Step is +${d}`};}const a=rnd(10,200),b=rnd(10,200);if(a+b>3000)return QQ.P10.easy();return{q:`${a} + ${b} = ?`,a:a+b,h:'Add the numbers'}},
-    hard:()=>{if(Math.random()<0.5){const s=rnd(5,80),d=rnd(5,15);const seq=[s,s+d,s+d*2,s+d*3,s+d*4];return{q:`What comes next?\n${seq.join(',  ')},  ?`,a:s+d*5,h:`Step is +${d}`};}const a=rnd(100,800),b=rnd(100,800);if(a+b>3000)return QQ.P10.medium();return{q:`${a} + ${b} = ?`,a:a+b,h:'Add carefully'}}
-  }
 };
 function genQ(){return(QQ[G.level]?.[G.tier]||QQ.P3.easy)()}
 
@@ -1249,7 +1225,7 @@ function openBook(){
   },400);
 }
 function updateBadge(){
-  const n={P1:'Add (No Rename)',P2:'Subtract (No Rename)',P3:'× by 2,5,10',P4:'Divide 2÷1',P5:'Add with Rename',P6:'Subtract with Rename',P7:'× by 2,4 (< 1000)',P8:'Divide 3÷1',P9:'Mixed (Easy)',P10:'Patterns'};
+  const n={P1:'Add (No Rename)',P2:'Subtract (No Rename)',P3:'× by 2,5,10',P4:'Divide 2÷1',P5:'Add with Rename',P6:'Subtract with Rename'};
   $id('level-badge').textContent=`${G.level} — ${n[G.level]||G.level}`;
 }
 
