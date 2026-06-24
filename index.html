@@ -668,15 +668,18 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     <!-- Intro panel -->
     <div class="rp-panel active" id="panel-intro">
       <h2>Hello, Young Scholar! ✨</h2>
-      <div class="inst">📖 10 Chapters — each chapter teaches a different topic!</div>
-      <div class="inst">Ch1: Add · Ch2: Subtract · Ch3: ×2,5,10 · Ch4: ÷ · Ch5: Add+Carry · Ch6: Sub+Borrow · Ch7: ×2,4,6,8 · Ch8: ÷3÷1 · Ch9: Mixed · Ch10: All+Patterns</div>
-      <div class="inst">📝 Each round = 3 questions → earn 1 Gear + 1 Password Digit!</div>
-      <div class="inst">🏆 ALL 3 correct → Type 3 Gear ⚔️ &nbsp; ⭐⭐ 2/3 → Type 2 Gear 🛡️ &nbsp; ⭐ 1/3 → Type 1 Gear 💡</div>
-      <div class="inst">😔 0 correct → No Gear (but password digit still saved!)</div>
-      <div class="inst">⚙️ Collect 3 Gears → FLIP PAGE → Dragon Battle!</div>
-      <div class="inst">🐉 Defeat the Dragon → FLIP PAGE → Password Machine</div>
-      <div class="inst">🔐 Enter the 3-digit Password → unlock next Chapter!</div>
-      <div class="inst">🪙 Earn 5 Tokens per chapter — spend 1 to play a Mini Game!</div>
+      <p style="font-size:11px;color:#8b4513;font-style:italic;margin-bottom:6px">📜 Read the instructions carefully for maximum clarity!</p>
+      <div class="inst">📖 There are <b>10 Chapters</b> — each one teaches a different math topic!</div>
+      <div class="inst">Ch1: Add (no rename) · Ch2: Subtract (no rename) · Ch3: ×2,5,10 · Ch4: Divide · Ch5: Add+Carry · Ch6: Sub+Borrow · Ch7: ×2,4,6,8 · Ch8: Divide 3÷1 · Ch9: Mixed · Ch10: All+Patterns</div>
+      <div class="inst">❓ Answer <b>3 questions</b> per round — correct = 🟢 green, wrong = 🔴 red with the answer shown</div>
+      <div class="inst">🏆 All 3 correct → Type 3 Gear ⚔️ &nbsp;|&nbsp; 2/3 → Type 2 Gear 🛡️ &nbsp;|&nbsp; 1/3 → Type 1 Gear 💡 &nbsp;|&nbsp; 0/3 → No Gear</div>
+      <div class="inst">🔑 Every round you earn a <b>Password Digit</b> — even if you got 0 correct!</div>
+      <div class="inst">⚙️ Collect <b>3 Gears</b> → click the <b>page strip on the left edge</b> (or it flips auto) → Dragon Battle!</div>
+      <div class="inst">🐉 Defeat the Dragon → page flips again → <b>Password Machine</b> appears</div>
+      <div class="inst">🔐 Type your <b>3-digit Password</b> into the machine → Chapter Complete!</div>
+      <div class="inst">🔖 Tap the <b>blue Bookmark</b> (top-right of page) to open the Menu — change level, flip mode, mini games &amp; more</div>
+      <div class="inst">🪙 Earn <b>5 Tokens</b> each chapter — spend <b>1 Token</b> per Mini Game visit</div>
+      <div class="inst">🎮 Mini Games unlock after finishing <b>Chapter 1!</b></div>
       <select id="level-select" onchange="G.level=this.value;if(G.phase==='questions'&&curQ)nextQ()">
         <option value="P1">P1 – Add (No Rename)</option>
         <option value="P2">P2 – Subtract (No Rename)</option>
