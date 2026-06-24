@@ -153,22 +153,45 @@ function drawBg(){
 }
 drawBg();
 
-// ── Question generation (same ranges as POPped Your Mind spec) ──
+// ── Question generation — scales to player's level ──
 function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}
 function pick(a){return a[Math.floor(Math.random()*a.length)]}
 
-const TYPES=['add','sub','mul','div','pat'];
+const _lv=new URLSearchParams(location.search).get('level')||'P3';
+const _isP1=_lv==='P1', _isP2=_lv==='P2', _isP3=_lv==='P3', _isP4=_lv==='P4';
+const _isEarly=_isP1||_isP2;
+
 let curQ=null,streak=0,score=0;
 
 function genQ(){
-  const t=pick(TYPES);
-  if(t==='add'){const a=rnd(10,500),b=rnd(10,500);return{type:'Addition',q:`${a} + ${b} = ?`,a:String(a+b),yn:false};}
-  if(t==='sub'){const a=rnd(20,500),b=rnd(5,Math.min(a-1,300));return{type:'Subtraction',q:`${a} − ${b} = ?`,a:String(a-b),yn:false};}
-  if(t==='mul'){const a=rnd(2,25),b=rnd(2,25);return{type:'Multiplication',q:`${a} × ${b} = ?`,a:String(a*b),yn:false};}
-  if(t==='div'){const d=rnd(2,9),q=rnd(2,30);return{type:'Division',q:`${d*q} ÷ ${d} = ?`,a:String(q),yn:false};}
-  const start=rnd(1,50),step=rnd(1,10);
-  const seq=[start,start+step,start+step*2,start+step*3];
-  return{type:'Pattern',q:`What comes next?\n${seq[0]},  ${seq[1]},  ${seq[2]},  ${seq[3]},  ?`,a:String(start+step*4),yn:false};
+  if(_isP1){
+    // P1: Addition no rename only
+    const a1=rnd(1,4),b1=rnd(1,9-a1),a=rnd(1,4)*10+a1,b=rnd(1,4)*10+b1;
+    return{type:'Addition',q:`${a} + ${b} = ?`,a:String(a+b),yn:false};
+  }
+  if(_isP2){
+    // P2: Addition and subtraction no rename
+    if(Math.random()<0.5){const a=rnd(5,30),b=rnd(1,20);return{type:'Addition',q:`${a} + ${b} = ?`,a:String(a+b),yn:false};}
+    const b1=rnd(1,4),a1=rnd(b1,9),b10=rnd(1,4),a10=rnd(b10,9);const a=a10*10+a1,b=b10*10+b1;
+    return{type:'Subtraction',q:`${a} − ${b} = ?`,a:String(a-b),yn:false};
+  }
+  if(_isP3){
+    // P3: × by 2, 5, 10
+    const m=pick([2,5,10]),n=rnd(1,12);
+    return{type:'Multiplication',q:`${n} × ${m} = ?`,a:String(n*m),yn:false};
+  }
+  if(_isP4){
+    // P4: ÷ 2÷1
+    const d=pick([2,5,10]),q=rnd(1,9);
+    return{type:'Division',q:`${d*q} ÷ ${d} = ?`,a:String(q),yn:false};
+  }
+  // P5/P6: addition/subtraction with rename + patterns
+  const types=['add','sub','pat'];const t=pick(types);
+  if(t==='add'){const a=rnd(20,200),b=rnd(20,200);return{type:'Addition',q:`${a} + ${b} = ?`,a:String(a+b),yn:false};}
+  if(t==='sub'){const a=rnd(30,200),b=rnd(5,a-1);return{type:'Subtraction',q:`${a} − ${b} = ?`,a:String(a-b),yn:false};}
+  const start=rnd(1,30),step=rnd(1,8);
+  const seq=[start,start+step,start+step*2,start+step*3,start+step*4];
+  return{type:'Pattern',q:`What comes next?\n${seq.join(',  ')},  ?`,a:String(start+step*5),yn:false};
 }
 
 function showQ(){
