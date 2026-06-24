@@ -185,11 +185,11 @@ function genQ(){
     const d=pick([2,5,10]),q=rnd(1,9);
     return{type:'Division',q:`${d*q} ÷ ${d} = ?`,a:String(q),yn:false};
   }
-  // P5/P6: addition/subtraction with rename + patterns
+  // P5/P6: addition/subtraction with rename — small numbers
   const types=['add','sub','pat'];const t=pick(types);
-  if(t==='add'){const a=rnd(20,200),b=rnd(20,200);return{type:'Addition',q:`${a} + ${b} = ?`,a:String(a+b),yn:false};}
-  if(t==='sub'){const a=rnd(30,200),b=rnd(5,a-1);return{type:'Subtraction',q:`${a} − ${b} = ?`,a:String(a-b),yn:false};}
-  const start=rnd(1,30),step=rnd(1,8);
+  if(t==='add'){const a=rnd(15,60),b=rnd(10,50);return{type:'Addition',q:`${a} + ${b} = ?`,a:String(a+b),yn:false};}
+  if(t==='sub'){const a=rnd(20,80),b=rnd(5,a-1);return{type:'Subtraction',q:`${a} − ${b} = ?`,a:String(a-b),yn:false};}
+  const start=rnd(1,15),step=rnd(1,5);
   const seq=[start,start+step,start+step*2,start+step*3,start+step*4];
   return{type:'Pattern',q:`What comes next?\n${seq.join(',  ')},  ?`,a:String(start+step*5),yn:false};
 }

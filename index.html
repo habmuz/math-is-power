@@ -1090,35 +1090,35 @@ function $id(id){return document.getElementById(id)}
 // SINGAPORE MATH QUESTIONS
 // ═══════════════════════════════════════
 const QQ = {
-  P1:{  // Addition, no rename (no carrying) — max 3000
-    easy:()=>{const a1=rnd(1,4),b1=rnd(1,9-a1),a=rnd(1,4)*10+a1,b=rnd(1,4)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:`Ones: ${a1}+${b1}=${a1+b1} — no carrying!`}},
-    medium:()=>{const a1=rnd(0,4),b1=rnd(0,9-a1),a=rnd(1,3)*100+rnd(0,4)*10+a1,b=rnd(1,3)*100+rnd(0,4)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:'Add each column — no carrying'}},
-    hard:()=>{const a1=rnd(0,4),b1=rnd(0,9-a1),a=rnd(1,9)*100+rnd(0,4)*10+a1,b=rnd(1,9)*100+rnd(0,4)*10+b1;const s=a+b;if(s>3000)return QQ.P1.medium();return{q:`${a} + ${b} = ?`,a:s,h:'No carrying needed'}}
+  P1:{  // Addition, no rename (no carrying) — 2-digit only, e.g. 23 + 14
+    easy:()=>{const a1=rnd(1,4),b1=rnd(1,9-a1),a=rnd(1,4)*10+a1,b=rnd(1,4)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:`Ones: ${a1}+${b1}=${a1+b1}, tens add up — no carrying!`}},
+    medium:()=>{const a1=rnd(0,4),b1=rnd(0,9-a1),a=rnd(2,6)*10+a1,b=rnd(1,4)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:'Add ones first, then tens — no carrying'}},
+    hard:()=>{const a1=rnd(0,3),b1=rnd(0,9-a1),a=rnd(2,7)*10+a1,b=rnd(1,5)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:'No carrying needed'}}
   },
-  P2:{  // Subtraction, no rename (no borrowing)
-    easy:()=>{const b1=rnd(1,4),a1=rnd(b1,9),b10=rnd(1,4),a10=rnd(b10,9);const a=a10*10+a1,b=b10*10+b1;return{q:`${a} − ${b} = ?`,a:a-b,h:`Ones: ${a1}-${b1} — no borrowing!`}},
-    medium:()=>{const b1=rnd(0,3),a1=rnd(b1,9),b10=rnd(0,3),a10=rnd(b10,9),b100=rnd(1,4),a100=rnd(b100,9);const a=a100*100+a10*10+a1,b=b100*100+b10*10+b1;return{q:`${a} − ${b} = ?`,a:a-b,h:'No borrowing needed'}},
-    hard:()=>{const b1=rnd(0,3),a1=rnd(b1,9),b10=rnd(0,3),a10=rnd(b10,9),b100=rnd(1,4),a100=rnd(b100,9);const a=a100*100+a10*10+a1,b=b100*100+b10*10+b1;if(a>2000)return QQ.P2.medium();return{q:`${a} − ${b} = ?`,a:a-b,h:'Subtract without borrowing'}}
+  P2:{  // Subtraction, no rename (no borrowing) — 2-digit, e.g. 47 − 23
+    easy:()=>{const b1=rnd(1,3),a1=rnd(b1,9),b10=rnd(1,3),a10=rnd(b10,7);const a=a10*10+a1,b=b10*10+b1;return{q:`${a} − ${b} = ?`,a:a-b,h:`Ones: ${a1}−${b1}=${a1-b1} — no borrowing!`}},
+    medium:()=>{const b1=rnd(0,3),a1=rnd(b1,9),b10=rnd(1,3),a10=rnd(b10+1,7);const a=a10*10+a1,b=b10*10+b1;return{q:`${a} − ${b} = ?`,a:a-b,h:'Subtract ones first, then tens'}},
+    hard:()=>{const b1=rnd(0,4),a1=rnd(b1,9),b10=rnd(1,4),a10=rnd(b10+1,9);const a=a10*10+a1,b=b10*10+b1;return{q:`${a} − ${b} = ?`,a:a-b,h:'No borrowing needed'}}
   },
-  P3:{  // Multiplication by 2, 5, 10
-    easy:()=>{const m=pick([2,5,10]),n=rnd(1,10);return{q:`${n} × ${m} = ?`,a:n*m,h:`Count by ${m}s`}},
-    medium:()=>{const m=pick([2,5,10]),n=rnd(5,20);return{q:`${n} × ${m} = ?`,a:n*m,h:`${m} times table`}},
-    hard:()=>{const m=pick([2,5,10]),n=rnd(10,30);if(n*m>3000)return QQ.P3.medium();return{q:`${n} × ${m} = ?`,a:n*m,h:`Multiply by ${m}`}}
+  P3:{  // Multiplication by 2, 5, 10 — small e.g. 4 × 5 = 20
+    easy:()=>{const m=pick([2,5,10]),n=rnd(1,6);return{q:`${n} × ${m} = ?`,a:n*m,h:`Count by ${m}s, ${n} times`}},
+    medium:()=>{const m=pick([2,5,10]),n=rnd(3,9);return{q:`${n} × ${m} = ?`,a:n*m,h:`${m} times table`}},
+    hard:()=>{const m=pick([2,5,10]),n=rnd(4,12);return{q:`${n} × ${m} = ?`,a:n*m,h:`${m} times table`}}
   },
-  P4:{  // Division, 2-digit ÷ 1-digit
-    easy:()=>{const d=pick([2,5,10]),q=rnd(1,9);return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`How many ${d}s in ${d*q}?`}},
-    medium:()=>{const d=pick([2,3,4,5]),q=rnd(2,9);return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`Share ${d*q} into groups of ${d}`}},
-    hard:()=>{const d=pick([2,3,4,5,6]),q=rnd(5,15);return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`Divide ${d*q} by ${d}`}}
+  P4:{  // Division 2÷1 — e.g. 20 ÷ 5 = 4
+    easy:()=>{const d=pick([2,5,10]),q=rnd(1,6);return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`How many ${d}s in ${d*q}?`}},
+    medium:()=>{const d=pick([2,5,10]),q=rnd(2,9);return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`Share equally into groups of ${d}`}},
+    hard:()=>{const d=pick([2,3,4,5]),q=rnd(2,9);return{q:`${d*q} ÷ ${d} = ?`,a:q,h:`Divide ${d*q} by ${d}`}}
   },
-  P5:{  // Addition with rename (carrying)
-    easy:()=>{const a1=rnd(5,9),b1=rnd(10-a1,9),a=rnd(1,4)*10+a1,b=rnd(1,4)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:`Ones: ${a1}+${b1}=${a1+b1} — carry the 1!`}},
-    medium:()=>{const a=rnd(25,199),b=rnd(25,199);if(a+b>3000)return QQ.P5.easy();return{q:`${a} + ${b} = ?`,a:a+b,h:'Remember to carry!'}},
-    hard:()=>{const a=rnd(100,999),b=rnd(100,999);if(a+b>3000)return QQ.P5.medium();return{q:`${a} + ${b} = ?`,a:a+b,h:'Add with carrying'}}
+  P5:{  // Addition WITH rename (carrying) — 2-digit, e.g. 37 + 45 = 82
+    easy:()=>{const a1=rnd(5,9),b1=rnd(10-a1,9),a=rnd(1,4)*10+a1,b=rnd(1,3)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:`Ones: ${a1}+${b1}=${a1+b1} — write ${(a1+b1)%10} carry 1!`}},
+    medium:()=>{const a1=rnd(4,9),b1=rnd(10-a1,9),a=rnd(2,5)*10+a1,b=rnd(1,4)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:'Carry the 1 to the tens!'}},
+    hard:()=>{const a1=rnd(3,9),b1=rnd(10-a1,9),a=rnd(2,7)*10+a1,b=rnd(1,5)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b,h:'Add and carry'}}
   },
-  P6:{  // Subtraction with rename (borrowing)
-    easy:()=>{const a=rnd(11,50),b=rnd(1,a-1);return{q:`${a} − ${b} = ?`,a:a-b,h:'You may need to borrow!'}},
-    medium:()=>{const a=rnd(50,299),b=rnd(10,a-1);return{q:`${a} − ${b} = ?`,a:a-b,h:'Borrow when needed'}},
-    hard:()=>{const a=rnd(200,1500),b=rnd(50,a-1);return{q:`${a} − ${b} = ?`,a:a-b,h:'Subtract carefully'}}
+  P6:{  // Subtraction WITH rename (borrowing) — 2-digit, e.g. 63 − 27 = 36
+    easy:()=>{const b1=rnd(4,9),a1=rnd(0,b1-1),b10=rnd(1,3),a10=rnd(b10+1,7);const a=a10*10+a1,b=b10*10+b1;return{q:`${a} − ${b} = ?`,a:a-b,h:`Ones: can't do ${a1}−${b1}, borrow from tens!`}},
+    medium:()=>{const b1=rnd(3,9),a1=rnd(0,b1-1),b10=rnd(1,4),a10=rnd(b10+1,8);const a=a10*10+a1,b=b10*10+b1;return{q:`${a} − ${b} = ?`,a:a-b,h:'Borrow 10 from the tens column'}},
+    hard:()=>{const b1=rnd(2,9),a1=rnd(0,b1-1),b10=rnd(1,5),a10=rnd(b10+1,9);const a=a10*10+a1,b=b10*10+b1;return{q:`${a} − ${b} = ?`,a:a-b,h:'Borrow and subtract'}}
   },
 };
 function genQ(){return(QQ[G.level]?.[G.tier]||QQ.P3.easy)()}
@@ -1734,38 +1734,33 @@ function closeMiniGameScene(){
 }
 
 function genMiniQ(type){
-  // Scale question difficulty to player's current level
   const lv=G.level||'P3';
-  const isP1=lv==='P1', isP2=lv==='P2', isP3=lv==='P3', isP4=lv==='P4';
+  const isP1=lv==='P1',isP2=lv==='P2',isP3=lv==='P3',isP4=lv==='P4';
   const isEarly=isP1||isP2;
 
-  // Addition — no rename for P1/P2
+  // All numbers kept small — like 23+47, not 1256+237
   const add=()=>{
-    if(isP1){const a1=rnd(1,4),b1=rnd(1,9-a1),a=rnd(1,4)*10+a1,b=rnd(1,4)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b};}
-    if(isP2){const a=rnd(5,30),b=rnd(5,30);return{q:`${a} + ${b} = ?`,a:a+b};}
-    const a=rnd(5,50),b=rnd(5,50);return{q:`${a} + ${b} = ?`,a:a+b};
+    if(isP1){const a1=rnd(1,4),b1=rnd(1,9-a1),a=rnd(1,4)*10+a1,b=rnd(1,3)*10+b1;return{q:`${a} + ${b} = ?`,a:a+b};}
+    if(isP2){const a=rnd(10,40),b=rnd(5,30);return{q:`${a} + ${b} = ?`,a:a+b};}
+    const a=rnd(10,50),b=rnd(5,40);return{q:`${a} + ${b} = ?`,a:a+b};
   };
-  // Subtraction
   const sub=()=>{
-    if(isEarly){const b=rnd(1,10),a=rnd(b,b+20);return{q:`${a} − ${b} = ?`,a:a-b};}
-    const a=rnd(20,80),b=rnd(5,a);return{q:`${a} − ${b} = ?`,a:a-b};
+    if(isP1){const b1=rnd(1,3),a1=rnd(b1,9),b10=rnd(1,3),a10=rnd(b10,7);return{q:`${a10*10+a1} − ${b10*10+b1} = ?`,a:(a10-b10)*10+(a1-b1)};}
+    if(isP2){const b=rnd(5,20),a=rnd(b+10,60);return{q:`${a} − ${b} = ?`,a:a-b};}
+    const b=rnd(5,30),a=rnd(b+10,80);return{q:`${a} − ${b} = ?`,a:a-b};
   };
-  // Multiplication
   const mul=()=>{
-    if(isEarly)return add(); // P1/P2 don't do times tables — use addition instead
-    if(isP3){const m=pick([2,5,10]),n=rnd(1,12);return{q:`${n} × ${m} = ?`,a:n*m};}
-    const a=rnd(2,10),b=rnd(2,10);return{q:`${a} × ${b} = ?`,a:a*b};
+    if(isEarly)return add();
+    if(isP3){const m=pick([2,5,10]),n=rnd(1,9);return{q:`${n} × ${m} = ?`,a:n*m};}
+    const m=pick([2,3,4,5]),n=rnd(1,9);return{q:`${n} × ${m} = ?`,a:n*m};
   };
-  // Division
   const div=()=>{
     if(isEarly)return sub();
-    if(isP3||isP4){const d=pick([2,5,10]),q=rnd(1,10);return{q:`${d*q} ÷ ${d} = ?`,a:q};}
-    const d=rnd(2,9),q=rnd(2,10);return{q:`${d*q} ÷ ${d} = ?`,a:q};
+    if(isP3||isP4){const d=pick([2,5,10]),q=rnd(1,9);return{q:`${d*q} ÷ ${d} = ?`,a:q};}
+    const d=pick([2,3,4,5]),q=rnd(1,9);return{q:`${d*q} ÷ ${d} = ?`,a:q};
   };
-  // Pattern (5 numbers)
   const pat=()=>{
-    const step=isEarly?rnd(1,3):rnd(1,8);
-    const start=rnd(1,isEarly?10:20);
+    const step=rnd(1,isEarly?2:5),start=rnd(1,isEarly?8:15);
     const seq=[start,start+step,start+step*2,start+step*3,start+step*4];
     return{q:`What comes next?\n${seq.join(', ')},  ?`,a:start+step*5};
   };

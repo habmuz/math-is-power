@@ -1404,12 +1404,12 @@ function submitAns(given){
 
 // ── QUESTION GENERATORS ───────────────────────────────────────────
 const _LVL_RANGES={
-  P1:{add:[1,20],sub:[5,20],mulA:[1,5],mulB:[1,5],divD:[1,5],divQ:[1,5]},
-  P2:{add:[10,50],sub:[10,50],mulA:[2,9],mulB:[2,9],divD:[2,9],divQ:[2,9]},
-  P3:{add:[10,100],sub:[20,100],mulA:[2,12],mulB:[2,12],divD:[2,12],divQ:[2,12]},
-  P4:{add:[50,500],sub:[50,500],mulA:[10,99],mulB:[2,9],divD:[2,12],divQ:[10,200]},
-  P5:{add:[100,2000],sub:[100,2000],mulA:[10,999],mulB:[2,12],divD:[2,9],divQ:[100,999]},
-  P6:{add:[500,9999],sub:[500,9999],mulA:[100,9999],mulB:[10,99],divD:[2,9],divQ:[500,9999]},
+  P1:{add:[10,40],sub:[11,49],mulA:[1,6],mulB:[2,5],divD:[2,5],divQ:[1,6]},
+  P2:{add:[10,60],sub:[11,69],mulA:[1,9],mulB:[2,5],divD:[2,5],divQ:[1,9]},
+  P3:{add:[10,70],sub:[11,79],mulA:[1,12],mulB:[2,10],divD:[2,10],divQ:[1,9]},
+  P4:{add:[10,80],sub:[11,89],mulA:[2,9],mulB:[2,9],divD:[2,9],divQ:[2,9]},
+  P5:{add:[10,90],sub:[11,89],mulA:[2,12],mulB:[2,10],divD:[2,10],divQ:[2,12]},
+  P6:{add:[11,99],sub:[12,99],mulA:[2,12],mulB:[2,12],divD:[2,12],divQ:[2,12]},
 };
 function genMath(){
   const lvl=_LVL_RANGES[_levelParam]||_LVL_RANGES.P3;
