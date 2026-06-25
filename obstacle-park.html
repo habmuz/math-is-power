@@ -117,7 +117,7 @@ function update(dt){
   // Duck
   player.duck=(keys['ArrowDown']||keys['ControlLeft']||touchD)&&player.onG;
   player.h=player.duck?PH*0.5:PH;
-  player.y=GROUND-player.h;
+  if(player.onG) player.y=GROUND-player.h;
 
   // Jump
   const jNow=keys['Space']||keys['ArrowUp']||keys['KeyW']||touchJ;

@@ -169,8 +169,8 @@ function makeFrostLevel(n){
   }
   // Exit bottom-right
   grid[(rows-2)*cols+(cols-2)]=4;
-  // Level 0: wall at midX+1 in top corridor so player stops at midX and can slide down
-  if(n===0){grid[1*cols+(midX+1)]=1;}
+  // Wall at midX+1 in top corridor so player always stops at midX and can slide down
+  grid[1*cols+(midX+1)]=1;
   const hints=['Rotate the gear to open the door!','Two gears — unlock both doors!',
     'Three gears — find the order!','Four gears — icy challenge!','Five gears — master the frost!'];
   return{cols,rows,hint:hints[Math.min(nG-1,4)],grid,start:{x:1,y:1},gears,doors};
