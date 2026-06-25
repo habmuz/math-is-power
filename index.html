@@ -50,7 +50,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 /* pages */
 .page{flex:1;height:600px;position:relative;overflow:hidden}
 #page-l{background:linear-gradient(160deg,#0a0a18,#150a28,#080810);border-radius:8px 0 0 8px}
-#page-r{background:linear-gradient(160deg,#f6e8cc,#ede0b0,#e8d89a);border-radius:0 8px 8px 0;font-family:'Indie Flower',cursive}
+#page-r{background:linear-gradient(160deg,#f6e8cc,#ede0b0,#e8d89a);border-radius:0 8px 8px 0}
 #page-r::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(transparent,transparent 28px,rgba(139,100,60,.07) 29px);pointer-events:none}
 
 /* ── PAGE FLIP ── */
@@ -183,7 +183,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 /* ═══ RIGHT PAGE CONTENT ═══ */
 /* shared header */
 #rp-header{padding:14px 20px 8px;text-align:center;border-bottom:1px solid rgba(139,100,60,.2)}
-#chapter-title{font-size:16px;color:#5a2d00;font-weight:bold;font-family:'Indie Flower',cursive}
+#chapter-title{font-size:16px;color:#5a2d00;font-weight:bold}
 #level-badge{display:inline-block;background:#8b4513;color:#f6e8cc;font-size:10px;padding:2px 10px;border-radius:10px;margin-top:3px}
 
 /* right-page panels */
@@ -193,7 +193,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 /* intro panel */
 #panel-intro{align-items:center;justify-content:center;text-align:center;gap:3px!important}
 #panel-intro h2{color:#5a2d00;font-size:18px;margin-bottom:8px}
-.inst{background:rgba(139,100,60,.1);border-left:3px solid #8b4513;padding:3px 8px;border-radius:0 6px 6px 0;font-size:10px;color:#4a2000;text-align:left;width:100%;font-family:'Indie Flower',cursive}
+.inst{background:rgba(139,100,60,.1);border-left:3px solid #8b4513;padding:2px 7px;border-radius:0 6px 6px 0;font-size:9.5px;color:#4a2000;text-align:left;width:100%;line-height:1.3}
 #friend-btn{margin-top:6px;padding:7px 22px;background:linear-gradient(#1a6699,#0d3d5c);color:#e0f4ff;border:none;border-radius:16px;font-size:13px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3);transition:transform .2s}
 #friend-btn:hover{transform:translateY(-2px)}
 #solo-player-btn{margin-top:3px;padding:7px 22px;background:linear-gradient(135deg,#7a7a52,#cfc4a8);color:#111;border:none;border-radius:16px;font-size:13px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.15);transition:transform .2s;font-weight:bold}
@@ -216,7 +216,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 /* question panel */
 #narrator{background:rgba(90,45,0,.08);border:1px solid rgba(139,100,60,.3);border-radius:6px;padding:6px 11px;font-size:11px;color:#5a2d00;font-style:italic;min-height:32px}
 #q-box{background:rgba(139,100,60,.13);border:2px solid #8b4513;border-radius:8px;padding:11px 14px;text-align:center}
-#q-text{font-size:18px;color:#1e0000;font-weight:bold;margin-bottom:7px;font-family:'Indie Flower',cursive}
+#q-text{font-size:16px;color:#1e0000;font-weight:bold;margin-bottom:7px}
 #a-row{display:flex;gap:7px;align-items:center;justify-content:center}
 #a-input{width:110px;padding:5px 8px;border:2px solid #8b4513;border-radius:6px;background:#fdf5e6;font-size:16px;text-align:center;font-family:Georgia,serif;color:#1e0000;outline:none}
 #a-input:focus{border-color:#cc5500;box-shadow:0 0 6px rgba(204,85,0,.3)}
@@ -346,8 +346,8 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
   background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
     linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
   background-size:40px 40px}
-#map-title{text-align:center;color:#aaffaa;font-size:17px;padding:9px;letter-spacing:3px;
-  text-shadow:0 0 10px #44ff44;border-bottom:1px solid #2a4a2a;font-family:Georgia,serif}
+#map-title{text-align:center;color:#aaffaa;font-size:24px;padding:9px;letter-spacing:3px;
+  text-shadow:0 0 10px #44ff44;border-bottom:1px solid #2a4a2a;font-family:'Indie Flower',cursive}
 #map-close{position:absolute;top:8px;right:10px;background:none;border:2px solid #66aa66;
   color:#66aa66;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px}
 /* SVG paths */
@@ -364,8 +364,8 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
   width:0;height:0;border-left:9px solid var(--fc,#888);
   border-top:7px solid transparent;border-bottom:7px solid transparent}
 .pin-icon{font-size:22px;line-height:1}
-.pin-fname{font-size:8px;font-weight:800;color:#fff;text-align:center;
-  letter-spacing:.8px;line-height:1.25;text-shadow:0 1px 3px rgba(0,0,0,.9)}
+.pin-fname{font-size:11px;font-weight:800;color:#fff;text-align:center;
+  letter-spacing:.8px;line-height:1.25;text-shadow:0 1px 3px rgba(0,0,0,.9);font-family:'Indie Flower',cursive}
 .pin-pole{width:3px;height:44px;background:linear-gradient(#d4b06a,#9a7030);border-radius:1px}
 .pin-base{width:14px;height:5px;background:#9a7030;border-radius:3px}
 /* POPped center — bigger */
@@ -670,17 +670,12 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     <div class="rp-panel active" id="panel-intro">
       <h2>Hello, Young Scholar! ✨</h2>
       <p style="font-size:11px;color:#8b4513;font-style:italic;margin-bottom:6px">📜 Read the instructions carefully for maximum clarity!</p>
-      <div class="inst">📖 There are <b>10 Chapters</b> — each one teaches a different math topic!</div>
-      <div class="inst">Ch1: Add (no rename) · Ch2: Subtract (no rename) · Ch3: ×2,5,10 · Ch4: Divide · Ch5: Add+Carry · Ch6: Sub+Borrow · Ch7: ×2,4,6,8 · Ch8: Divide 3÷1 · Ch9: Mixed · Ch10: All+Patterns</div>
-      <div class="inst">❓ Answer <b>3 questions</b> per round — correct = 🟢 green, wrong = 🔴 red with the answer shown</div>
-      <div class="inst">🏆 All 3 correct → Type 3 Gear ⚔️ &nbsp;|&nbsp; 2/3 → Type 2 Gear 🛡️ &nbsp;|&nbsp; 1/3 → Type 1 Gear 💡 &nbsp;|&nbsp; 0/3 → No Gear</div>
-      <div class="inst">🔑 Every round you earn a <b>Password Digit</b> — even if you got 0 correct!</div>
-      <div class="inst">⚙️ Collect <b>3 Gears</b> → click the <b>page strip on the left edge</b> (or it flips auto) → Dragon Battle!</div>
-      <div class="inst">🐉 Defeat the Dragon → page flips again → <b>Password Machine</b> appears</div>
-      <div class="inst">🔐 Type your <b>3-digit Password</b> into the machine → Chapter Complete!</div>
-      <div class="inst">🔖 Tap the <b>blue Bookmark</b> (top-right of page) to open the Menu — change level, flip mode, mini games &amp; more</div>
-      <div class="inst">🪙 Earn <b>5 Tokens</b> each chapter — spend <b>1 Token</b> per Mini Game visit</div>
-      <div class="inst">🎮 Mini Games unlock after finishing <b>Chapter 1!</b></div>
+      <div class="inst">📖 <b>10 Chapters:</b> Add · Subtract · ×2,5,10 · Divide · Add+Carry · Sub+Borrow · ×evens · Divide3 · Mixed · All+Patterns</div>
+      <div class="inst">❓ <b>3 questions</b> per round — 🟢 correct / 🔴 wrong (answer shown). You earn a <b>Password Digit</b> every round!</div>
+      <div class="inst">🏆 3/3 → ⚔️ Type 3 Gear &nbsp;|&nbsp; 2/3 → 🛡️ Type 2 &nbsp;|&nbsp; 1/3 → 💡 Type 1 &nbsp;|&nbsp; 0/3 → No Gear</div>
+      <div class="inst">⚙️ Collect <b>3 Gears</b> → flip page (left strip) → 🐉 Dragon Battle → 🔐 Password Machine → Chapter Complete!</div>
+      <div class="inst">🔖 <b>Blue Bookmark</b> (top-right) = Menu: change level, flip mode, mini games &amp; more</div>
+      <div class="inst">🪙 Earn <b>5 Tokens</b> per chapter · spend <b>1 Token</b> per Mini Game · unlocks after <b>Chapter 1</b></div>
       <select id="level-select" onchange="G.level=this.value;if(G.phase==='questions'&&curQ)nextQ()">
         <option value="P1">P1 – Add (No Rename)</option>
         <option value="P2">P2 – Subtract (No Rename)</option>
