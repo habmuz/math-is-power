@@ -64,15 +64,14 @@ const _charImg=_charSrc?Object.assign(new Image(),{src:_charSrc}):null;
 function _rng(seed){let s=seed*9301+49297;return()=>{s=(s*9301+49297)%233280;return s/233280;}}
 function makeLevel(n){
   const r=_rng(n+1);
-  // Cap difficulty at level 28 (level 29 in UI). Slower after 25.
-  const nc=Math.min(n,28);
+  // Difficulty scales across all 50 levels — level 50 is as hard as level 32 used to be
+  const nc=n;
   let speed;
   if(n===0)speed=4;
-  else if(n<25)speed=5+n*1.4;
-  else if(n<29)speed=5+24*1.4+(n-24)*0.5;
-  else speed=5+24*1.4+4*0.5; // hard cap
+  else if(n<45)speed=5+n*0.76;
+  else speed=5+45*0.76+(n-45)*0.3;
   const nP=4+Math.floor(nc/3);
-  const crumble=Math.min(0.30,nc/110);
+  const crumble=Math.min(0.30,nc/160);
   const gap=50+Math.floor(nc/5)*2;
   const plats=[{x:0,y:395,w:Math.max(110,180-nc*2),c:false}];
   let x=0,y=385;
@@ -85,7 +84,7 @@ function makeLevel(n){
   }
   const last=plats[plats.length-1];
   return{speed,lives:3,
-    hint:n<10?'Jump the gaps!':(n<20?'Watch for crumble platforms!':(n<29?'Stay fast!':'⚠️ Max difficulty reached!')),
+    hint:n<18?'Jump the gaps!':(n<36?'Watch for crumble platforms!':(n<50?'Stay fast!':'⚠️ Max difficulty reached!')),
     plats,exit:{x:Math.min(800,last.x+last.w-18),y:Math.max(18,last.y-42)}};
 }
 const LEVELS=Array.from({length:50},(_,i)=>makeLevel(i));
