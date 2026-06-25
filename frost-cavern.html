@@ -138,67 +138,119 @@ else{_pEl.textContent='🧊';_pEl.style.fontSize='1.5rem';_pEl.style.display='fl
 
 // ─── PROCEDURAL LEVEL GENERATOR ────────────────────────────────────
 // Cell: 0=ice  1=wall  2=gear  3=door  4=exit
-// Each level has a varied layout: different channel position, gear row height,
-// number of corridors, and gear positions — so every level feels genuinely different.
+// 5 genuinely different path shapes, each with varied sizes & gear positions.
 function makeFrostLevel(n){
   function rng(seed){let v=seed;return()=>{v=(v*1664525+1013904223)>>>0;return v/0x100000000;};}
   const r=rng(n*31+17);
-  const cols=8+Math.floor(n/10)*2;       // 8→18 over 50 levels
-  const rows=6+Math.floor(n/12);         // 6→10 over 50 levels
-  const nG=1+Math.floor(n/14);           // 1→4 gears
+  const cols=8+Math.floor(n/10)*2;
+  const rows=6+Math.floor(n/12);
+  const nG=1+Math.floor(n/14);
   const grid=Array(rows*cols).fill(1);
+  const carve=(row,x1,x2)=>{for(let x=x1;x<=x2;x++)grid[row*cols+x]=0;};
+  const carveV=(col,y1,y2)=>{for(let y=y1;y<=y2;y++)grid[y*cols+col]=0;};
+  const cR=cols-2, cB=rows-2; // right/bottom inner edge
 
-  // ── Pick layout type (5 types, cycles with level) ──
-  const layout=n%5;
+  // ── Layout skeleton — 5 types cycle with level ──
+  // All layouts guarantee: player at (1,1) can reach all gears then exit.
+  // "stop walls" (#) added so player halts at key column/row junctions.
+  const shape=n%5;
+  let vx,gRow,exitX,exitY; // primary channel, gear row, exit cell
 
-  // ── Vertical channel position: left-third, centre, or right-third ──
-  const vxOptions=[Math.floor(cols/3),Math.floor(cols/2),Math.floor(cols*2/3)];
-  const vx=Math.max(2,Math.min(cols-3,vxOptions[Math.floor(r()*3)]));
-
-  // ── Gear row height: varies per layout ──
-  const gRowOptions=[2,Math.floor((rows-1)/2),rows-3];
-  const gRow=Math.max(2,Math.min(rows-3,gRowOptions[layout%3]));
-
-  // ── Carve corridors based on layout ──
-  // Always carve top (row 1) and bottom (rows-2)
-  for(let x=1;x<cols-1;x++){grid[1*cols+x]=0;grid[(rows-2)*cols+x]=0;}
-  // Always carve primary vertical channel
-  for(let y=1;y<rows-1;y++) grid[y*cols+vx]=0;
-  // Always carve gear row
-  for(let x=1;x<cols-1;x++) grid[gRow*cols+x]=0;
-
-  // Layout 2+: add a second horizontal corridor for extra navigation
-  if(layout>=2&&rows>6){
-    const midRow=Math.floor((gRow+rows-2)/2);
-    if(midRow!==gRow&&midRow!==rows-2&&midRow>=2)
-      for(let x=1;x<cols-1;x++) grid[midRow*cols+x]=0;
+  if(shape===0){
+    // ── CROSS: vertical channel left-of-centre, gear row mid-height ──
+    // S→→→#   (stop wall at vx+1)
+    //      ↓
+    //  ←←←←← (gear row)
+    //      ↓
+    //      →→→E
+    vx=Math.max(2,Math.floor(cols/3)+Math.floor(r()*2));
+    gRow=Math.max(2,Math.min(cB-1,2+Math.floor(r()*(rows-4))));
+    carve(1,1,cR); carve(gRow,1,cR); carve(cB,1,cR);
+    carveV(vx,1,cB);
+    if(vx+1<=cR) grid[1*cols+(vx+1)]=1; // stop wall
+    exitX=cR; exitY=cB;
+  }else if(shape===1){
+    // ── Z-SHAPE: top-right, diagonal drop, bottom-left ──
+    // S→→→→→→
+    //        ↓
+    //   ←←←←← (gear row, right channel)
+    //   ↓
+    //   →→→→→E
+    vx=Math.max(2,Math.floor(cols*2/3)+Math.floor(r()*2)-1);
+    const vx2=Math.max(2,Math.floor(cols/3));
+    gRow=Math.max(2,Math.min(cB-1,2+Math.floor(r()*(rows-4))));
+    carve(1,1,cR); carve(gRow,1,cR); carve(cB,1,cR);
+    carveV(vx,1,gRow);   // right channel: top→gearRow
+    carveV(vx2,gRow,cB); // left channel: gearRow→bottom
+    // stop walls
+    if(vx+1<=cR) grid[1*cols+(vx+1)]=1;
+    if(vx2+1<=cR&&vx2+1!==vx) grid[gRow*cols+(vx2+1)]=1;
+    exitX=vx2+1<=cR?vx2:cR; exitY=cB;
+  }else if(shape===2){
+    // ── U-SHAPE: left column, bottom corridor, right column, exit top-right ──
+    // S      E
+    // ↓      ↑ (gear row near top)
+    // ↓  ←←← ↑
+    // →→→→→→→→
+    const lx=1, rx=cR;
+    gRow=Math.max(2,Math.min(rows-3,2+Math.floor(r()*2)));
+    carve(1,lx,lx); carve(1,rx,rx); // just corners open at top
+    carve(gRow,lx,rx); carve(cB,lx,rx);
+    carveV(lx,1,cB); carveV(rx,1,cB);
+    exitX=rx; exitY=1;
+    vx=lx; // for gear placement reference
+  }else if(shape===3){
+    // ── TWO-PATH: two vertical channels, player picks which side, door on one ──
+    // S→→#     ←←←E
+    //    ↓     ↑
+    //    →→→→→→     (gear row connects both)
+    //    ↓     ↑
+    //    (door) (open)
+    vx=Math.max(2,Math.floor(cols/3));
+    const vx2=Math.max(vx+2,Math.min(cR-1,Math.floor(cols*2/3)));
+    gRow=Math.max(2,Math.min(cB-1,Math.floor((rows)/2)));
+    carve(1,1,cR); carve(gRow,1,cR); carve(cB,1,cR);
+    carveV(vx,1,cB); carveV(vx2,1,cB);
+    if(vx+1<=vx2-1) grid[1*cols+(vx+1)]=1; // stop at left channel
+    if(vx2+1<=cR) grid[gRow*cols+(vx2+1)]=1; // stop at right channel in gearRow
+    exitX=cR; exitY=cB;
+  }else{
+    // ── SPIRAL: outer ring + inner cross, lots of turning ──
+    // S→→→→→→→
+    // ↑       ↓ (right col)
+    // ←←←←←  ↓
+    //        ↓
+    //  (gear) ↓
+    // →→→→→→→E
+    vx=cR;
+    const vx2=Math.max(2,Math.floor(cols/2));
+    gRow=Math.max(2,Math.min(cB-1,rows-3));
+    carve(1,1,cR); carve(gRow,vx2,cR); carve(cB,1,cR);
+    carveV(vx,1,cB);   // right column full height
+    carveV(vx2,gRow,cB); // inner column, lower half
+    carveV(1,1,gRow);  // left column, upper half
+    carve(gRow,1,vx2);
+    if(2<=cR) grid[1*cols+2]=1; // stop wall near start → forces left col
+    exitX=cR; exitY=cB;
+    vx=vx2; // gear reference column
   }
-  // Layout 3+: add a second vertical channel
-  if(layout>=3&&cols>9){
-    const vx2=layout===3?Math.floor(cols*2/3):Math.floor(cols/3);
-    const vx2c=Math.max(2,Math.min(cols-3,vx2));
-    if(vx2c!==vx) for(let y=1;y<rows-1;y++) grid[y*cols+vx2c]=0;
-  }
 
-  // ── Stop wall so player halts at vx in top corridor ──
-  if(vx+1<=cols-2) grid[1*cols+(vx+1)]=1;
-
-  // ── Place exit: varies between right side and left side based on vx ──
-  const exitX=vx>cols/2?2:cols-2;  // exit on opposite side from channel
-  grid[(rows-2)*cols+exitX]=4;
+  // ── Ensure exit is set ──
+  grid[exitY*cols+exitX]=4;
 
   // ── Place gears & doors ──
-  const gears=[],doors=[],usedGx=new Set([vx]);
+  const gears=[],doors=[],usedGx=new Set([vx,exitX]);
   for(let g=0;g<nG;g++){
     let gx,tries=0;
-    do{gx=1+Math.floor(r()*(cols-3));tries++;}while(usedGx.has(gx)&&tries<30);
+    // gear must be in an open cell on the gear row, not at vx or exit
+    do{gx=1+Math.floor(r()*(cols-3));tries++;}while((usedGx.has(gx)||grid[gRow*cols+gx]!==0)&&tries<40);
     usedGx.add(gx);
-    // need: 1 click early, 2-3 clicks later
+    if(grid[gRow*cols+gx]!==0) continue; // skip if no open spot found
     const need=n<10?1:n<25?1+Math.floor(r()*2):1+Math.floor(r()*3);
-    // door blocks the vertical channel between gear row and exit row
-    const minDy=gRow+1, maxDy=rows-2;
-    const dy=minDy+Math.floor(r()*Math.max(1,maxDy-minDy));
-    if(dy>=1&&dy<rows-1&&dy!==gRow){
+    // door blocks vx channel between gearRow and exit row
+    const minDy=gRow+1, maxDy=exitY-1;
+    const dy=minDy<maxDy?minDy+Math.floor(r()*(maxDy-minDy+1)):minDy;
+    if(dy>=1&&dy<rows-1&&grid[dy*cols+vx]===0){
       grid[gRow*cols+gx]=2;
       grid[dy*cols+vx]=3;
       gears.push({id:g,x:gx,y:gRow,rot:0,need,door:g});
@@ -206,12 +258,12 @@ function makeFrostLevel(n){
     }
   }
 
-  // ── Ensure exit cell isn't overwritten ──
-  grid[(rows-2)*cols+exitX]=4;
+  // ── Always re-stamp exit (gear placement may overwrite it) ──
+  grid[exitY*cols+exitX]=4;
 
   const hints=['Rotate the gear to open the door!','Two gears to unlock!',
     'Three gears — plan your path!','Four gears — master the ice!'];
-  return{cols,rows,hint:hints[Math.min(nG-1,3)],grid,start:{x:1,y:1},gears,doors};
+  return{cols,rows,hint:hints[Math.min(nG-1,3)],grid,start:{x:1,y:1},gears,doors,exit:{x:exitX,y:exitY}};
 }
 const LEVELS=Array.from({length:50},(_,i)=>makeFrostLevel(i));
 
