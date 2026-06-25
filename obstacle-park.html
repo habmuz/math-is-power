@@ -93,7 +93,7 @@ function initLevel(i){
   lvIdx=i;
   const lv=LEVELS[i];
   lives=lv.lives;scroll=0;elapsed=0;running=true;distDone=false;
-  player={x:120,y:GROUND-PH,vy:0,onG:true,duck:false,w:PW,h:PH};
+  player={x:120,y:GROUND-PH,vy:0,onG:true,duck:false,w:PW,h:PH,jumps:3};
   obs=makeCourse(lv.seed,lv.speed);
   document.getElementById('lv').textContent=i+1;
   document.getElementById('lives').textContent=lives;
@@ -126,14 +126,19 @@ function update(dt){
   player.h=player.duck?PH*0.5:PH;
   if(player.onG) player.y=GROUND-player.h;
 
-  // Jump
+  // Jump (triple jump — each jump slightly weaker)
   const jNow=keys['Space']||keys['ArrowUp']||keys['KeyW']||touchJ;
-  if(jNow&&!lastJ&&player.onG&&!player.duck){player.vy=JUMP;player.onG=false;}
+  if(jNow&&!lastJ&&player.jumps>0&&!player.duck){
+    const power=player.jumps===3?1:player.jumps===2?0.85:0.7;
+    player.vy=JUMP*power;
+    player.onG=false;
+    player.jumps--;
+  }
   lastJ=jNow;
 
   player.vy=Math.min(player.vy+G*dt,900);
   if(!player.onG){player.y+=player.vy*dt;}
-  if(player.y>=GROUND-player.h){player.y=GROUND-player.h;player.vy=0;player.onG=true;}
+  if(player.y>=GROUND-player.h){player.y=GROUND-player.h;player.vy=0;player.onG=true;player.jumps=3;}
 
   // Scroll
   scroll+=lv.speed*dt;
@@ -172,7 +177,7 @@ function hit(){
   if(lives<=0){over(false,'💥 Wiped Out!','No lives left — try again?',false);}
   else{
     // Reset player and obstacles scroll back a bit
-    player={x:120,y:GROUND-PH,vy:0,onG:true,duck:false,w:PW,h:PH};
+    player={x:120,y:GROUND-PH,vy:0,onG:true,duck:false,w:PW,h:PH,jumps:3};
     // Reset all obstacles to original positions
     const lv=LEVELS[lvIdx];
     obs=makeCourse(lv.seed,lv.speed);
