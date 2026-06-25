@@ -970,6 +970,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     <div id="adm-title">🔐 Admin Panel</div>
     <div class="adm-row">Chapter: <span id="adm-ch">—</span> / 10</div>
     <div class="adm-row">Chapter Password: <span id="adm-pw">—</span></div>
+    <div class="adm-row">🪙 Tokens: <span id="adm-tokens">0</span></div>
     <button class="adm-btn" onclick="admShowPw()">🔍 Reveal Password</button>
     <button class="adm-btn" onclick="admSkip()">⏭ Skip Chapter</button>
     <button class="adm-btn" onclick="admSkipN()">⏭ Skip to Chapter</button>
@@ -1668,7 +1669,7 @@ function mEnter(){
 // ═══════════════════════════════════════
 // SCROLL MENU
 // ═══════════════════════════════════════
-function updateTokenDisplay(){const el=$id('token-count');if(el)el.textContent=G.tokens;const el2=$id('map-token-count');if(el2)el2.textContent=G.tokens;}
+function updateTokenDisplay(){const el=$id('token-count');if(el)el.textContent=G.tokens;const el2=$id('map-token-count');if(el2)el2.textContent=G.tokens;const el3=$id('adm-tokens');if(el3)el3.textContent=G.tokens;}
 
 function toggleScroll(){
   const isOpen=$id('scroll-menu').classList.toggle('open');
@@ -1697,6 +1698,7 @@ function openAdmin(){
   if($id('scroll-menu').classList.contains('open'))toggleScroll();
   $id('adm-ch').textContent=G.chapter;
   $id('adm-pw').textContent='—';
+  $id('adm-tokens').textContent=G.tokens;
   $id('admin-overlay').classList.add('open');
 }
 function closeAdmin(){$id('admin-overlay').classList.remove('open')}
