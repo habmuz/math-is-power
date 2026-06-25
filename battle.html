@@ -1321,14 +1321,9 @@ function openQ(type){
   document.getElementById('q-text').textContent=qd.question;
   renderQProg();
   const fb=document.getElementById('q-fb');fb.className='q-fb hidden';fb.textContent='';
-  if(qd.type==='palindrome'){
-    document.getElementById('num-area').classList.add('hidden');
-    document.getElementById('yn-area').classList.remove('hidden');
-  }else{
-    document.getElementById('yn-area').classList.add('hidden');
-    document.getElementById('num-area').classList.remove('hidden');
-    document.getElementById('ans-inp').value='';
-  }
+  document.getElementById('yn-area').classList.add('hidden');
+  document.getElementById('num-area').classList.remove('hidden');
+  document.getElementById('ans-inp').value='';
   // Specialist locking (solo: anyone can answer)
   const specialist=_soloMode?G.players[0]:G.players.find(p=>p.isAlive&&
     (type==='math'?p.character.role==='math_master':p.character.role==='pattern_master'));
@@ -1344,7 +1339,7 @@ function openQ(type){
     banner.style.display='none';
   }
   document.getElementById('q-modal').classList.remove('hidden');
-  if(canAnswer&&qd.type!=='palindrome')setTimeout(()=>document.getElementById('ans-inp').focus(),120);
+  if(canAnswer)setTimeout(()=>document.getElementById('ans-inp').focus(),120);
   startQTimer();
 }
 
@@ -1423,7 +1418,7 @@ function genMath(){
 }
 
 function genPattern(){
-  const t=r(0,5);
+  const t=r(0,3);
   if(t===0){
     // Ascending arithmetic
     const s=r(1,20),d=r(1,10);
@@ -1435,24 +1430,10 @@ function genPattern(){
     const seq=[s,s*m,s*m*m,s*m*m*m];
     return{question:'What comes next?\n'+seq.join(' ,  ')+' ,  ?',answer:String(s*Math.pow(m,4))};
   }else if(t===2){
-    // Word palindrome
-    const palins=['racecar','level','noon','refer','madam','civic','kayak','radar','stats','deed','peep','tenet','rotator','repaper'];
-    const nonP=['hello','world','python','tiger','dragon','battle','school','orange','pencil','carpet'];
-    const ip=r(0,1)===1;
-    const word=ip?palins[r(0,palins.length-1)]:nonP[r(0,nonP.length-1)];
-    return{question:'Is  "'+word+'"  a palindrome?\n(yes or no)',answer:ip?'yes':'no',type:'palindrome'};
-  }else if(t===3){
     // Descending arithmetic
     const s=r(30,100),d=r(2,10);
     const seq=[s,s-d,s-2*d,s-3*d];
     return{question:'What comes next?\n'+seq.join(' ,  ')+' ,  ?',answer:String(s-4*d)};
-  }else if(t===4){
-    // Number palindrome
-    const palNums=[121,131,141,1221,1331,12321,12421,10101,11011,99,11,22,33];
-    const nonPNums=[123,124,132,1234,12345,10203,11012,12320,100,112];
-    const ip=r(0,1)===1;
-    const num=ip?palNums[r(0,palNums.length-1)]:nonPNums[r(0,nonPNums.length-1)];
-    return{question:'Is the number  '+num+'  a palindrome?\n(yes or no)',answer:ip?'yes':'no',type:'palindrome'};
   }else{
     // Alternating add pattern (+d1, +d2, +d1, +d2 …)
     const s=r(2,15);const d1=r(3,8);const d2=r(1,d1-1);
