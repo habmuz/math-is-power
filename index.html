@@ -801,6 +801,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="si"><label>Gear Base</label><button class="smb" onclick="openGearRoom();toggleScroll()">🏠 View Gears</button></div>
       <div class="si"><label>Directions</label><button class="smb" onclick="showDirs()">📖 How to Play</button></div>
       <div class="si"><label>Tokens</label><div style="font-size:11px;color:#c084d4;font-weight:bold">🪙 <span id="token-count" style="font-variant-numeric:slashed-zero;font-family:monospace">0</span> tokens</div></div>
+      <div class="si"><label>Reset Game</label><button class="smb" style="color:#aa0000;border-color:#aa0000" onclick="if(confirm('Reset ALL progress and start over?')){clearSave();location.reload();}">🔄 Start Over</button></div>
       <div class="si"><label>Admin</label><button class="smb" onclick="adminLogin()">🔐 Admin</button></div>
       <div class="si"><label>Multiplayer</label><button class="smb" onclick="openMpOverlay();toggleScroll()">🔗 Invite Friend</button></div>
       <button id="close-sm" onclick="toggleScroll()">✕ Close</button>
@@ -831,7 +832,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
 <div id="mini-map-overlay">
   <div id="map-container">
     <div id="map-title">🗺️ MINI GAME WORLD MAP 🗺️</div>
-    <div id="map-subtitle">Choose a region to explore</div>
+    <div id="map-subtitle">Choose a region to explore &nbsp;·&nbsp; 🪙 <span id="map-token-count">0</span> tokens (1 per game)</div>
     <button id="map-close" onclick="closeMiniMap()">✕ EXIT</button>
 
     <!-- 5-region world map -->
@@ -1666,7 +1667,7 @@ function mEnter(){
 // ═══════════════════════════════════════
 // SCROLL MENU
 // ═══════════════════════════════════════
-function updateTokenDisplay(){const el=$id('token-count');if(el)el.textContent=G.tokens;}
+function updateTokenDisplay(){const el=$id('token-count');if(el)el.textContent=G.tokens;const el2=$id('map-token-count');if(el2)el2.textContent=G.tokens;}
 
 function toggleScroll(){
   const isOpen=$id('scroll-menu').classList.toggle('open');
