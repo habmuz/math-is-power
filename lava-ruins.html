@@ -75,8 +75,8 @@ function makeLevel(n){
   const nc=n;
   let speed;
   if(n===0)speed=4;
-  else if(n<30)speed=5+n*1.0;
-  else speed=5+30*1.0+(n-30)*0.4;
+  else if(n<30)speed=5+n*1.2;
+  else speed=5+30*1.2+(n-30)*0.55;
   const nP=4+Math.floor(nc/3);
   const crumble=Math.min(0.30,nc/160);
   const gap=50+Math.floor(nc/5)*2;
