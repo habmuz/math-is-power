@@ -115,28 +115,34 @@ cv.addEventListener('touchstart',e=>{
 },{passive:false});
 cv.addEventListener('touchend',e=>{e.preventDefault();touchJ=false;touchD=false;},{passive:false});
 
-let lastJ=false;
+let lastJ=false,lastSlam=false;
 function update(dt){
   const lv=LEVELS[lvIdx];
   elapsed+=dt;
   document.getElementById('timer').textContent=elapsed.toFixed(1);
 
-  // Duck / slam
+  // Duck (on ground only)
   const duckKey=keys['ArrowDown']||keys['ControlLeft']||touchD;
   player.duck=duckKey&&player.onG;
   player.h=player.duck?PH*0.5:PH;
   if(player.onG) player.y=GROUND-player.h;
 
-  // Slam — press ↓ mid-air to crash down fast
-  if(duckKey&&!player.onG&&!player.slam){player.slam=true;player.vy=780;}
+  // Slam — tap ↓ once mid-air → rocket down
+  const slamNow=duckKey;
+  if(slamNow&&!lastSlam&&!player.onG&&!player.slam){
+    player.slam=true;
+    player.vy=820; // fast fall
+    player.jumps=0; // can't jump after slamming
+  }
+  lastSlam=slamNow;
   if(player.onG) player.slam=false;
 
-  // Jump (triple jump — each jump slightly weaker)
+  // Jump — up to 3 times (tap Space/↑ each time)
   const jNow=keys['Space']||keys['ArrowUp']||keys['KeyW']||touchJ;
-  if(jNow&&!lastJ&&player.jumps>0&&!player.duck){
+  if(jNow&&!lastJ&&player.jumps>0&&!player.duck&&!player.slam){
     const power=player.jumps===3?1:player.jumps===2?0.85:0.7;
     player.vy=JUMP*power;
-    player.onG=false;player.slam=false;
+    player.onG=false;
     player.jumps--;
   }
   lastJ=jNow;
@@ -245,6 +251,7 @@ function draw(){
   const spriteTop=player.y-(SPH-PH);
   if(_charImg3&&_charImg3.complete&&_charImg3.naturalWidth){
     const iw=_charImg3.naturalWidth,ih=_charImg3.naturalHeight;
+    if(player.slamReady||player.slamCharge>0)ctx.globalAlpha=0.5+0.5*Math.sin(Date.now()/40); // flash while charging
     if(player.duck||player.slam){
       const dh=Math.round(SPH*0.45);
       ctx.drawImage(_charImg3,0,Math.round(ih*0.45),iw,Math.round(ih*0.55),player.x-8,player.y+player.h-dh,SPW,dh);
@@ -291,18 +298,15 @@ function fitCanvas(){
 }
 window.addEventListener('resize',fitCanvas);fitCanvas();
 
-// Click/tap anywhere to capture keyboard focus (required in iframe)
-let _focused=false;
+// Grab keyboard focus every time player taps/clicks
+document.body.setAttribute('tabindex','0');
 function _focus(){
-  if(_focused)return;
-  _focused=true;
   document.body.focus();
   const el=document.getElementById('focus-hint');
   if(el)el.style.display='none';
 }
-document.body.setAttribute('tabindex','0');
-cv.addEventListener('click',_focus);
-cv.addEventListener('touchstart',_focus,{passive:true});
+document.addEventListener('click',_focus);
+document.addEventListener('touchstart',_focus,{passive:true});
 
 initLevel(_loadLv());
 requestAnimationFrame(ts=>{lastT=ts;requestAnimationFrame(loop);});
