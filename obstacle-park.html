@@ -71,9 +71,9 @@ function makeCourse(n,speed){
   const obs=[];
   let x=W+120;
   const types=['w','b','p'];
-  const nObs=5+Math.floor(n/4);
+  const nObs=3+Math.floor(n/6);
   for(let i=0;i<nObs;i++){
-    x+=Math.floor(r.next()*120)+130;
+    x+=Math.floor(r.next()*140)+180;
     obs.push({x,type:types[Math.floor(r.next()*3)],passed:false});
   }
   obs.push({x:x+280,type:'finish',passed:false});
@@ -81,9 +81,9 @@ function makeCourse(n,speed){
 }
 
 const LEVELS=Array.from({length:50},(_,i)=>({
-  speed:200+i*16,
+  speed:160+i*10,
   seed:i,
-  lives:i<20?3:i<40?2:1,
+  lives:3,
   hint:i<10?'Jump walls, duck beams, leap pits!':i<25?'Faster — stay sharp!':'Maximum speed!',
 }));
 
