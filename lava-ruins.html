@@ -64,12 +64,12 @@ const _charImg=_charSrc?Object.assign(new Image(),{src:_charSrc}):null;
 function _rng(seed){let s=seed*9301+49297;return()=>{s=(s*9301+49297)%233280;return s/233280;}}
 function makeLevel(n){
   const r=_rng(n+1);
-  // Difficulty scales across all 50 levels — level 50 is as hard as level 32 used to be
+  // Difficulty scales across all 50 levels — a bit easier than original, hard cap at level 50
   const nc=n;
   let speed;
   if(n===0)speed=4;
-  else if(n<45)speed=5+n*0.76;
-  else speed=5+45*0.76+(n-45)*0.3;
+  else if(n<30)speed=5+n*1.0;
+  else speed=5+30*1.0+(n-30)*0.4;
   const nP=4+Math.floor(nc/3);
   const crumble=Math.min(0.30,nc/160);
   const gap=50+Math.floor(nc/5)*2;

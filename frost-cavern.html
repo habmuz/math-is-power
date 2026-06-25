@@ -141,9 +141,9 @@ else{_pEl.textContent='🧊';_pEl.style.fontSize='1.5rem';_pEl.style.display='fl
 function makeFrostLevel(n){
   function rng(seed){let v=seed;return()=>{v=(v*1664525+1013904223)>>>0;return v/0x100000000;};}
   const r=rng(n*31+17);
-  const cols=8+Math.floor(n/8)*2;  // 8→18 over 50 levels
-  const rows=6+Math.floor(n/10);   // 6→11 over 50 levels
-  const nG=1+Math.floor(n/10);     // 1..5 gears
+  const cols=8+Math.floor(n/12)*2; // 8→16 over 50 levels
+  const rows=6+Math.floor(n/14);   // 6→9 over 50 levels
+  const nG=1+Math.floor(n/16);     // 1..4 gears
   // All walls
   const grid=Array(rows*cols).fill(1);
   // Carve: top corridor (row 1), bottom corridor (row rows-2), vertical mid column

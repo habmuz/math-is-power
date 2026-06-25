@@ -675,8 +675,6 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="inst">⚙️ Collect <b>3 Gears</b> → flip page (left strip) → 🐉 Dragon Battle → 🔐 Password Machine → Chapter Complete!</div>
       <div class="inst">🔖 <b>Blue Bookmark</b> (top-right) = Menu: change level, flip mode, mini games &amp; more</div>
       <div class="inst">🪙 Earn <b>5 Tokens</b> per chapter · spend <b>1 Token</b> per Mini Game · unlocks after <b>Chapter 1</b></div>
-      <button id="solo-player-btn" onclick="openSoloPicker()">🧩 Solo Player</button>
-      <button id="friend-btn" onclick="openMpOverlay()">🔗 Play with Friend</button>
       <select id="level-select" onchange="G.level=this.value;if(G.phase==='questions'&&curQ)nextQ()">
         <option value="P1">P1</option>
         <option value="P2">P2</option>
@@ -685,6 +683,8 @@ body.sharp-off #pcp-img-wrap img{filter:none}
         <option value="P5">P5</option>
         <option value="P6">P6</option>
       </select>
+      <button id="solo-player-btn" onclick="openSoloPicker()">🧩 Solo Player</button>
+      <button id="friend-btn" onclick="openMpOverlay()">🔗 Play with Friend</button>
     </div>
 
     <!-- Question panel -->
