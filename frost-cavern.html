@@ -153,16 +153,19 @@ function makeFrostLevel(n){
   // Carve gear row (row 3 or row rows-3 if small)
   const gearRow=Math.min(3,rows-3);
   for(let x=1;x<cols-1;x++) grid[gearRow*cols+x]=0;
-  // Place gears on gear row spread out
-  const gears=[],doors=[];
+  // Place gears on gear row — randomise x so every level looks different
+  const gears=[],doors=[],usedGx=new Set();
   for(let g=0;g<nG;g++){
-    const gx=1+Math.floor(g*(cols-3)/(nG));
-    const need=1;
-    // Door on vertical corridor (row between gear row and bottom, vary by g)
-    const dy=gearRow+1+Math.floor(g*(rows-gearRow-3)/Math.max(1,nG-1));
+    // Pick a random x that isn't midX and hasn't been used
+    let gx,tries=0;
+    do{gx=1+Math.floor(r()*(cols-3));tries++;}while((gx===midX||usedGx.has(gx))&&tries<20);
+    usedGx.add(gx);
+    const need=1+Math.floor(r()*3); // need 1–3 clicks (adds challenge)
+    const minDy=gearRow+1, maxDy=rows-2;
+    const dy=minDy+Math.floor(r()*(maxDy-minDy+1));
     if(dy>=1&&dy<rows-1){
-      grid[gearRow*cols+gx]=2; // gear cell
-      grid[dy*cols+midX]=3;    // door on vertical corridor
+      grid[gearRow*cols+gx]=2;
+      grid[dy*cols+midX]=3;
       gears.push({id:g,x:gx,y:gearRow,rot:0,need,door:g});
       doors.push({id:g,x:midX,y:dy,open:false});
     }
@@ -318,7 +321,7 @@ function showWin(){
     :`Level ${lvIdx+1} done in ${moves} moves!`;
   const btn=document.getElementById('wo-btn');
   if(isLast){btn.textContent='🗺️ Back to Map';btn.onclick=goBack;}
-  else{btn.textContent=`Next Chamber ❄️`;btn.onclick=()=>initLevel(lvIdx+1);}
+  else{btn.textContent=`Next Chamber ❄️`;btn.onclick=()=>{_saveLv();initLevel(lvIdx+1)};}
   document.getElementById('win-overlay').classList.add('show');
 }
 
@@ -347,7 +350,10 @@ document.addEventListener('touchend',e=>{
   ts=null;
 },{passive:true});
 
-initLevel(0);
+const _SK='mp_frost_lv';
+function _saveLv(){localStorage.setItem(_SK,lvIdx);}
+function _loadLv(){return Math.min(parseInt(localStorage.getItem(_SK)||'0'),LEVELS.length-1);}
+initLevel(_loadLv());
 </script>
 </body>
 </html>

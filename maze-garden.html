@@ -150,7 +150,7 @@ function move(dx,dy){
     document.getElementById('ov-s').textContent=`Found all chests in ${steps} steps!`;
     const btn=document.getElementById('ov-btn');
     if(isLast){btn.textContent='🗺️ Back to Map';btn.onclick=goBack;}
-    else{btn.textContent=`Next Maze 🌿`;btn.onclick=()=>initLevel(lvIdx+1);}
+    else{btn.textContent=`Next Maze 🌿`;btn.onclick=()=>{_saveLv();initLevel(lvIdx+1);}}
     ov.classList.add('show');
   }
 }
@@ -230,7 +230,10 @@ function goBack(){
 }
 
 function loop(){draw();requestAnimationFrame(loop);}
-initLevel(0);loop();
+const _SK='mp_maze_lv';
+function _saveLv(){localStorage.setItem(_SK,lvIdx);}
+function _loadLv(){return Math.min(parseInt(localStorage.getItem(_SK)||'0'),SIZES.length-1);}
+initLevel(_loadLv());loop();
 </script>
 </body>
 </html>

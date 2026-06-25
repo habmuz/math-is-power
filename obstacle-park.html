@@ -223,20 +223,20 @@ function draw(){
     }
   }
 
-  // Player sprite — feet always sit on GROUND line
+  // Player sprite — follows player.y so jump is visible
   ctx.save();
+  const spriteTop=player.y-(SPH-PH);
   if(_charImg3&&_charImg3.complete&&_charImg3.naturalWidth){
     const iw=_charImg3.naturalWidth,ih=_charImg3.naturalHeight;
     if(player.duck){
-      // Show bottom 55% of image squashed to duck height — looks like a crouch
       const dh=Math.round(SPH*0.45);
-      ctx.drawImage(_charImg3,0,Math.round(ih*0.45),iw,Math.round(ih*0.55),player.x-8,GROUND-dh,SPW,dh);
+      ctx.drawImage(_charImg3,0,Math.round(ih*0.45),iw,Math.round(ih*0.55),player.x-8,player.y+player.h-dh,SPW,dh);
     }else{
-      ctx.drawImage(_charImg3,0,0,iw,ih,player.x-8,GROUND-SPH,SPW,SPH);
+      ctx.drawImage(_charImg3,0,0,iw,ih,player.x-8,spriteTop,SPW,SPH);
     }
   }else{
     ctx.font=`${player.duck?22:34}px serif`;ctx.textAlign='center';
-    ctx.fillText(player.duck?'🙇':'🏃',player.x+PW/2,GROUND-4);
+    ctx.fillText(player.duck?'🙇':'🏃',player.x+PW/2,player.y+player.h);
   }
   ctx.restore();
 }
@@ -251,8 +251,11 @@ function over(win,title,sub,isLast){
   document.getElementById('overlay').classList.add('show');
 }
 function hide(){document.getElementById('overlay').classList.remove('show');}
+const _SK='mp_obs_lv';
+function _saveLv(){localStorage.setItem(_SK,lvIdx);}
+function _loadLv(){return Math.min(parseInt(localStorage.getItem(_SK)||'0'),LEVELS.length-1);}
 function retry(){initLevel(lvIdx);}
-function nextLv(){initLevel(lvIdx+1);}
+function nextLv(){_saveLv();initLevel(lvIdx+1);}
 function goBack(){
   cancelAnimationFrame(raf);
   if(window.parent!==window&&window.parent.closeMiniGameScene)window.parent.closeMiniGameScene();
@@ -271,7 +274,7 @@ function fitCanvas(){
 }
 window.addEventListener('resize',fitCanvas);fitCanvas();
 window.focus();
-initLevel(0);
+initLevel(_loadLv());
 requestAnimationFrame(ts=>{lastT=ts;requestAnimationFrame(loop);});
 </script>
 </body>

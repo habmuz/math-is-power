@@ -233,8 +233,11 @@ function over(win,title,sub,isLast){
   document.getElementById('overlay').classList.add('show');
 }
 function hide(){document.getElementById('overlay').classList.remove('show');}
+const _SK='mp_lava_lv';
+function _saveLv(){localStorage.setItem(_SK,lvIdx);}
+function _loadLv(){return Math.min(parseInt(localStorage.getItem(_SK)||'0'),LEVELS.length-1);}
 function retry(){initLevel(lvIdx);}
-function nextLv(){initLevel(lvIdx+1);}
+function nextLv(){_saveLv();initLevel(lvIdx+1);}
 function goBack(){
   cancelAnimationFrame(raf);
   if(window.parent!==window&&window.parent.closeMiniGameScene)window.parent.closeMiniGameScene();
@@ -253,7 +256,7 @@ function fitCanvas(){
 }
 window.addEventListener('resize',fitCanvas);fitCanvas();
 window.focus();
-initLevel(0);
+initLevel(_loadLv());
 requestAnimationFrame(ts=>{lastT=ts;requestAnimationFrame(loop);});
 </script>
 </body>
