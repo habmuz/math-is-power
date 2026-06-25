@@ -121,24 +121,29 @@ function update(dt){
   elapsed+=dt;
   document.getElementById('timer').textContent=elapsed.toFixed(1);
 
-  // Duck
-  player.duck=(keys['ArrowDown']||keys['ControlLeft']||touchD)&&player.onG;
+  // Duck / slam
+  const duckKey=keys['ArrowDown']||keys['ControlLeft']||touchD;
+  player.duck=duckKey&&player.onG;
   player.h=player.duck?PH*0.5:PH;
   if(player.onG) player.y=GROUND-player.h;
+
+  // Slam — press ↓ mid-air to crash down fast
+  if(duckKey&&!player.onG&&!player.slam){player.slam=true;player.vy=780;}
+  if(player.onG) player.slam=false;
 
   // Jump (triple jump — each jump slightly weaker)
   const jNow=keys['Space']||keys['ArrowUp']||keys['KeyW']||touchJ;
   if(jNow&&!lastJ&&player.jumps>0&&!player.duck){
     const power=player.jumps===3?1:player.jumps===2?0.85:0.7;
     player.vy=JUMP*power;
-    player.onG=false;
+    player.onG=false;player.slam=false;
     player.jumps--;
   }
   lastJ=jNow;
 
   player.vy=Math.min(player.vy+G*dt,900);
   if(!player.onG){player.y+=player.vy*dt;}
-  if(player.y>=GROUND-player.h){player.y=GROUND-player.h;player.vy=0;player.onG=true;player.jumps=3;}
+  if(player.y>=GROUND-player.h){player.y=GROUND-player.h;player.vy=0;player.onG=true;player.jumps=3;player.slam=false;}
 
   // Scroll
   scroll+=lv.speed*dt;
@@ -240,15 +245,15 @@ function draw(){
   const spriteTop=player.y-(SPH-PH);
   if(_charImg3&&_charImg3.complete&&_charImg3.naturalWidth){
     const iw=_charImg3.naturalWidth,ih=_charImg3.naturalHeight;
-    if(player.duck){
+    if(player.duck||player.slam){
       const dh=Math.round(SPH*0.45);
       ctx.drawImage(_charImg3,0,Math.round(ih*0.45),iw,Math.round(ih*0.55),player.x-8,player.y+player.h-dh,SPW,dh);
     }else{
       ctx.drawImage(_charImg3,0,0,iw,ih,player.x-8,spriteTop,SPW,SPH);
     }
   }else{
-    ctx.font=`${player.duck?22:34}px serif`;ctx.textAlign='center';
-    ctx.fillText(player.duck?'🙇':'🏃',player.x+PW/2,player.y+player.h);
+    ctx.font=`${player.duck||player.slam?22:34}px serif`;ctx.textAlign='center';
+    ctx.fillText(player.duck?'🙇':player.slam?'💥':'🏃',player.x+PW/2,player.y+player.h);
   }
   ctx.restore();
 }
