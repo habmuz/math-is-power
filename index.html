@@ -801,7 +801,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="si"><label>Gear Base</label><button class="smb" onclick="openGearRoom();toggleScroll()">🏠 View Gears</button></div>
       <div class="si"><label>Directions</label><button class="smb" onclick="showDirs()">📖 How to Play</button></div>
       <div class="si"><label>Tokens</label><div style="font-size:11px;color:#c084d4;font-weight:bold">🪙 <span id="token-count" style="font-variant-numeric:slashed-zero;font-family:monospace">0</span> tokens</div></div>
-      <div class="si"><label>Reset Game</label><button class="smb" style="color:#aa0000;border-color:#aa0000" onclick="if(confirm('Reset ALL progress and start over?')){clearSave();location.reload();}">🔄 Start Over</button></div>
+      <div class="si"><label>Reset Chapter</label><button class="smb" style="color:#aa0000;border-color:#aa0000" onclick="resetChapter()">🔄 Redo Chapter</button></div>
       <div class="si"><label>Admin</label><button class="smb" onclick="adminLogin()">🔐 Admin</button></div>
       <div class="si"><label>Multiplayer</label><button class="smb" onclick="openMpOverlay();toggleScroll()">🔗 Invite Friend</button></div>
       <button id="close-sm" onclick="toggleScroll()">✕ Close</button>
@@ -1733,6 +1733,15 @@ function admSkipToFight(){
   launchFightScene();
 }
 function admReset(){if(confirm('Reset ALL progress?')){clearSave();location.reload();}}
+function resetChapter(){
+  if(!confirm('Redo this chapter from the start?\n(Your chapter progress and tokens are kept.)')) return;
+  G.gears=[];G.password=[];G.partnerGears=[];
+  G.phase='questions';G.streak=0;G.setQ=0;G.setCorrect=0;
+  G.dotResults=['','',''];G.immunityUsed=false;G.defending=false;
+  G.consC=0;G.consW=0;
+  saveGame();toggleScroll();
+  showPanel('q');nextQ();
+}
 function showDirs(){toggleScroll();showDialog('📖 How to Play','1. Answer 9 math questions at your level\n2. 3 correct in a row → 1 ⚙️ Gear + 1 Password Digit\n3. Collect 3 Gears → flip page → Dragon Battle!\n4. Defeat the Dragon → flip page → Password Machine\n5. Enter the 3-digit Password → next Chapter\n6. 10 Chapters total!','Got it!',()=>{})}
 
 // ═══════════════════════════════════════
