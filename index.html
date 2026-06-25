@@ -225,6 +225,8 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 #streak-row{display:flex;align-items:center;gap:5px;justify-content:center}
 .sdot{width:14px;height:14px;border-radius:50%;background:#d4b896;border:2px solid #8b4513;transition:all .3s}
 .sdot.on{background:#ff6600;border-color:#cc3300;box-shadow:0 0 7px #ff6600}
+.sdot.correct{background:#22bb44;border-color:#119922;box-shadow:0 0 7px #22bb44}
+.sdot.wrong{background:#cc2222;border-color:#991111;box-shadow:0 0 7px #cc2222}
 .slabel{font-size:10px;color:#8b4513}
 #gear-row{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;min-height:54px;align-items:center}
 .gear-slot{position:relative;width:48px;height:52px;border:2px solid #8b4513;border-radius:7px;background:rgba(139,100,60,.1);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:20px;transition:all .3s}
@@ -1056,7 +1058,7 @@ const G = {
   mpPlayers:[],
   partnerGears:[],
   soloChar:{name:'Leo',gender:'boy',img:'chars/ad8d4e23-eec4-4ae2-9d31-76b420af265d.png'},
-  setQ:0, setCorrect:0,
+  setQ:0, setCorrect:0, dotResults:['','',''],
   tokens:0,
 };
 
@@ -1317,7 +1319,7 @@ function startChapter(){
   }
   G.phase='questions'; G.streak=0; G.gears=[]; G.password=[]; G.partnerGears=[];
   G.consC=0; G.consW=0; G.immunityUsed=false; G.defending=false;
-  G.setQ=0; G.setCorrect=0;
+  G.setQ=0; G.setCorrect=0; G.dotResults=['','',''];
   G.machineAttempts=0; $id('torn-paper').style.display='none'; $id('flip-zone').style.display='none'; $id('machine').classList.remove('visible');
   $id('q-flip-btn').style.display='none';
   $id('bm-chapter').textContent='CH '+G.chapter;
@@ -1341,7 +1343,7 @@ function updateDots(){for(let i=1;i<=3;i++)$id('d'+i).classList.toggle('on',i<=G
 // ═══════════════════════════════════════
 // ANSWER SUBMISSION
 // ═══════════════════════════════════════
-function updateSetDots(){for(let i=1;i<=3;i++)$id('d'+i).classList.toggle('on',i<=G.setQ);}
+function updateSetDots(){for(let i=1;i<=3;i++){const el=$id('d'+i),r=G.dotResults[i-1];el.classList.remove('on','correct','wrong');if(r==='correct')el.classList.add('correct');else if(r==='wrong')el.classList.add('wrong');}}
 
 function submitAns(){
   if(G.phase!=='questions')return;
@@ -1357,8 +1359,9 @@ function submitAns(){
     // Solo: set of 3 questions — correct green, wrong red
     if(ok){sfx('correct');narrate('correct');G.setCorrect++;setFb('✅ Correct!','#2d6a00');}
     else{sfx('wrong');narrate('wrong');setFb(`❌ Answer: ${curQ.a}   💡 ${curQ.h}`,'#8b0000');}
+    G.dotResults[G.setQ]=ok?'correct':'wrong';
     G.setQ++;updateSetDots();
-    if(G.setQ>=3){const c=G.setCorrect;G.setQ=0;G.setCorrect=0;setTimeout(()=>awardGearBySet(c),950);}
+    if(G.setQ>=3){const c=G.setCorrect;G.setQ=0;G.setCorrect=0;G.dotResults=['','',''];setTimeout(()=>awardGearBySet(c),950);}
     else{setTimeout(nextQ,950);}
   }
 }
