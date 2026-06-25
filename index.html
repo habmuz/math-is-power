@@ -191,9 +191,9 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 .rp-panel.active{display:flex}
 
 /* intro panel */
-#panel-intro{align-items:center;justify-content:center;text-align:center;gap:3px!important}
+#panel-intro{align-items:center;justify-content:flex-start;text-align:center;gap:5px!important;padding-top:4px}
 #panel-intro h2{color:#5a2d00;font-size:18px;margin-bottom:8px}
-.inst{background:rgba(139,100,60,.1);border-left:3px solid #8b4513;padding:2px 7px;border-radius:0 6px 6px 0;font-size:9.5px;color:#4a2000;text-align:left;width:100%;line-height:1.3}
+.inst{background:rgba(139,100,60,.1);border-left:3px solid #8b4513;padding:4px 9px;border-radius:0 6px 6px 0;font-size:11.5px;color:#4a2000;text-align:left;width:100%;line-height:1.35;font-family:'Indie Flower',cursive}
 #friend-btn{margin-top:6px;padding:7px 22px;background:linear-gradient(#1a6699,#0d3d5c);color:#e0f4ff;border:none;border-radius:16px;font-size:13px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3);transition:transform .2s}
 #friend-btn:hover{transform:translateY(-2px)}
 #solo-player-btn{margin-top:3px;padding:7px 22px;background:linear-gradient(135deg,#7a7a52,#cfc4a8);color:#111;border:none;border-radius:16px;font-size:13px;font-family:Georgia,serif;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.15);transition:transform .2s;font-weight:bold}
@@ -676,16 +676,16 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="inst">⚙️ Collect <b>3 Gears</b> → flip page (left strip) → 🐉 Dragon Battle → 🔐 Password Machine → Chapter Complete!</div>
       <div class="inst">🔖 <b>Blue Bookmark</b> (top-right) = Menu: change level, flip mode, mini games &amp; more</div>
       <div class="inst">🪙 Earn <b>5 Tokens</b> per chapter · spend <b>1 Token</b> per Mini Game · unlocks after <b>Chapter 1</b></div>
-      <select id="level-select" onchange="G.level=this.value;if(G.phase==='questions'&&curQ)nextQ()">
-        <option value="P1">P1 – Add (No Rename)</option>
-        <option value="P2">P2 – Subtract (No Rename)</option>
-        <option value="P3" selected>P3 – × by 2, 5, 10</option>
-        <option value="P4">P4 – Divide 2÷1</option>
-        <option value="P5">P5 – Add with Rename</option>
-        <option value="P6">P6 – Subtract with Rename</option>
-      </select>
-      <button id="friend-btn" onclick="openMpOverlay()">🔗 Play with Friend</button>
       <button id="solo-player-btn" onclick="openSoloPicker()">🧩 Solo Player</button>
+      <button id="friend-btn" onclick="openMpOverlay()">🔗 Play with Friend</button>
+      <select id="level-select" onchange="G.level=this.value;if(G.phase==='questions'&&curQ)nextQ()">
+        <option value="P1">P1</option>
+        <option value="P2">P2</option>
+        <option value="P3" selected>P3</option>
+        <option value="P4">P4</option>
+        <option value="P5">P5</option>
+        <option value="P6">P6</option>
+      </select>
     </div>
 
     <!-- Question panel -->
