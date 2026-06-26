@@ -190,6 +190,11 @@ const PUZZLES=[
   {q:'⚔️ TEMPLE BOSS\nA train travels 300 km in 2.5 hours.\nWhat is its speed in km/h?',type:'choice',choices:['100','110','120','130'],ans:'120',hint:'Speed = Distance ÷ Time = 300 ÷ 2.5'},
   {q:'🏛️ GRAND MASTER\nFind x: 4(x−3) = 2x + 6',type:'text',ans:'9',hint:'4x−12=2x+6 → 2x=18 → x=?'},
 ];
+const _lvP=new URLSearchParams(location.search).get('level')||'P3';
+if(_lvP!=='P5'&&_lvP!=='P6'){
+  PUZZLES[47]={q:'Sarah has 3 boxes with 15 apples each.\nShe gives away 12 apples total.\nHow many does she have left?',type:'text',ans:'33',hint:'3 × 15 = 45, then 45 − 12 = 33'};
+  PUZZLES[49]={q:'🏛️ GRAND MASTER\nWhat percentage of 80 is 20?',type:'choice',choices:['20%','25%','30%','35%'],ans:'25%',hint:'20 ÷ 80 × 100 = 25%'};
+}
 
 // ══ BACKGROUND CANVAS — stone temple ══
 const bgCv=document.getElementById('bg'),bgCtx=bgCv.getContext('2d');
