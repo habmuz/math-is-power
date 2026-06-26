@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Neucha&display=swap" rel="stylesheet">
 <title>🏃 Obstacle Park</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#0a0010;display:flex;flex-direction:column;align-items:flex-start;
   height:100vh;overflow:hidden;padding:6px;gap:4px;
-  font-family:'Segoe UI',system-ui,sans-serif;color:#ddaaff}
+  font-family:'Neucha',cursive;color:#ddaaff}
 #hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:870px}
 #hdr h1{font-size:1.1rem;color:#cc88ff;letter-spacing:2px;text-shadow:0 0 12px #8844ff}
 #stats{display:flex;gap:14px;font-size:.72rem;color:#664488}
@@ -48,6 +49,10 @@ canvas{border-radius:8px;border:2px solid #2a0055;display:block;
 </div>
 </div>
 <div id="ctrl">Space / ↑ = Jump &nbsp;·&nbsp; ↓ = Duck &nbsp;·&nbsp; Tap top half to jump, bottom to duck</div>
+<div id="how-to-play" style="font-family:'Neucha',cursive;font-size:1.4rem;color:#aa88ff;text-align:center;padding:10px 20px;line-height:1.9;max-width:860px">
+  🏃 Race to the finish flag! Jump over walls, duck under beams, leap over pits!<br>
+  Use ← → to run · ↓ to duck · Reach the flag before time runs out!
+</div>
 <div id="overlay">
   <div class="ov-t" id="ov-t"></div>
   <div class="ov-s" id="ov-s"></div>
@@ -279,12 +284,20 @@ const _SK='mp_obs_lv';
 function _saveLv(){localStorage.setItem(_SK,lvIdx);}
 function _loadLv(){return Math.min(parseInt(localStorage.getItem(_SK)||'0'),LEVELS.length-1);}
 function retry(){initLevel(lvIdx);}
-function nextLv(){_saveLv();initLevel(lvIdx+1);}
+function nextLv(){_requestToken(()=>{initLevel(lvIdx+1);_saveLv();});}
 function goBack(){
   cancelAnimationFrame(raf);
   if(window.parent!==window&&window.parent.closeMiniGameScene)window.parent.closeMiniGameScene();
   else window.history.back();
 }
+let _tokenCb=null;
+window.addEventListener('message',e=>{
+  if(!e.data)return;
+  if(e.data.type==='token_granted'&&_tokenCb){const cb=_tokenCb;_tokenCb=null;cb();}
+  if(e.data.type==='token_denied'){_tokenCb=null;_showNoTokens();}
+});
+function _requestToken(cb){if(window.parent===window){cb();return;}_tokenCb=cb;window.parent.postMessage({type:'request_token'},'*');}
+function _showNoTokens(){let el=document.getElementById('_ntmsg');if(!el){el=document.createElement('div');el.id='_ntmsg';el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.92);color:#ff5555;font-family:Neucha,cursive;font-size:1.1rem;padding:.9rem 1.8rem;border-radius:12px;border:2px solid #ff4444;z-index:9999;text-align:center;pointer-events:none';document.body.appendChild(el);}el.textContent='🪙 No Tokens! Complete a chapter to earn more.';el.style.display='block';setTimeout(()=>el.style.display='none',2500);}
 
 function loop(ts){
   const dt=Math.min((ts-(lastT||ts))/1000,.05);lastT=ts;

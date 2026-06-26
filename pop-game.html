@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Neucha&display=swap" rel="stylesheet">
 <title>💥 POPped Your Mind</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0a0015;font-family:'Segoe UI',system-ui,sans-serif;color:#e0bbff;
+body{background:#0a0015;font-family:'Neucha',cursive;color:#e0bbff;
   display:flex;flex-direction:column;align-items:center;
   height:100vh;overflow:hidden;padding:10px;gap:8px;position:relative}
 canvas#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
@@ -80,6 +81,14 @@ canvas#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
 </head>
 <body>
 <canvas id="bg"></canvas>
+<div id="how-to-play" style="position:fixed;right:2vw;top:50%;transform:translateY(-50%);width:260px;font-family:'Neucha',cursive;font-size:1.35rem;color:#cc88ff;text-align:center;line-height:1.9;z-index:2;pointer-events:none">
+  💥 Solve maths questions fast!<br><br>
+  Get 3 correct in a row to earn<br>
+  a ⚙️ bonus gear for your team!<br><br>
+  Wrong answer resets your streak.<br>
+  All 4 operations + patterns —<br>
+  stay sharp!
+</div>
 <div id="ui">
   <div id="hdr">
     <button id="back-btn" onclick="goBack()">← Map</button>

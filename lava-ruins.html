@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Neucha&display=swap" rel="stylesheet">
 <title>🌋 Lava Ruins</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:#080000;display:flex;flex-direction:column;align-items:flex-start;
   height:100vh;overflow:hidden;padding:6px;gap:4px;
-  font-family:'Segoe UI',system-ui,sans-serif;color:#ffcc88}
+  font-family:'Neucha',cursive;color:#ffcc88}
 #hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:870px}
 #hdr h1{font-size:1.1rem;color:#ff8844;letter-spacing:2px;text-shadow:0 0 12px #ff4400}
 #stats{display:flex;gap:14px;font-size:.72rem;color:#883300}
@@ -60,6 +61,10 @@ canvas{border-radius:8px;border:2px solid #3a1100;display:block;
   </div>
 </div>
 <div id="ctrl">← → Move &nbsp;·&nbsp; Space / ↑ Jump &nbsp;·&nbsp; Touch left/right/top</div>
+<div id="how-to-play" style="font-family:'Neucha',cursive;font-size:1.4rem;color:#cc8844;text-align:center;padding:10px 20px;line-height:1.9;max-width:860px">
+  🌋 Jump across platforms and reach the 🚪 exit — before the lava rises!<br>
+  Watch out for crumbling platforms · They fall when you stand on them!
+</div>
 
 <script>
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
@@ -244,12 +249,20 @@ const _SK='mp_lava_lv';
 function _saveLv(){localStorage.setItem(_SK,lvIdx);}
 function _loadLv(){return Math.min(parseInt(localStorage.getItem(_SK)||'0'),LEVELS.length-1);}
 function retry(){initLevel(lvIdx);}
-function nextLv(){_saveLv();initLevel(lvIdx+1);}
+function nextLv(){_requestToken(()=>{initLevel(lvIdx+1);_saveLv();});}
 function goBack(){
   cancelAnimationFrame(raf);
   if(window.parent!==window&&window.parent.closeMiniGameScene)window.parent.closeMiniGameScene();
   else window.history.back();
 }
+let _tokenCb=null;
+window.addEventListener('message',e=>{
+  if(!e.data)return;
+  if(e.data.type==='token_granted'&&_tokenCb){const cb=_tokenCb;_tokenCb=null;cb();}
+  if(e.data.type==='token_denied'){_tokenCb=null;_showNoTokens();}
+});
+function _requestToken(cb){if(window.parent===window){cb();return;}_tokenCb=cb;window.parent.postMessage({type:'request_token'},'*');}
+function _showNoTokens(){let el=document.getElementById('_ntmsg');if(!el){el=document.createElement('div');el.id='_ntmsg';el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.92);color:#ff5555;font-family:Neucha,cursive;font-size:1.1rem;padding:.9rem 1.8rem;border-radius:12px;border:2px solid #ff4444;z-index:9999;text-align:center;pointer-events:none';document.body.appendChild(el);}el.textContent='🪙 No Tokens! Complete a chapter to earn more.';el.style.display='block';setTimeout(()=>el.style.display='none',2500);}
 
 function loop(ts){
   const dt=Math.min((ts-(lastT||ts))/1000,.05);lastT=ts;

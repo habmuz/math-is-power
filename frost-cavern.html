@@ -3,12 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Neucha&display=swap" rel="stylesheet">
 <title>❄️ Frost Gear Cavern</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{
   background:radial-gradient(ellipse at 50% 0%,#0a1a2e,#05080f);
-  font-family:'Segoe UI',system-ui,sans-serif;color:#c0d8ff;
+  font-family:'Neucha',cursive;color:#c0d8ff;
   display:flex;flex-direction:column;align-items:center;
   height:100vh;overflow:hidden;padding:6px 8px;gap:6px;
 }
@@ -128,6 +129,10 @@ body{
 </div>
 
 <div id="ctrl-hint">Arrow keys / WASD to slide &nbsp;·&nbsp; Click ⚙️ to rotate gears</div>
+<div id="how-to-play" style="font-family:'Neucha',cursive;font-size:1.4rem;color:#88ccff;text-align:center;padding:10px 20px;line-height:1.9;max-width:760px">
+  ❄️ You slide on ice until you hit a wall! Click ⚙️ gears to rotate them — the right amount opens locked doors.<br>
+  Collect all gears and reach the 🚪 exit to clear each chamber!
+</div>
 
 <script>
 // ─── CHARACTER IMAGE ───────────────────────────────────────────────
@@ -408,7 +413,7 @@ function showWin(){
     :`Level ${lvIdx+1} done in ${moves} moves!`;
   const btn=document.getElementById('wo-btn');
   if(isLast){btn.textContent='🗺️ Back to Map';btn.onclick=goBack;}
-  else{btn.textContent=`Next Chamber ❄️`;btn.onclick=()=>{_saveLv();initLevel(lvIdx+1)};}
+  else{btn.textContent=`Next Chamber ❄️`;btn.onclick=()=>_requestToken(()=>{initLevel(lvIdx+1);_saveLv();});}
   document.getElementById('win-overlay').classList.add('show');
 }
 
@@ -417,6 +422,14 @@ function goBack(){
     window.parent.closeMiniGameScene();
   else window.history.back();
 }
+let _tokenCb=null;
+window.addEventListener('message',e=>{
+  if(!e.data)return;
+  if(e.data.type==='token_granted'&&_tokenCb){const cb=_tokenCb;_tokenCb=null;cb();}
+  if(e.data.type==='token_denied'){_tokenCb=null;_showNoTokens();}
+});
+function _requestToken(cb){if(window.parent===window){cb();return;}_tokenCb=cb;window.parent.postMessage({type:'request_token'},'*');}
+function _showNoTokens(){let el=document.getElementById('_ntmsg');if(!el){el=document.createElement('div');el.id='_ntmsg';el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.92);color:#ff5555;font-family:Neucha,cursive;font-size:1.1rem;padding:.9rem 1.8rem;border-radius:12px;border:2px solid #ff4444;z-index:9999;text-align:center;pointer-events:none';document.body.appendChild(el);}el.textContent='🪙 No Tokens! Complete a chapter to earn more.';el.style.display='block';setTimeout(()=>el.style.display='none',2500);}
 
 // Keyboard
 document.addEventListener('keydown',e=>{

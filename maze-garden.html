@@ -3,11 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Neucha&display=swap" rel="stylesheet">
 <title>🌀 Maze Garden</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{background:radial-gradient(ellipse at 50% 0%,#001a0a,#000a04);
-  font-family:'Segoe UI',system-ui,sans-serif;color:#88ffbb;
+  font-family:'Neucha',cursive;color:#88ffbb;
   display:flex;flex-direction:column;align-items:center;
   height:100vh;overflow:hidden;padding:6px;gap:5px}
 #hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:870px}
@@ -40,7 +41,11 @@ canvas{border-radius:8px;border:2px solid #1a4422;display:block;
   <div id="stats">Maze <b id="lv">1</b>/50 &nbsp;|&nbsp; Chests: <b id="chests">0</b>/<b id="ctotal">3</b> &nbsp;|&nbsp; Steps: <b id="steps">0</b></div>
 </div>
 <canvas id="c"></canvas>
-<div id="ctrl">Arrow keys / WASD to move &nbsp;·&nbsp; Find 3 chests then reach the center 🌀</div>
+<div id="ctrl">Arrow keys / WASD to move &nbsp;·&nbsp; Find 2 chests then reach the center 🌀</div>
+<div id="how-to-play" style="font-family:'Neucha',cursive;font-size:1.4rem;color:#55ff99;text-align:center;padding:10px 20px;line-height:1.9;max-width:900px">
+  🌿 The maze is hidden in fog — explore to reveal it! Find both treasure chests 📦<br>
+  then reach the glowing 🌀 center to complete each maze!
+</div>
 <div id="overlay">
   <div class="ov-t" id="ov-t">🎉</div>
   <div class="ov-s" id="ov-s"></div>
@@ -150,7 +155,7 @@ function move(dx,dy){
     document.getElementById('ov-s').textContent=`Found all chests in ${steps} steps!`;
     const btn=document.getElementById('ov-btn');
     if(isLast){btn.textContent='🗺️ Back to Map';btn.onclick=goBack;}
-    else{btn.textContent=`Next Maze 🌿`;btn.onclick=()=>{_saveLv();initLevel(lvIdx+1);}}
+    else{btn.textContent=`Next Maze 🌿`;btn.onclick=()=>_requestToken(()=>{initLevel(lvIdx+1);_saveLv();});}
     ov.classList.add('show');
   }
 }
@@ -228,6 +233,14 @@ function goBack(){
   if(window.parent!==window&&window.parent.closeMiniGameScene)window.parent.closeMiniGameScene();
   else window.history.back();
 }
+let _tokenCb=null;
+window.addEventListener('message',e=>{
+  if(!e.data)return;
+  if(e.data.type==='token_granted'&&_tokenCb){const cb=_tokenCb;_tokenCb=null;cb();}
+  if(e.data.type==='token_denied'){_tokenCb=null;_showNoTokens();}
+});
+function _requestToken(cb){if(window.parent===window){cb();return;}_tokenCb=cb;window.parent.postMessage({type:'request_token'},'*');}
+function _showNoTokens(){let el=document.getElementById('_ntmsg');if(!el){el=document.createElement('div');el.id='_ntmsg';el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.92);color:#ff5555;font-family:Neucha,cursive;font-size:1.1rem;padding:.9rem 1.8rem;border-radius:12px;border:2px solid #ff4444;z-index:9999;text-align:center;pointer-events:none';document.body.appendChild(el);}el.textContent='🪙 No Tokens! Complete a chapter to earn more.';el.style.display='block';setTimeout(()=>el.style.display='none',2500);}
 
 function loop(){draw();requestAnimationFrame(loop);}
 const _SK='mp_maze_lv';

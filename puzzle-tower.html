@@ -3,10 +3,11 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Neucha&display=swap" rel="stylesheet">
 <title>🏛️ Ancient Temple</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Georgia,serif;color:#e8c87a;
+body{font-family:'Neucha',cursive;color:#e8c87a;
   display:flex;flex-direction:column;align-items:center;
   height:100vh;overflow:hidden;padding:8px;gap:6px;position:relative}
 canvas#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
@@ -126,6 +127,13 @@ canvas#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
 <!-- Stair climb animation -->
 <div id="stair-overlay">
   <canvas id="stair-cv" width="320" height="210"></canvas>
+</div>
+<div id="how-to-play" style="position:fixed;right:2vw;top:50%;transform:translateY(-50%);width:260px;font-family:'Neucha',cursive;font-size:1.35rem;color:#e8c87a;text-align:center;line-height:1.9;z-index:2;pointer-events:none">
+  🏛️ Climb 50 floors of math puzzles!<br><br>
+  Choose or type the correct answer.<br>
+  You get 3 attempts per floor —<br>
+  a hint appears on your last try.<br><br>
+  Reach Floor 50 to conquer the temple!
 </div>
 
 <script>
@@ -382,13 +390,13 @@ function feedback(ok){
     flashFloor();
     const next=floor+1;
     if(next>=PUZZLES.length){setTimeout(showWin,900);}
-    else{showStairs(floor+1,()=>showFloor(next));}
+    else{_requestToken(()=>showStairs(floor+1,()=>showFloor(next)));}
   }else{
     if(tries>=maxTries){
       fb.textContent=`❌ Answer: ${PUZZLES[floor].ans} — moving on!`;fb.className='fb-no';
       const next=floor+1;
       if(next>=PUZZLES.length){setTimeout(showWin,1600);}
-      else{setTimeout(()=>showStairs(floor+1,()=>showFloor(next)),1200);}
+      else{setTimeout(()=>_requestToken(()=>showStairs(floor+1,()=>showFloor(next))),1200);}
     }else{
       fb.textContent=`❌ Try again! (${maxTries-tries} left)`;fb.className='fb-no';
     }
@@ -411,6 +419,14 @@ function goBack(){
   if(window.parent!==window&&window.parent.closeMiniGameScene)window.parent.closeMiniGameScene();
   else window.history.back();
 }
+let _tokenCb=null;
+window.addEventListener('message',e=>{
+  if(!e.data)return;
+  if(e.data.type==='token_granted'&&_tokenCb){const cb=_tokenCb;_tokenCb=null;cb();}
+  if(e.data.type==='token_denied'){_tokenCb=null;_showNoTokens();}
+});
+function _requestToken(cb){if(window.parent===window){cb();return;}_tokenCb=cb;window.parent.postMessage({type:'request_token'},'*');}
+function _showNoTokens(){let el=document.getElementById('_ntmsg');if(!el){el=document.createElement('div');el.id='_ntmsg';el.style.cssText='position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,0,0,.92);color:#ff5555;font-family:Neucha,cursive;font-size:1.1rem;padding:.9rem 1.8rem;border-radius:12px;border:2px solid #ff4444;z-index:9999;text-align:center;pointer-events:none';document.body.appendChild(el);}el.textContent='🪙 No Tokens! Complete a chapter to earn more.';el.style.display='block';setTimeout(()=>el.style.display='none',2500);}
 
 const _cSrc=new URLSearchParams(location.search).get('char');
 if(_cSrc){
