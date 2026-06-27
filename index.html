@@ -1330,6 +1330,7 @@ function startChapter(){
   G.setQ=0; G.setCorrect=0; G.dotResults=['','',''];
   G.machineAttempts=0; $id('torn-paper').style.display='none'; $id('flip-zone').style.display='none'; $id('machine').classList.remove('visible');
   $id('q-flip-btn').style.display='none';
+  $id('a-input').disabled=false;$id('sub-btn').disabled=false;$id('a-input').placeholder='?';
   $id('bm-chapter').textContent='CH '+G.chapter;
   const _chTopics=['','Add (No Rename)','Subtract (No Rename)','× by 2, 5, 10','Divide 2÷1','Add with Rename','Subtract with Rename','× by 2, 4, 6, 8','Divide 3÷1','Mixed','All + Patterns'];
   $id('chapter-title').textContent=`📖 Chapter ${G.chapter} — ${_chTopics[G.chapter]||''}`;
@@ -1439,7 +1440,10 @@ function awardGear(){
 // PAGE FLIP TO BATTLE
 // ═══════════════════════════════════════
 function goToBattlePage(){
-  // After 3 gears: flip to fight scene directly (password machine shows AFTER you win)
+  // Lock questions — no more answering after 3 gears
+  $id('a-input').disabled=true;
+  $id('sub-btn').disabled=true;
+  $id('a-input').placeholder='⚙️ All gears collected!';
   if(G.flipMode==='manual'){
     $id('q-flip-btn').style.display='block';
     updateFlipStrip();
@@ -1490,6 +1494,7 @@ function launchFightScene(){
     $id('cave-scene').style.display='none';
     $id('battle-scene').style.display='none';
     $id('mp-scene').style.display='block';
+    showPanel('intro');
   });
 }
 function onSoloBattleWin(leftoverGears){
