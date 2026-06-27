@@ -1083,7 +1083,7 @@ function renderRoster(){
 
 function renderActions(){
   // Every player first gets a question (random math or pattern)
-  const qType=Math.random()<0.5?'math':'pattern';
+  const qType=Math.random()<0.25?'pattern':'math';
   setTimeout(()=>{if(!G.done)openQ(qType);},350);
 }
 
@@ -1833,6 +1833,7 @@ const ROLE_CLASS={fighter:'role-fighter',healer:'role-healer',defender:'role-def
 let _cgIdx=-1, _cgFilter='all';
 
 function openGallery(playerIdx){
+  if(G&&G.done!==undefined)return;
   _cgIdx=playerIdx;
   _cgFilter='all';
   document.querySelectorAll('.cg-tab').forEach((t,i)=>{t.classList.toggle('active',i===0)});
