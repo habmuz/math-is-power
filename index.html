@@ -1489,6 +1489,7 @@ function launchFightScene(){
     $id('cave-scene').style.display='none';
     $id('battle-scene').style.display='none';
     $id('mp-scene').style.display='block';
+    document.querySelectorAll('.rp-panel').forEach(p=>p.classList.remove('active'));
   });
 }
 function onSoloBattleWin(leftoverGears){
