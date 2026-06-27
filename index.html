@@ -2571,6 +2571,13 @@ function _cSendGame(data){
 }
 
 
+function scaleScene(){
+  const scale=Math.min(1,window.innerWidth/900,window.innerHeight/600);
+  document.getElementById('scene').style.transform=scale<1?`scale(${scale})`:'';
+}
+window.addEventListener('resize',scaleScene);
+scaleScene();
+
 function _cHandleGame(msg){
   if(msg.type==='join'){
     // Someone wants to join — host assigns a player number
