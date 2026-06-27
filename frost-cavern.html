@@ -147,9 +147,9 @@ else{_pEl.textContent='🧊';_pEl.style.fontSize='1.5rem';_pEl.style.display='fl
 function makeFrostLevel(n){
   function rng(seed){let v=seed;return()=>{v=(v*1664525+1013904223)>>>0;return v/0x100000000;};}
   const r=rng(n*31+17);
-  const cols=8+Math.floor(n/10)*2;
-  const rows=6+Math.floor(n/12);
-  const nG=1+Math.floor(n/14);
+  const cols=Math.min(14,8+Math.floor(n/5)*2);
+  const rows=Math.min(9,6+Math.floor(n/5));
+  const nG=1+Math.floor(n/10);
   const grid=Array(rows*cols).fill(1);
   const carve=(row,x1,x2)=>{for(let x=x1;x<=x2;x++)grid[row*cols+x]=0;};
   const carveV=(col,y1,y2)=>{for(let y=y1;y<=y2;y++)grid[y*cols+col]=0;};
@@ -252,14 +252,18 @@ function makeFrostLevel(n){
     usedGx.add(gx);
     if(grid[gRow*cols+gx]!==0) continue; // skip if no open spot found
     const need=n<10?1:n<25?1+Math.floor(r()*2):1+Math.floor(r()*3);
-    // door blocks vx channel between gearRow and exit row
-    const minDy=gRow+1, maxDy=exitY-1;
-    const dy=minDy<maxDy?minDy+Math.floor(r()*(maxDy-minDy+1)):minDy;
-    if(dy>=1&&dy<rows-1&&grid[dy*cols+vx]===0){
+    // pick a random row anywhere between gearRow and bottom
+    const minDy=gRow+1, maxDy=rows-2;
+    const dy=minDy<=maxDy?minDy+Math.floor(r()*(maxDy-minDy+1)):minDy;
+    // pick a random open cell in that row (not the gear column)
+    const rowOpen=[];
+    for(let x=1;x<cols-1;x++){if(grid[dy*cols+x]===0&&x!==gx)rowOpen.push(x);}
+    const doorX=rowOpen.length?rowOpen[Math.floor(r()*rowOpen.length)]:vx;
+    if(dy>=1&&dy<rows-1&&grid[dy*cols+doorX]===0){
       grid[gRow*cols+gx]=2;
-      grid[dy*cols+vx]=3;
+      grid[dy*cols+doorX]=3;
       gears.push({id:g,x:gx,y:gRow,rot:0,need,door:g});
-      doors.push({id:g,x:vx,y:dy,open:false});
+      doors.push({id:g,x:doorX,y:dy,open:false});
     }
   }
 
