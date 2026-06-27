@@ -150,6 +150,7 @@ function move(dx,dy){
   if(cell===3&&collected>=chests.length){
     won=true;
     const isLast=lvIdx>=SIZES.length-1;
+    if(isLast)localStorage.removeItem(_SK);
     const ov=document.getElementById('overlay');
     document.getElementById('ov-t').textContent=isLast?'🏆 Garden Complete!':'🌿 Maze Cleared!';
     document.getElementById('ov-s').textContent=`Found all chests in ${steps} steps!`;

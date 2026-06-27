@@ -236,6 +236,7 @@ function draw(){
 
 function over(win,title,sub,isLast){
   running=false;
+  if(win&&isLast)localStorage.removeItem(_SK);
   if(win){const pts=Math.max(0,Math.round(500-elapsed*25));totalScore+=pts;document.getElementById('score').textContent=totalScore;sub+=`  (+${pts} pts)`;}
   document.getElementById('ov-t').textContent=title;
   document.getElementById('ov-s').textContent=sub;

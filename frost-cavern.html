@@ -405,6 +405,7 @@ function slide(dir){
 
 function showWin(){
   const isLast=lvIdx>=LEVELS.length-1;
+  if(isLast)localStorage.removeItem(_SK);
   const stars=moves<=6?'⭐⭐⭐':moves<=10?'⭐⭐':moves<=16?'⭐':'';
   document.getElementById('wo-stars').textContent=stars;
   document.getElementById('wo-title').textContent=isLast?'🏆 Cavern Complete!':'🎉 Chamber Cleared!';
