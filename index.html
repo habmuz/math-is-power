@@ -7,7 +7,8 @@
 <title>Math Is Power 📖</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:#0a0005;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Georgia,serif;overflow:hidden}
+html{overflow:hidden;height:100%}
+body{background:#0a0005;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Georgia,serif;overflow:hidden;height:100%}
 
 /* ══ SCENE WRAPPER ══ */
 #scene{position:relative;width:900px;height:600px}
@@ -1489,7 +1490,6 @@ function launchFightScene(){
     $id('cave-scene').style.display='none';
     $id('battle-scene').style.display='none';
     $id('mp-scene').style.display='block';
-    document.querySelectorAll('.rp-panel').forEach(p=>p.classList.remove('active'));
   });
 }
 function onSoloBattleWin(leftoverGears){
