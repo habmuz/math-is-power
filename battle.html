@@ -11,10 +11,10 @@
   --green:#22c55e;--red:#ef4444;--blue:#3b82f6;--purple:#a855f7;
   --text:#e2e8f0;--muted:#94a3b8;--border:rgba(255,255,255,0.1)
 }
-body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);height:100vh;max-height:100vh;overflow:hidden}
+body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-y:auto}
 .hidden{display:none!important}
-.screen{display:none;height:100vh;max-height:100vh;overflow:hidden}
-.screen.active{display:flex;flex-direction:column}
+.screen{display:none}
+.screen.active{display:flex;flex-direction:column;min-height:100vh}
 
 /* ── SETUP ── */
 #setup-screen{align-items:center;justify-content:flex-start;padding:2rem 1rem;
@@ -114,7 +114,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 #battle-screen::before{content:'🔥🔥🔥🔥🔥';position:absolute;bottom:-2rem;left:0;width:100%;font-size:1.1rem;
   letter-spacing:18vw;opacity:.18;pointer-events:none;animation:embersRise 6s linear infinite;z-index:0}
 @keyframes embersRise{0%{transform:translateY(0)}100%{transform:translateY(-100vh)}}
-.battle-arena{display:flex;flex-direction:column;height:100vh;max-height:100vh;overflow:hidden}
+.battle-arena{display:flex;flex-direction:column;min-height:100vh}
 
 /* ── Thin HP bars at very top ── */
 .hp-bars-top{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;
