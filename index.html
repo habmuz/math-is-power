@@ -1472,6 +1472,8 @@ function _execFlipToMachine(){
 }
 
 function launchFightScene(){
+  pcCloseProfile();
+  showPanel('intro');
   const pw=G.password.join('');
   const allGears=[...G.gears,...(G.carryoverGears||[]),...(G.partnerGears||[])];
   const gearsParam=encodeURIComponent(allGears.map(g=>g.name).join(','));
