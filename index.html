@@ -1752,8 +1752,16 @@ function resetChapter(){
   G.phase='questions';G.streak=0;G.setQ=0;G.setCorrect=0;
   G.dotResults=['','',''];G.immunityUsed=false;G.defending=false;
   G.consC=0;G.consW=0;
+  $id('machine').classList.remove('visible');
+  $id('battle-scene').style.display='none';
+  $id('mp-scene').style.display='none';
+  $id('mp-iframe').src='';
+  $id('cave-scene').style.display='flex';
+  $id('flip-zone').style.display='none';
+  $id('q-flip-btn').style.display='none';
+  $id('a-input').disabled=false;$id('sub-btn').disabled=false;$id('a-input').placeholder='?';
   saveGame();toggleScroll();
-  showPanel('q');nextQ();
+  showPanel('q');startChapter();
 }
 function showDirs(){toggleScroll();showDialog('📖 How to Play','1. Answer 9 math questions at your level\n2. 3 correct in a row → 1 ⚙️ Gear + 1 Password Digit\n3. Collect 3 Gears → flip page → Dragon Battle!\n4. Defeat the Dragon → flip page → Password Machine\n5. Enter the 3-digit Password → next Chapter\n6. 10 Chapters total!','Got it!',()=>{})}
 
