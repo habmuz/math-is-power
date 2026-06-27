@@ -977,6 +977,7 @@ initSetupData();renderSetup();
 let G={};
 
 function startBattle(players){
+  document.getElementById('char-gallery').classList.add('hidden');
   const code=[r(1,9),r(1,9),r(1,9)];
   G={
     players:players.map(p=>({playerName:p.playerName,character:p.character,hp:450,maxHp:450,isAlive:true,shielded:false})),
