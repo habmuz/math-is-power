@@ -1019,7 +1019,8 @@ function startBattle(players){
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  document.getElementById('char-gallery').classList.add('hidden');
+  const cg=document.getElementById('char-gallery');
+  cg.classList.add('hidden');cg.style.display='none';
 }
 
 // ── DISPLAY ───────────────────────────────────────────────────────
@@ -1468,9 +1469,8 @@ function triggerTimeUp(){
   clearInterval(_qTimerInterval);
   document.getElementById('q-modal').classList.add('hidden');
   updateCaveLight(true);
-  // Drift the screen in from the right
+  showScreen('timeout-screen');
   const ts=document.getElementById('timeout-screen');
-  ts.style.display='flex';
   requestAnimationFrame(()=>requestAnimationFrame(()=>ts.classList.add('drift-in')));
   setTimeout(function(){
     if(window.parent!==window)window.parent.closeMpScene&&window.parent.closeMpScene();
