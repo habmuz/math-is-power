@@ -272,6 +272,7 @@ function draw(){
 
 function over(win,title,sub,isLast){
   running=false;
+  if(win&&isLast)localStorage.removeItem(_SK);
   document.getElementById('ov-t').textContent=title;
   document.getElementById('ov-s').textContent=sub;
   document.getElementById('btn-r').style.display=win&&isLast?'none':'inline-block';
