@@ -218,8 +218,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .streak-charges{font-size:.65rem;color:var(--muted)}
 /* Battle timer */
 #battle-timer-wrap{display:flex;align-items:center;gap:.5rem;margin-left:auto}
-#battle-timer-txt{font-size:.95rem;font-weight:700;color:var(--gold);min-width:2.5rem;text-align:right}
-#battle-timer-bar{width:70px;height:5px;background:rgba(255,255,255,.12);border-radius:3px}
+#battle-timer-txt{font-size:.80rem;font-weight:700;color:var(--gold);min-width:2.2rem;text-align:right}
+#battle-timer-bar{width:58px;height:4px;background:rgba(255,255,255,.12);border-radius:3px}
 #battle-timer-fill{height:100%;background:linear-gradient(90deg,#22c55e,#f59e0b);border-radius:3px;transition:width 1s linear}
 /* Gear tray */
 #gear-tray{display:flex;flex-wrap:nowrap;overflow-x:auto;gap:.4rem;padding:.6rem 1.25rem;border-top:1px solid var(--border);background:rgba(0,0,0,.4);flex-shrink:0}
@@ -709,7 +709,6 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
     <button class="copy-btn" id="copy-btn" onclick="copyCode()">📋 Copy Code</button>
   </div>
   <a class="book-link" href="index.html" onclick="if(window.parent!==window){event.preventDefault();if(!_winSent){_winSent=true;(_soloMode||_bParams.get('autostart')==='1')?(window.parent.onSoloBattleWin&&window.parent.onSoloBattleWin((G.gearItems||[]).map(g=>g.name))):window.parent.closeMpScene();}}">Return to Book</a><br>
-  <button class="again-btn" onclick="location.reload()">⚔️ Play Again</button>
 </div>
 
 <!-- DEFEAT -->
