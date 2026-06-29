@@ -418,7 +418,7 @@ function showWin(){
     :`Level ${lvIdx+1} done in ${moves} moves!`;
   const btn=document.getElementById('wo-btn');
   if(isLast){btn.textContent='🗺️ Back to Map';btn.onclick=goBack;}
-  else{btn.textContent=`Next Chamber ❄️`;btn.onclick=()=>_requestToken(()=>{initLevel(lvIdx+1);_saveLv();});}
+  else{btn.textContent=`Next Chamber ❄️`;btn.onclick=()=>{if(lvIdx>=LEVELS.length-1)return;_requestToken(()=>{initLevel(lvIdx+1);_saveLv();});};}
   document.getElementById('win-overlay').classList.add('show');
 }
 

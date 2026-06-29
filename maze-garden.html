@@ -156,7 +156,7 @@ function move(dx,dy){
     document.getElementById('ov-s').textContent=`Found all chests in ${steps} steps!`;
     const btn=document.getElementById('ov-btn');
     if(isLast){btn.textContent='🗺️ Back to Map';btn.onclick=goBack;}
-    else{btn.textContent=`Next Maze 🌿`;btn.onclick=()=>_requestToken(()=>{initLevel(lvIdx+1);_saveLv();});}
+    else{btn.textContent=`Next Maze 🌿`;btn.onclick=()=>{if(lvIdx>=LEVELS.length-1)return;_requestToken(()=>{initLevel(lvIdx+1);_saveLv();});};}
     ov.classList.add('show');
   }
 }

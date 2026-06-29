@@ -250,7 +250,7 @@ const _SK='mp_lava_lv';
 function _saveLv(){localStorage.setItem(_SK,lvIdx);}
 function _loadLv(){return Math.min(parseInt(localStorage.getItem(_SK)||'0'),LEVELS.length-1);}
 function retry(){initLevel(lvIdx);}
-function nextLv(){_requestToken(()=>{initLevel(lvIdx+1);_saveLv();});}
+function nextLv(){if(lvIdx>=LEVELS.length-1)return;_requestToken(()=>{initLevel(lvIdx+1);_saveLv();});}
 function goBack(){
   cancelAnimationFrame(raf);
   if(window.parent!==window&&window.parent.closeMiniGameScene)window.parent.closeMiniGameScene();

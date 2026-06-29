@@ -114,7 +114,8 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 #battle-screen::before{content:'🔥🔥🔥🔥🔥';position:absolute;bottom:-2rem;left:0;width:100%;font-size:1.1rem;
   letter-spacing:18vw;opacity:.18;pointer-events:none;animation:embersRise 6s linear infinite;z-index:0}
 @keyframes embersRise{0%{transform:translateY(0)}100%{transform:translateY(-100vh)}}
-.battle-arena{display:flex;flex-direction:column;min-height:100vh}
+.battle-arena{display:flex;flex-direction:column;height:100vh;height:100dvh}
+#d-sprite{height:clamp(110px,22vh,240px)!important;width:auto!important;max-width:190px!important}
 
 /* ── Thin HP bars at very top ── */
 .hp-bars-top{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;
@@ -128,7 +129,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .combat-zone{display:grid;grid-template-columns:1fr 1fr;gap:.5rem;
   padding:.6rem .85rem;flex:1;min-height:0;align-items:center;position:relative}
 .hero-side{display:flex;flex-direction:column;align-items:center;gap:.35rem}
-.hero-portrait{width:100%;max-width:160px;height:210px;
+.hero-portrait{width:100%;max-width:160px;height:clamp(110px,20vh,210px);
   border-radius:.8rem;object-fit:cover;object-position:left top;
   border:2px solid rgba(255,215,0,.5);display:block;
   box-shadow:0 0 24px rgba(255,215,0,.25),0 6px 18px rgba(0,0,0,.7);
@@ -366,7 +367,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .rrole{font-size:.58rem;color:var(--muted)}
 
 /* Action panel */
-.action-panel{border-top:1px solid var(--border);background:rgba(0,0,0,.5);padding:.85rem 1.25rem}
+.action-panel{border-top:1px solid var(--border);background:rgba(0,0,0,.5);padding:.5rem 1.25rem}
 .turn-ind{font-size:.75rem;color:var(--gold);font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:.6rem}
 .act-btns{display:flex;gap:.6rem;flex-wrap:wrap}
 .abtn{padding:.55rem 1rem;border-radius:.55rem;border:none;font-size:.8rem;font-weight:600;

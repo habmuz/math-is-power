@@ -1193,7 +1193,10 @@ function adapt(ok){} // kept for compatibility — chapter now controls topic, n
 const SAVE_VERSION='20260624';
 const SAVE_KEY='mathIsPower_save_'+SAVE_VERSION;
 // Wipe all old game saves from previous versions
-(function(){Object.keys(localStorage).filter(k=>k.startsWith('mathIsPower_')&&k!==SAVE_KEY).forEach(k=>localStorage.removeItem(k));})();
+(function(){
+  Object.keys(localStorage).filter(k=>k.startsWith('mathIsPower_')&&k!==SAVE_KEY).forEach(k=>localStorage.removeItem(k));
+  if(!localStorage.getItem(SAVE_KEY)){['mp_lava_lv','mp_obs_lv','mp_frost_lv','mp_maze_lv'].forEach(k=>localStorage.removeItem(k));}
+})();
 function saveGame(){
   const data={
     chapter:G.chapter,
@@ -1208,7 +1211,7 @@ function saveGame(){
 function loadSave(){
   try{return JSON.parse(localStorage.getItem(SAVE_KEY));}catch{return null;}
 }
-function clearSave(){localStorage.removeItem(SAVE_KEY);}
+function clearSave(){localStorage.removeItem(SAVE_KEY);['mp_lava_lv','mp_obs_lv','mp_frost_lv','mp_maze_lv'].forEach(k=>localStorage.removeItem(k));}
 function continueGame(){
   const save=loadSave(); if(!save)return;
   G.chapter=save.chapter;
@@ -1764,7 +1767,7 @@ function resetChapter(){
   saveGame();toggleScroll();
   showPanel('q');startChapter();
 }
-function showDirs(){toggleScroll();showDialog('📖 How to Play','1. Answer 9 math questions at your level\n2. 3 correct in a row → 1 ⚙️ Gear + 1 Password Digit\n3. Collect 3 Gears → flip page → Dragon Battle!\n4. Defeat the Dragon → flip page → Password Machine\n5. Enter the 3-digit Password → next Chapter\n6. 10 Chapters total!','Got it!',()=>{})}
+function showDirs(){toggleScroll();showDialog('📖 How to Play','1. Answer math questions — 3 correct in a row earns a ⚙️ Gear + Password Digit!\n2. Collect 3 Gears → flip page → Dragon Battle!\n3. Defeat the Dragon → flip page → Password Machine\n4. Enter the 3-digit Password → next Chapter\n5. Complete chapters to earn 🪙 Tokens — spend them on the Mini Game map!\n6. 10 Chapters total!','Got it!',()=>{})}
 
 // ═══════════════════════════════════════
 // MINI GAME MAP
