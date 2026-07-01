@@ -329,7 +329,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 .si select,.smb{padding:4px 7px;border:1px solid #8b4513;border-radius:4px;background:#fdf5e6;color:#2d0000;font-size:11px;font-family:'Neucha',cursive;cursor:pointer;width:100%}
 .smb.act{background:#8b4513;color:#f6e8cc}
 #close-sm{margin-top:auto;padding:5px;background:#5a2d00;color:#f6e8cc;border:none;border-radius:4px;cursor:pointer;font-family:'Neucha',cursive;font-size:11px}
-#gear-base-btn{position:absolute;bottom:10px;right:6px;z-index:10;padding:5px 14px;background:linear-gradient(#ffd700,#cc8800);color:#2d0000;border:none;border-radius:12px;font-size:11px;cursor:pointer;font-family:Georgia,serif;font-weight:bold;display:none}
+#gear-base-btn{display:none!important}
 #page-nav{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:10;display:none}
 .pnav-btn{padding:5px 14px;background:rgba(139,100,60,.7);color:#f6e8cc;border:none;border-radius:10px;font-size:12px;cursor:pointer;font-family:Georgia,serif;transition:background .2s}
 .pnav-btn:hover{background:rgba(139,100,60,1)}
@@ -571,7 +571,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     <!-- Cave scene (default) -->
     <div id="cave-scene">
       <div id="stalactites">▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼</div>
-      <div id="cave-goal-text" style="font-family:'Neucha',cursive;background:linear-gradient(180deg,#5db520 0%,#7ec832 40%,#e8f5d0 75%,#faf5e8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:12px;text-align:center;padding:0 16px;margin-top:-60px;margin-bottom:6px;filter:drop-shadow(0 0 6px #2d5a0a);letter-spacing:0.5px;line-height:1.4">GOAL OF GAME: For Primary 1 to Primary 3<br>to master 4 operations &amp; identify patterns</div>
+      <div id="cave-goal-text" style="font-family:'Neucha',cursive;background:linear-gradient(180deg,#3a8f0a 0%,#5cb81a 30%,#8fd44a 60%,#f0f8e0 85%,#fdf8ec 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:12px;text-align:center;padding:0 16px;margin-top:-60px;margin-bottom:6px;letter-spacing:0.5px;line-height:1.4">GOAL OF GAME: For Primary 1 to Primary 3<br>to master 4 operations &amp; identify patterns</div>
       <div id="cave-dragon-idle">🐉</div>
       <div id="cave-dragon-text">THE DRAGON'S LAIR</div>
       <div class="flame" style="left:16px;animation-delay:0s">🔥</div>
@@ -689,6 +689,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       </select>
       <button id="solo-player-btn" onclick="openSoloPicker()">🧩 Solo Player</button>
       <button id="friend-btn" onclick="openMpOverlay()">🔗 Play with Friend</button>
+      <button id="gear-base-btn-inline" onclick="openGearRoom()" style="margin-top:6px;padding:9px 22px;background:linear-gradient(#ffd700,#cc8800);color:#2d0000;border:none;border-radius:16px;font-size:16px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25);display:none">🏠 Gear Base</button>
     </div>
 
     <!-- Question panel -->
@@ -1243,6 +1244,7 @@ function openBook(){
     $id('book').style.display='flex';
     $id('book').classList.add('open');
     $id('gear-base-btn').style.display='block';
+    const gbi=$id('gear-base-btn-inline');if(gbi)gbi.style.display='block';
   },400);
 }
 function updateBadge(){
