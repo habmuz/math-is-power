@@ -442,9 +442,9 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 /* ═══ DIALOG ═══ */
 #dialog{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:center;justify-content:center}
 #dialog.open{display:flex}
-#dialog-box{background:linear-gradient(160deg,#f6e8cc,#e8d89a);border:3px solid #8b4513;border-radius:14px;padding:24px 32px;text-align:center;max-width:360px;white-space:pre-line;font-family:'Neucha',cursive}
-#dialog-title{font-size:22px;color:#5a2d00;margin-bottom:8px;font-family:'Neucha',cursive}
-#dialog-msg{font-size:14px;color:#4a2000;margin-bottom:14px;line-height:1.7;font-family:'Neucha',cursive}
+#dialog-box{background:linear-gradient(160deg,#f6e8cc,#e8d89a);border:3px solid #8b4513;border-radius:14px;padding:18px 24px;text-align:left;max-width:520px;width:92vw;max-height:80vh;overflow-y:auto;white-space:pre-line;font-family:'Neucha',cursive}
+#dialog-title{font-size:22px;color:#5a2d00;margin-bottom:8px;font-family:'Neucha',cursive;text-align:center}
+#dialog-msg{font-size:13.5px;color:#4a2000;margin-bottom:14px;line-height:1.75;font-family:'Neucha',cursive}
 #dialog-btn{padding:8px 26px;background:linear-gradient(#8b4513,#5a2d00);color:#f6e8cc;border:none;border-radius:20px;font-size:14px;cursor:pointer;font-family:Georgia,serif}
 
 /* ═══ PERSPECTIVE WRAPPER ═══ */
@@ -1749,7 +1749,9 @@ function resetChapter(){
   saveGame();toggleScroll();
   showPanel('q');startChapter();
 }
-function showDirs(){toggleScroll();showDialog('📖 How to Play','❓ 3 questions per round — 🟢 correct / 🔴 wrong (answer shown). Password Digit earned every round!\n🏆 3/3 → ⚔️ Type 3 Gear  |  2/3 → 🛡️ Type 2  |  1/3 → 💡 Type 1  |  0/3 → No Gear\n⚙️ Collect 3 Gears → flip page → 🐉 Dragon Battle → 🔐 Password Machine → Chapter Complete!\n🏠 Gear Base: See all gears collected across every chapter!\n🪙 Earn 5 Tokens per chapter — spend them to explore the Mini Game map!\n📖 10 Chapters total!','Got it!',()=>{})}
+function showDirs(){toggleScroll();showDialog('📖 How to Play',
+'📖 10 Chapters: Addition · Subtraction · Multiplication · Division · Carrying · Borrowing · and more!\n\n❓ 3 questions per round — 🟢 correct / 🔴 wrong (answer shown). You earn a Password Digit every round!\n\n🏆 3/3 correct → ⚔️ Type 3 Gear  |  2/3 → 🛡️ Type 2  |  1/3 → 💡 Type 1  |  0/3 → No Gear\n\n⚙️ Collect 3 Gears → flip the page (left strip glows) → 🐉 Dragon Battle → 🔐 Password Machine → Chapter Complete!\n\n🎚️ Level: Choose P1, P2 or P3. P1 = smallest numbers, P3 = harder. Change anytime in the bookmark!\n\n🧩 Solo Player: Play alone — pick your hero, answer & face the dragon yourself!\n🔗 Play with Friend: Generate a code, share with a friend — battle together on two devices!\n\n🔖 Bookmark (top-right): Tap mid-game for quick access to level, narrator, page flip, mini games & more — your on-the-go guide!\n\n🗣️ Narrator: ON/OFF toggle in the bookmark — shows hints & story messages.\n\n📄 Page Flip: Once you have 3 gears the left strip glows — click to flip! Set to Auto in bookmark to flip automatically.\n\n🏠 Gear Base: See ALL gears collected across every chapter! Button below or in the bookmark menu.\n\n🪙 Earn 5 Tokens per chapter · unlocks after Chapter 1 · 1 Token to enter a Mini Game · each level inside costs 1 Token!',
+'Got it! 🐉',()=>{})}}
 
 // ═══════════════════════════════════════
 // MINI GAME MAP
