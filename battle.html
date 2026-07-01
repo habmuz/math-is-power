@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Math is Power: Dragon Battle</title>
+<link href="https://fonts.googleapis.com/css2?family=Nanum+Pen+Script&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -108,11 +109,18 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 .role-pattern{border-color:#f59e0b;color:#f59e0b}
 
 /* ── BATTLE ── */
-#battle-screen{background:radial-gradient(ellipse at top,#1a0523 0%,#0d0d1f 55%,#0a0810 100%)}
+#battle-screen{
+  background:url('cave-bg.webp') center/cover no-repeat;
+  position:relative;overflow:hidden;
+}
+#battle-screen::after{
+  content:'';position:absolute;inset:0;pointer-events:none;z-index:0;
+  background:linear-gradient(180deg,rgba(10,5,20,.78) 0%,rgba(5,3,15,.65) 50%,rgba(15,5,25,.82) 100%);
+}
+#battle-screen>*{position:relative;z-index:1}
 /* cave embers drifting up */
-#battle-screen{position:relative;overflow:hidden}
 #battle-screen::before{content:'🔥🔥🔥🔥🔥';position:absolute;bottom:-2rem;left:0;width:100%;font-size:1.1rem;
-  letter-spacing:18vw;opacity:.18;pointer-events:none;animation:embersRise 6s linear infinite;z-index:0}
+  letter-spacing:18vw;opacity:.18;pointer-events:none;animation:embersRise 6s linear infinite;z-index:2}
 @keyframes embersRise{0%{transform:translateY(0)}100%{transform:translateY(-100vh)}}
 .battle-arena{display:flex;flex-direction:column;height:100vh;height:100dvh}
 #d-sprite{height:clamp(110px,22vh,240px)!important;width:auto!important;max-width:190px!important}
@@ -249,11 +257,27 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 #q-timer-bar{flex:1;height:6px;background:rgba(255,255,255,.12);border-radius:3px}
 #q-timer-fill{height:100%;background:#f59e0b;border-radius:3px;transition:width 1s linear}
 #q-timer-txt{font-size:.75rem;color:var(--muted);min-width:2.4rem;text-align:right;font-weight:600}
-/* Timeout screen — drifts in from right */
+/* Timeout screen — slow smoky drift in from right */
 #timeout-screen{align-items:center;justify-content:center;text-align:center;padding:2rem;
-  background:radial-gradient(ellipse at center,#350a0a 0%,var(--bg) 60%);
-  transform:translateX(100%)}
-#timeout-screen.drift-in{transform:translateX(0);transition:transform 1s cubic-bezier(.25,.46,.45,.94)}
+  background:radial-gradient(ellipse at center,#350a0a 0%,var(--bg) 60%)}
+#timeout-screen:not(.drift-in){transform:translateX(110%);filter:blur(8px);opacity:0}
+#timeout-screen.drift-in{transform:translateX(0);filter:blur(0);opacity:1;
+  transition:transform 2.8s cubic-bezier(.15,.55,.3,1),filter 3s ease,opacity 2.5s ease}
+/* Smoke particles on timeout */
+.smoke-particle{position:fixed;border-radius:50%;background:radial-gradient(circle,rgba(180,180,180,.35),transparent);
+  pointer-events:none;z-index:9998;animation:smokeFloat var(--dur,4s) ease-out forwards}
+@keyframes smokeFloat{
+  0%{transform:translateY(0) scale(.5);opacity:.7}
+  100%{transform:translateY(calc(-1 * var(--h,200px))) scale(2.5);opacity:0}
+}
+/* Dragon claw scratch marks on defeat/timeout */
+.claw-scratch{position:fixed;pointer-events:none;z-index:9999;opacity:0;
+  animation:scratchReveal .35s ease-out forwards}
+@keyframes scratchReveal{
+  0%{opacity:0;transform:scaleY(0) rotate(var(--rot,0deg));transform-origin:top center}
+  40%{opacity:1;transform:scaleY(1.1) rotate(var(--rot,0deg));transform-origin:top center}
+  100%{opacity:.85;transform:scaleY(1) rotate(var(--rot,0deg));transform-origin:top center}
+}
 #timeout-dragon-sprite{font-size:6rem;animation:dfloat 1.5s ease-in-out infinite}
 /* ── Visual FX — shoot RIGHT from hero toward dragon ── */
 @keyframes shootRight{
@@ -590,12 +614,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
       <div>
         <div class="hp-side-label hero-lbl" id="a-name">Hero</div>
         <div class="hp-track"><div class="hp-fill hp-high" id="a-hp-bar" style="width:100%"></div></div>
-        <div class="hp-labels" style="margin-top:1px"><span id="a-hp-txt">450/450</span></div>
+        <div class="hp-labels" style="margin-top:1px"><span id="a-hp-txt">500/500</span></div>
       </div>
       <div style="text-align:right">
         <div class="hp-side-label dragon-lbl">☠ DRALIOSTER</div>
         <div class="hp-track"><div class="hp-fill hp-dragon" id="d-hp-bar" style="width:100%"></div></div>
-        <div class="hp-labels" style="margin-top:1px;justify-content:flex-end"><span id="d-hp-txt">500/500</span></div>
+        <div class="hp-labels" style="margin-top:1px;justify-content:flex-end"><span id="d-hp-txt">400/400</span></div>
       </div>
     </div>
 
@@ -631,7 +655,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
         </div>
         <span class="streak-charges" id="streak-charges">3-streak = Power Attack!</span>
         <div id="battle-timer-wrap">
-          <span id="battle-timer-txt">3:30</span>
+          <span id="battle-timer-txt">4:30</span>
           <div id="battle-timer-bar"><div id="battle-timer-fill"></div></div>
         </div>
       </div>
@@ -689,11 +713,10 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 
 <!-- TIMEOUT SCREEN -->
 <div id="timeout-screen" class="screen">
-  <div class="defeat-skull-wrap" style="font-size:8rem;animation:defeatFloat 2s ease-in-out infinite,defeatPulse 1.5s ease-in-out infinite">☠️</div>
-  <div class="defeat-caption" style="font-size:2.2rem;letter-spacing:4px">⏰ TIME IS UP</div>
-  <div class="defeat-retry" style="font-size:1.1rem;color:#ff9999;margin:1rem 0">Play Again and Defeat the Dralioster!</div>
-  <button class="again-btn" onclick="location.reload()">⚔️ Play Again</button>
-  <a class="book-link" href="index.html" style="margin-top:.75rem;display:inline-block" onclick="if(window.parent!==window){event.preventDefault();window.parent.closeMpScene&&window.parent.closeMpScene();}">📖 Return to Book</a>
+  <div id="timeout-dragon-sprite" style="font-size:7rem;animation:dfloat 1.5s ease-in-out infinite">🐉</div>
+  <div class="defeat-caption" style="font-size:2.2rem;letter-spacing:4px;font-family:'Nanum Pen Script',cursive">⏰ TIME Is Up…</div>
+  <div class="defeat-retry" style="font-size:1.1rem;color:#ff9999;margin:1rem 0;font-family:'Nanum Pen Script',cursive;font-size:1.4rem">The dragon claimed victory this time!</div>
+  <button class="again-btn" id="timeout-retry-btn" style="display:none;font-family:'Nanum Pen Script',cursive;font-size:1.2rem" onclick="location.reload()">⚔️ Try Again</button>
 </div>
 
 <!-- VICTORY -->
@@ -712,12 +735,11 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(
 </div>
 
 <!-- DEFEAT -->
-<div id="defeat-screen" class="screen">
-  <div class="human-skull-wrap"><span>☠️</span></div>
-  <div class="defeat-caption">You have lost.</div>
-  <div class="defeat-retry">Try again!</div>
-  <button class="again-btn" onclick="location.reload()">⚔️ Try Again</button>
-  <a class="book-link" href="index.html" style="margin-top:.75rem;display:inline-block" onclick="if(window.parent!==window){event.preventDefault();window.parent.closeMpScene();}">📖 Return to Book</a>
+<div id="defeat-screen" class="screen" style="background:radial-gradient(ellipse at center,#350a0a 0%,var(--bg) 60%);transform:translateX(110%);filter:blur(6px);opacity:0">
+  <div style="font-size:7rem;animation:dfloat 1.5s ease-in-out infinite;margin-bottom:.5rem">🐉</div>
+  <div class="defeat-caption" style="font-family:'Nanum Pen Script',cursive;font-size:2rem">The Dragon Wins!</div>
+  <div class="defeat-retry" style="font-family:'Nanum Pen Script',cursive;font-size:1.3rem">You fought bravely — try again!</div>
+  <button class="again-btn" id="defeat-retry-btn" style="display:none;font-family:'Nanum Pen Script',cursive;font-size:1.2rem" onclick="location.reload()">⚔️ Try Again</button>
 </div>
 
 <script>
@@ -760,6 +782,7 @@ const _soloMode = _bParams.get('solo') === '1';
 const _soloPw   = _bParams.get('pw') || '';
 const _gearsParam = (_bParams.get('gears')||'').split(',').filter(Boolean);
 const _levelParam = _bParams.get('level')||'P3';
+const _chapterParam = Math.max(1,parseInt(_bParams.get('chapter')||'1'));
 const _isMpBattle = !!_bParams.get('invite');
 const _isBattleHost = _bParams.get('host') === '1';
 let numP = _soloMode ? 1 : 2;
@@ -979,8 +1002,8 @@ function startBattle(players){
   document.getElementById('char-gallery').classList.add('hidden');
   const code=[r(1,9),r(1,9),r(1,9)];
   G={
-    players:players.map(p=>({playerName:p.playerName,character:p.character,hp:450,maxHp:450,isAlive:true,shielded:false})),
-    dragon:{hp:500,maxHp:500},
+    players:players.map(p=>({playerName:p.playerName,character:p.character,hp:500,maxHp:500,isAlive:true,shielded:false})),
+    dragon:{hp:400,maxHp:400},
     round:1,
     curIdx:0,
     streak:0,
@@ -1018,9 +1041,14 @@ function startBattle(players){
 // ── SCREENS ───────────────────────────────────────────────────────
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
+  const el=document.getElementById(id);
+  el.classList.add('active');
   const cg=document.getElementById('char-gallery');
   cg.classList.add('hidden');cg.style.display='none';
+  // Trigger drift-in for timeout screen
+  if(id==='timeout-screen'){
+    requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('drift-in')));
+  }
 }
 
 // ── DISPLAY ───────────────────────────────────────────────────────
@@ -1279,10 +1307,11 @@ function dragonTurn(){
   // screen shake when dragon attacks
   const arena=document.querySelector('.battle-arena');
   if(arena){arena.classList.remove('arena-shake');void arena.offsetWidth;arena.classList.add('arena-shake');setTimeout(()=>arena.classList.remove('arena-shake'),500);}
+  const _dragonDmg=1+2*G.round; // scales: round2→5, round3→7, ..., round12→23
   if(special){
     log('🔥 Dralioster ROARS — ALL heroes take fire damage!','log-dmg');
     alive.forEach((p,pi)=>{
-      const raw=r(12,25);const dmg=p.shielded?Math.floor(raw*.4):raw;
+      const raw=_dragonDmg;const dmg=p.shielded?Math.floor(raw*.4):raw;
       if(p.shielded){log('  🛡️ '+p.character.name+'\'s shield absorbs fire! ('+raw+'→'+dmg+')','log-imp');p.shielded=false;}
       p.hp=Math.max(0,p.hp-dmg);
       log('  🔥 '+p.character.name+' takes '+dmg+' damage! HP: '+p.hp,'log-dmg');
@@ -1291,7 +1320,7 @@ function dragonTurn(){
     });
   }else{
     const tgt=alive[Math.floor(Math.random()*alive.length)];
-    const raw=r(28,55);const dmg=tgt.shielded?Math.floor(raw*.4):raw;
+    const raw=_dragonDmg;const dmg=tgt.shielded?Math.floor(raw*.4):raw;
     if(tgt.shielded){log('🛡️ '+tgt.character.name+'\'s shield absorbs the blow! ('+raw+'→'+dmg+')','log-imp');tgt.shielded=false;}
     tgt.hp=Math.max(0,tgt.hp-dmg);
     log('💥 Dralioster attacks '+tgt.character.name+'! '+dmg+' damage! HP: '+tgt.hp,'log-dmg');
@@ -1446,11 +1475,11 @@ function genPattern(){
 }
 
 // ── TIMERS ────────────────────────────────────────────────────────
-var _btInterval=null,_btSecs=210;
+var _btInterval=null,_btSecs=270;
 var _qTimerInterval=null,_qTimerSecs=0;
 
 function startBattleTimer(){
-  clearInterval(_btInterval);_btSecs=210;updateBattleTimerUI();
+  clearInterval(_btInterval);_btSecs=270;updateBattleTimerUI();
   _btInterval=setInterval(function(){
     _btSecs--;updateBattleTimerUI();
     if(_btSecs<=0){clearInterval(_btInterval);triggerTimeUp();}
@@ -1462,19 +1491,31 @@ function updateBattleTimerUI(){
   if(!el)return;
   el.textContent=m+':'+(s<10?'0':'')+s;
   el.style.color=_btSecs<=30?'#ef4444':'var(--gold)';
-  document.getElementById('battle-timer-fill').style.width=Math.max(0,(_btSecs/210)*100)+'%';
+  document.getElementById('battle-timer-fill').style.width=Math.max(0,(_btSecs/270)*100)+'%';
+}
+function spawnSmoke(){
+  for(let i=0;i<14;i++){
+    const el=document.createElement('div');
+    el.className='smoke-particle';
+    const size=40+Math.random()*80;
+    el.style.cssText='width:'+size+'px;height:'+size+'px;left:'+(Math.random()*100)+'vw;top:'+(50+Math.random()*50)+'vh;--dur:'+(3+Math.random()*3)+'s;--h:'+(150+Math.random()*200)+'px;animation-delay:'+(Math.random()*1.5)+'s';
+    document.body.appendChild(el);
+    setTimeout(()=>el.remove(),6000);
+  }
 }
 function triggerTimeUp(){
   if(G.done)return;G.done=true;
   clearInterval(_qTimerInterval);
   document.getElementById('q-modal').classList.add('hidden');
   updateCaveLight(true);
+  spawnSmoke();
   showScreen('timeout-screen');
-  const ts=document.getElementById('timeout-screen');
-  requestAnimationFrame(()=>requestAnimationFrame(()=>ts.classList.add('drift-in')));
+  // Show Try Again button after drift completes
   setTimeout(function(){
-    if(window.parent!==window)window.parent.closeMpScene&&window.parent.closeMpScene();
-  },8000);
+    const btn=document.getElementById('timeout-retry-btn');
+    if(btn){btn.style.display='';btn.style.animation='fadein .6s ease';}
+    spawnSmoke();
+  },3500);
 }
 
 function startQTimer(){
@@ -1795,7 +1836,39 @@ function loseGame(){
   updateCaveLight(true);
   _btRelay('lose',{});
   log('All heroes have fallen…','log-dmg');
+  spawnSmoke();
   showScreen('defeat-screen');
+  const ds=document.getElementById('defeat-screen');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{
+    ds.style.transition='transform 2.5s cubic-bezier(.2,.6,.3,1),filter 2.8s ease,opacity 2.2s ease';
+    ds.style.transform='translateX(0)';ds.style.filter='blur(0)';ds.style.opacity='1';
+  }));
+  // Claw scratch marks appear after drift
+  setTimeout(()=>{
+    spawnClawScratches();
+    spawnSmoke();
+    setTimeout(()=>{
+      const btn=document.getElementById('defeat-retry-btn');
+      if(btn){btn.style.display='';btn.style.animation='fadein .6s ease';}
+    },1200);
+  },3000);
+}
+function spawnClawScratches(){
+  const positions=[
+    {left:'25vw',top:'10vh',rot:'-15deg',h:'40vh'},
+    {left:'40vw',top:'5vh',rot:'5deg',h:'50vh'},
+    {left:'60vw',top:'8vh',rot:'-8deg',h:'45vh'},
+  ];
+  positions.forEach((p,i)=>{
+    const el=document.createElement('div');
+    el.className='claw-scratch';
+    el.style.cssText=`left:${p.left};top:${p.top};--rot:${p.rot};animation-delay:${i*0.25}s;
+      width:8px;height:${p.h};
+      background:linear-gradient(180deg,#ff0000 0%,#cc0000 40%,#880000 70%,transparent 100%);
+      border-radius:4px;filter:blur(1.5px);
+      box-shadow:0 0 12px 4px rgba(220,0,0,.5),-3px 0 6px rgba(255,50,50,.4);`;
+    document.body.appendChild(el);
+  });
 }
 
 // ── BATTLE LOG ────────────────────────────────────────────────────
