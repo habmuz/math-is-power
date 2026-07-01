@@ -329,7 +329,6 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 .si select,.smb{padding:4px 7px;border:1px solid #8b4513;border-radius:4px;background:#fdf5e6;color:#2d0000;font-size:11px;font-family:'Neucha',cursive;cursor:pointer;width:100%}
 .smb.act{background:#8b4513;color:#f6e8cc}
 #close-sm{margin-top:auto;padding:5px;background:#5a2d00;color:#f6e8cc;border:none;border-radius:4px;cursor:pointer;font-family:'Neucha',cursive;font-size:11px}
-#gear-base-btn{display:none!important}
 #page-nav{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:10;display:none}
 .pnav-btn{padding:5px 14px;background:rgba(139,100,60,.7);color:#f6e8cc;border:none;border-radius:10px;font-size:12px;cursor:pointer;font-family:Georgia,serif;transition:background .2s}
 .pnav-btn:hover{background:rgba(139,100,60,1)}
@@ -788,7 +787,6 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div id="bm-text">MENU</div>
       <div id="bm-chapter">CH 1</div>
     </div>
-    <button id="gear-base-btn" onclick="openGearRoom()">🏠 Gear Base</button>
 
     <!-- Scroll Menu -->
     <div id="scroll-menu">
@@ -1243,7 +1241,6 @@ function openBook(){
     $id('cover').style.display='none';
     $id('book').style.display='flex';
     $id('book').classList.add('open');
-    $id('gear-base-btn').style.display='block';
     const gbi=$id('gear-base-btn-inline');if(gbi)gbi.style.display='block';
   },400);
 }
