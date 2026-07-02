@@ -119,8 +119,6 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 @keyframes flicker{0%,100%{opacity:.5;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.3)}}
 #cave-dragon-idle{font-size:90px;filter:drop-shadow(0 0 24px #ff4400);animation:breathe 3s ease-in-out infinite}
 @keyframes breathe{0%,100%{transform:scale(1);filter:drop-shadow(0 0 20px #ff4400)}50%{transform:scale(1.06);filter:drop-shadow(0 0 44px #ff8800)}}
-#cave-goal-text{font-family:'Neucha',cursive;font-size:14px;text-align:center;padding:10px 14px 30px;position:absolute;top:16px;left:10px;right:10px;min-height:90px;letter-spacing:0.5px;line-height:1.5;color:#1a3a10;-webkit-font-smoothing:antialiased;background:linear-gradient(to bottom,#2a5c14 0%,#5a9432 25%,#a8d060 55%,#e8f4cc 78%,#fdfaf0 100%);border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.75)}
-#gog-text{display:block}
 #cave-dragon-text{color:#ff6600;font-size:12px;letter-spacing:3px;font-style:italic;text-shadow:0 0 10px #ff4400;margin-top:6px}
 
 /* Battle scene */
@@ -573,7 +571,6 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     <!-- Cave scene (default) -->
     <div id="cave-scene">
       <div id="stalactites">▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼</div>
-      <div id="cave-goal-text"><span id="gog-text">GOAL OF GAME: For Primary 1 to Primary 3<br>to master 4 operations &amp; identify patterns</span><span id="boba-pearls" style="display:block;position:absolute;bottom:2px;left:0;right:0;text-align:center"></span></div>
       <div id="cave-dragon-idle">🐉</div>
       <div id="cave-dragon-text">THE DRAGON'S LAIR</div>
       <div class="flame" style="left:16px;animation-delay:0s">🔥</div>
@@ -1213,15 +1210,6 @@ window.onload=()=>{
   const el=$id('eye-l'),er=$id('eye-r'),zz=$id('zzz'),msg=$id('cover-msg');
   $id('zzz').style.display='block';
   $id('cover').addEventListener('click',wakeBook,{once:true});
-  // Boba pearls at bottom of text design
-  const bobaEl=$id('boba-pearls');
-  if(bobaEl){
-    [9,11,8,10,9,12,8,10,9,11].forEach(s=>{
-      const p=document.createElement('span');
-      p.style.cssText=`display:inline-block;width:${s}px;height:${s}px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#3a1a08,#0a0200);box-shadow:0 2px 4px rgba(0,0,0,0.8);border:2px solid rgba(255,255,255,0.88);margin:0 2px;vertical-align:bottom`;
-      bobaEl.appendChild(p);
-    });
-  }
 };
 function wakeBook(){
   sfx('correct');
