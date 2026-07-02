@@ -121,7 +121,6 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 @keyframes breathe{0%,100%{transform:scale(1);filter:drop-shadow(0 0 20px #ff4400)}50%{transform:scale(1.06);filter:drop-shadow(0 0 44px #ff8800)}}
 #cave-goal-text{font-family:'Neucha',cursive;font-size:15px;text-align:center;padding:6px 16px 18px;position:absolute;top:22px;left:0;right:0;letter-spacing:0.5px;line-height:1.5;color:#d8f0b8;-webkit-font-smoothing:antialiased}
 #gog-text{display:block}
-#gog-text{display:block}
 #cave-dragon-text{color:#ff6600;font-size:12px;letter-spacing:3px;font-style:italic;text-shadow:0 0 10px #ff4400;margin-top:6px}
 
 /* Battle scene */
@@ -451,7 +450,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 #dialog-btn{padding:8px 26px;background:linear-gradient(#8b4513,#5a2d00);color:#f6e8cc;border:none;border-radius:20px;font-size:14px;cursor:pointer;font-family:Georgia,serif}
 
 /* ═══ PERSPECTIVE WRAPPER ═══ */
-#book-wrap{position:absolute;inset:0;perspective:2000px}
+#book-wrap{position:absolute;inset:0;perspective:2000px;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
 /* ══ POST-FIGHT PAGE FLIP ZONE ══ */
 #flip-zone{position:absolute;top:0;right:0;width:44px;height:100%;display:none;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;z-index:15;border-radius:0 8px 8px 0;animation:flipPulse 1.4s ease-in-out infinite}
@@ -1214,13 +1213,6 @@ window.onload=()=>{
   const el=$id('eye-l'),er=$id('eye-r'),zz=$id('zzz'),msg=$id('cover-msg');
   $id('zzz').style.display='block';
   $id('cover').addEventListener('click',wakeBook,{once:true});
-  // Use actual matcha boba photo as text fill
-  (function(){
-    const el=$id('cave-goal-text');if(!el)return;
-    el.style.backgroundImage="url('matcha-boba.jpg')";
-    el.style.backgroundSize='cover';
-    el.style.backgroundPosition='center 30%';
-  })();
   // Boba pearls at bottom of text design
   const bobaEl=$id('boba-pearls');
   if(bobaEl){
