@@ -1212,43 +1212,12 @@ window.onload=()=>{
   const el=$id('eye-l'),er=$id('eye-r'),zz=$id('zzz'),msg=$id('cover-msg');
   $id('zzz').style.display='block';
   $id('cover').addEventListener('click',wakeBook,{once:true});
-  // Matcha boba swirl — canvas drawn to match photo exactly
+  // Use actual matcha boba photo as text fill
   (function(){
     const el=$id('cave-goal-text');if(!el)return;
-    const W=400,H=76;
-    const cv=document.createElement('canvas');cv.width=W;cv.height=H;
-    const c=cv.getContext('2d');
-    // Cream base
-    c.fillStyle='#f2ede0';c.fillRect(0,0,W,H);
-    // Deep matcha band at top
-    const topG=c.createLinearGradient(0,0,0,H*0.5);
-    topG.addColorStop(0,'rgba(42,78,18,0.95)');
-    topG.addColorStop(0.18,'rgba(68,112,28,0.85)');
-    topG.addColorStop(0.38,'rgba(110,160,50,0.55)');
-    topG.addColorStop(0.6,'rgba(180,210,130,0.25)');
-    topG.addColorStop(1,'transparent');
-    c.fillStyle=topG;c.fillRect(0,0,W,H);
-    // Wispy matcha tendrils curling down — like the photo
-    [[0.18,0.28,0.7],[0.55,0.22,0.5],[0.35,0.38,0.4],[0.72,0.32,0.45],[0.12,0.45,0.3]].forEach(([rx,ry,a])=>{
-      const g=c.createRadialGradient(W*rx,H*ry,0,W*rx,H*ry,W*0.18);
-      g.addColorStop(0,`rgba(55,100,22,${a})`);
-      g.addColorStop(0.5,`rgba(90,150,40,${a*0.4})`);
-      g.addColorStop(1,'transparent');
-      c.fillStyle=g;c.beginPath();c.ellipse(W*rx,H*ry,W*0.22,H*0.18,0.4,0,Math.PI*2);c.fill();
-    });
-    // Cream wisps in the green (the white swirls you see in photo)
-    [[0.3,0.12,0.6],[0.65,0.18,0.5],[0.48,0.08,0.55]].forEach(([rx,ry,a])=>{
-      const g=c.createRadialGradient(W*rx,H*ry,0,W*rx,H*ry,W*0.1);
-      g.addColorStop(0,`rgba(245,242,232,${a})`);
-      g.addColorStop(1,'transparent');
-      c.fillStyle=g;c.beginPath();c.ellipse(W*rx,H*ry,W*0.14,H*0.12,0.7,0,Math.PI*2);c.fill();
-    });
-    // Soft cream fade in lower half
-    const botG=c.createLinearGradient(0,H*0.4,0,H);
-    botG.addColorStop(0,'transparent');
-    botG.addColorStop(1,'rgba(245,240,228,0.9)');
-    c.fillStyle=botG;c.fillRect(0,0,W,H);
-    el.style.backgroundImage=`url(${cv.toDataURL()})`;
+    el.style.backgroundImage="url('matcha-boba.jpg')";
+    el.style.backgroundSize='cover';
+    el.style.backgroundPosition='center 30%';
   })();
   // Boba pearls at bottom of text design
   const bobaEl=$id('boba-pearls');
