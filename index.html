@@ -570,7 +570,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     <!-- Cave scene (default) -->
     <div id="cave-scene">
       <div id="stalactites">▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼▼</div>
-      <div id="cave-goal-text" style="font-family:'Neucha',cursive;background:linear-gradient(160deg,#4a8a28 0%,#6aaa40 12%,#8ec860 24%,#b8d88a 36%,#d8e8b8 48%,#ede8d8 60%,#f0e2cc 72%,#ede0c4 84%,#e8d8b8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:15px;text-align:center;padding:0 16px;position:absolute;top:22px;left:0;right:0;letter-spacing:0.5px;line-height:1.5">GOAL OF GAME: For Primary 1 to Primary 3<br>to master 4 operations &amp; identify patterns<span id="boba-row" style="display:flex;justify-content:center;align-items:flex-end;gap:3px;margin-top:5px"></span></div>
+      <div id="cave-goal-text" style="font-family:'Neucha',cursive;background:linear-gradient(to bottom,#4a8a28 0%,#6aaa40 20%,#9ec860 40%,#d8e8b8 60%,#ede8d8 75%,#f0e2cc 88%,#e8d8b8 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-size:15px;text-align:center;padding:0 16px;position:absolute;top:22px;left:0;right:0;letter-spacing:0.5px;line-height:1.5">GOAL OF GAME:<b id="bp1"></b> For Primary 1<b id="bp2"></b> to Primary 3<br><b id="bp3"></b>to master 4<b id="bp4"></b> operations &amp;<b id="bp5"></b> identify patterns<b id="bp6"></b></div>
       <div id="cave-dragon-idle">🐉</div>
       <div id="cave-dragon-text">THE DRAGON'S LAIR</div>
       <div class="flame" style="left:16px;animation-delay:0s">🔥</div>
@@ -1210,16 +1210,14 @@ window.onload=()=>{
   const el=$id('eye-l'),er=$id('eye-r'),zz=$id('zzz'),msg=$id('cover-msg');
   $id('zzz').style.display='block';
   $id('cover').addEventListener('click',wakeBook,{once:true});
-  // Boba pearls
-  const bobaRow=$id('boba-row');
-  if(bobaRow){
-    const sizes=[8,10,9,11,8,10,9,8,10,9];
-    sizes.forEach(s=>{
-      const p=document.createElement('div');
-      p.style.cssText=`width:${s}px;height:${s}px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#3a1a08,#0f0400);box-shadow:0 2px 3px rgba(0,0,0,0.6),inset 0 1px 2px rgba(80,40,10,0.4);flex-shrink:0`;
-      bobaRow.appendChild(p);
-    });
-  }
+  // Boba pearls inline in text
+  const pearlStyle=s=>`display:inline-block;width:${s}px;height:${s}px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#3a1a08,#0f0400);box-shadow:0 1px 3px rgba(0,0,0,0.7);vertical-align:middle;margin:0 2px`;
+  [['bp1',9],['bp2',8],['bp3',8],['bp4',10],['bp5',8],['bp6',9]].forEach(([id,s])=>{
+    const el=$id(id);if(!el)return;
+    const p=document.createElement('span');
+    p.style.cssText=pearlStyle(s);
+    el.replaceWith(p);
+  });
 };
 function wakeBook(){
   sfx('correct');
