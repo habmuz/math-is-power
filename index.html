@@ -194,7 +194,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 /* intro panel */
 #panel-intro{align-items:center;justify-content:flex-start;text-align:center;gap:1px!important;padding-top:1px;overflow-y:auto;padding-bottom:6px}
 #panel-intro h2{color:#5a2d00;font-size:16px;margin-bottom:2px;font-family:'Nanum Pen Script',cursive;flex-shrink:0}
-.inst{background:rgba(139,100,60,.1);border-left:3px solid #8b4513;padding:1px 6px;border-radius:0 6px 6px 0;font-size:9.5px;color:#4a2000;text-align:left;width:100%;line-height:1.22;flex-shrink:0}
+.inst{background:rgba(139,100,60,.1);border-left:3px solid #8b4513;padding:2px 7px;border-radius:0 6px 6px 0;font-size:11px;color:#4a2000;text-align:left;width:100%;line-height:1.28;flex-shrink:0}
 #friend-btn{margin-top:4px;padding:5px 16px;background:linear-gradient(#1a6699,#0d3d5c);color:#e0f4ff;border:none;border-radius:16px;font-size:14px;font-family:'Nanum Pen Script',cursive;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3);transition:transform .2s}
 #friend-btn:hover{transform:translateY(-2px)}
 #solo-player-btn{margin-top:2px;padding:5px 16px;background:linear-gradient(135deg,#7a7a52,#cfc4a8);color:#111;border:none;border-radius:16px;font-size:14px;font-family:'Nanum Pen Script',cursive;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.15);transition:transform .2s;font-weight:bold}
@@ -1212,41 +1212,43 @@ window.onload=()=>{
   const el=$id('eye-l'),er=$id('eye-r'),zz=$id('zzz'),msg=$id('cover-msg');
   $id('zzz').style.display='block';
   $id('cover').addEventListener('click',wakeBook,{once:true});
-  // Matcha swirl canvas text background
+  // Matcha boba swirl — canvas drawn to match photo exactly
   (function(){
     const el=$id('cave-goal-text');if(!el)return;
-    const cv=document.createElement('canvas');
-    cv.width=400;cv.height=76;
+    const W=400,H=76;
+    const cv=document.createElement('canvas');cv.width=W;cv.height=H;
     const c=cv.getContext('2d');
-    let t=0;
-    function frame(){
-      // Cream base
-      c.fillStyle='#f0e5d8';c.fillRect(0,0,400,76);
-      // Swirling matcha blobs — orbit + wobble like ink drops
-      const blobs=[
-        {r:0,speed:0.7,size:32,alpha:0.72},
-        {r:Math.PI*0.4,speed:0.5,size:26,alpha:0.55},
-        {r:Math.PI*0.9,speed:0.9,size:20,alpha:0.65},
-        {r:Math.PI*1.3,speed:0.6,size:28,alpha:0.5},
-        {r:Math.PI*1.7,speed:0.8,size:18,alpha:0.6},
-        {r:Math.PI*0.2,speed:0.4,size:22,alpha:0.45},
-      ];
-      blobs.forEach((b,i)=>{
-        const a=t*b.speed+b.r;
-        const x=200+155*Math.cos(a);
-        const y=38+26*Math.sin(a*1.5+i);
-        const sz=b.size+8*Math.sin(t*1.1+i);
-        const g=c.createRadialGradient(x,y,0,x,y,sz);
-        g.addColorStop(0,`rgba(28,82,14,${b.alpha})`);
-        g.addColorStop(0.45,`rgba(72,140,36,${b.alpha*0.6})`);
-        g.addColorStop(1,'transparent');
-        c.fillStyle=g;
-        c.beginPath();c.ellipse(x,y,sz*1.6,sz*0.65,a*0.35,0,Math.PI*2);c.fill();
-      });
-      el.style.backgroundImage=`url(${cv.toDataURL()})`;
-      t+=0.016;requestAnimationFrame(frame);
-    }
-    frame();
+    // Cream base
+    c.fillStyle='#f2ede0';c.fillRect(0,0,W,H);
+    // Deep matcha band at top
+    const topG=c.createLinearGradient(0,0,0,H*0.5);
+    topG.addColorStop(0,'rgba(42,78,18,0.95)');
+    topG.addColorStop(0.18,'rgba(68,112,28,0.85)');
+    topG.addColorStop(0.38,'rgba(110,160,50,0.55)');
+    topG.addColorStop(0.6,'rgba(180,210,130,0.25)');
+    topG.addColorStop(1,'transparent');
+    c.fillStyle=topG;c.fillRect(0,0,W,H);
+    // Wispy matcha tendrils curling down — like the photo
+    [[0.18,0.28,0.7],[0.55,0.22,0.5],[0.35,0.38,0.4],[0.72,0.32,0.45],[0.12,0.45,0.3]].forEach(([rx,ry,a])=>{
+      const g=c.createRadialGradient(W*rx,H*ry,0,W*rx,H*ry,W*0.18);
+      g.addColorStop(0,`rgba(55,100,22,${a})`);
+      g.addColorStop(0.5,`rgba(90,150,40,${a*0.4})`);
+      g.addColorStop(1,'transparent');
+      c.fillStyle=g;c.beginPath();c.ellipse(W*rx,H*ry,W*0.22,H*0.18,0.4,0,Math.PI*2);c.fill();
+    });
+    // Cream wisps in the green (the white swirls you see in photo)
+    [[0.3,0.12,0.6],[0.65,0.18,0.5],[0.48,0.08,0.55]].forEach(([rx,ry,a])=>{
+      const g=c.createRadialGradient(W*rx,H*ry,0,W*rx,H*ry,W*0.1);
+      g.addColorStop(0,`rgba(245,242,232,${a})`);
+      g.addColorStop(1,'transparent');
+      c.fillStyle=g;c.beginPath();c.ellipse(W*rx,H*ry,W*0.14,H*0.12,0.7,0,Math.PI*2);c.fill();
+    });
+    // Soft cream fade in lower half
+    const botG=c.createLinearGradient(0,H*0.4,0,H);
+    botG.addColorStop(0,'transparent');
+    botG.addColorStop(1,'rgba(245,240,228,0.9)');
+    c.fillStyle=botG;c.fillRect(0,0,W,H);
+    el.style.backgroundImage=`url(${cv.toDataURL()})`;
   })();
   // Boba pearls at bottom of text design
   const bobaEl=$id('boba-pearls');
