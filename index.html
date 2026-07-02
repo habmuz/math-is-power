@@ -49,7 +49,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 
 /* pages */
 .page{flex:1;height:600px;position:relative;overflow:hidden}
-#page-l{background:linear-gradient(160deg,#0a0a18,#150a28,#080810);border-radius:8px 0 0 8px}
+#page-l{background:radial-gradient(ellipse at 50% 35%,rgba(20,55,130,.55) 0%,transparent 60%),radial-gradient(ellipse at 15% 55%,rgba(10,30,80,.35),transparent 40%),radial-gradient(ellipse at 85% 55%,rgba(10,30,80,.35),transparent 40%),linear-gradient(180deg,#050c14 0%,#0a1620 30%,#090e1c 60%,#060810 100%);border-radius:8px 0 0 8px}
 #page-r{background:linear-gradient(160deg,#f6e8cc,#ede0b0,#e8d89a);border-radius:0 8px 8px 0}
 #page-r::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(transparent,transparent 28px,rgba(139,100,60,.07) 29px);pointer-events:none}
 
@@ -57,7 +57,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 #flipper{position:absolute;top:0;right:0;width:450px;height:600px;transform-origin:left center;transform-style:preserve-3d;pointer-events:none;z-index:20;display:none}
 .flip-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}
 .flip-front{background:linear-gradient(160deg,#f6e8cc,#ede0b0,#e8d89a);border-radius:0 8px 8px 0;overflow:hidden;position:relative}
-.flip-back{background:linear-gradient(160deg,#0a0a18,#150a28,#080810);border-radius:8px 0 0 8px;transform:rotateY(180deg);overflow:hidden}
+.flip-back{background:radial-gradient(ellipse at 50% 35%,rgba(20,55,130,.55) 0%,transparent 60%),linear-gradient(180deg,#050c14 0%,#0a1620 30%,#090e1c 60%,#060810 100%);border-radius:8px 0 0 8px;transform:rotateY(180deg);overflow:hidden}
 /* Shadow on the page face that sweeps as the page curls */
 .flip-front::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;
   background:linear-gradient(to left,rgba(0,0,0,.45) 0%,rgba(0,0,0,.25) 30%,transparent 75%);
@@ -114,12 +114,12 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 /* ═══ LEFT PAGE CONTENT ═══ */
 /* Cave scene */
 #cave-scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
-#stalactites{position:absolute;top:0;left:0;right:0;font-size:22px;text-align:center;letter-spacing:-4px;color:#1a1a30;line-height:.7}
+#stalactites{position:absolute;top:0;left:0;right:0;font-size:22px;text-align:center;letter-spacing:-4px;color:#2a4a7a;line-height:.7;text-shadow:0 0 8px rgba(40,100,200,.6)}
 .flame{position:absolute;bottom:0;font-size:24px;animation:flicker 1.8s ease-in-out infinite}
 @keyframes flicker{0%,100%{opacity:.5;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.3)}}
 #cave-dragon-idle{font-size:90px;filter:drop-shadow(0 0 24px #ff4400);animation:breathe 3s ease-in-out infinite}
 @keyframes breathe{0%,100%{transform:scale(1);filter:drop-shadow(0 0 20px #ff4400)}50%{transform:scale(1.06);filter:drop-shadow(0 0 44px #ff8800)}}
-#cave-goal-text{font-family:'Neucha',cursive;font-size:15px;text-align:center;padding:6px 16px 18px;position:absolute;top:22px;left:0;right:0;letter-spacing:0.5px;line-height:1.5;color:#d8f0b8;-webkit-font-smoothing:antialiased}
+#cave-goal-text{font-family:'Neucha',cursive;font-size:14px;text-align:center;padding:8px 14px 24px;position:absolute;top:16px;left:10px;right:10px;letter-spacing:0.5px;line-height:1.5;color:#1a3a10;-webkit-font-smoothing:antialiased;background:linear-gradient(to bottom,#4a8030 0%,#7ab550 38%,#c0e090 68%,#f4f0dc 100%);border-radius:10px;box-shadow:0 4px 18px rgba(0,0,0,.75),0 0 0 1px rgba(255,255,255,.18)}
 #gog-text{display:block}
 #cave-dragon-text{color:#ff6600;font-size:12px;letter-spacing:3px;font-style:italic;text-shadow:0 0 10px #ff4400;margin-top:6px}
 
@@ -1218,7 +1218,7 @@ window.onload=()=>{
   if(bobaEl){
     [9,11,8,10,9,12,8,10,9,11].forEach(s=>{
       const p=document.createElement('span');
-      p.style.cssText=`display:inline-block;width:${s}px;height:${s}px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#3a1a08,#0a0200);box-shadow:0 2px 4px rgba(0,0,0,0.8);margin:0 2px;vertical-align:bottom`;
+      p.style.cssText=`display:inline-block;width:${s}px;height:${s}px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#3a1a08,#0a0200);box-shadow:0 2px 4px rgba(0,0,0,0.8);border:2px solid rgba(255,255,255,0.88);margin:0 2px;vertical-align:bottom`;
       bobaEl.appendChild(p);
     });
   }
@@ -1333,7 +1333,7 @@ function startChapter(){
   nextQ();
 }
 let curQ=null;
-function nextQ(){curQ=genQ();$id('q-text').textContent=curQ.q;$id('a-input').value='';setFb('');setTimeout(()=>$id('a-input').focus(),50)}
+function nextQ(){curQ=genQ();$id('q-text').textContent=curQ.q;$id('a-input').value='';setFb('');$id('sub-btn').disabled=false;setTimeout(()=>$id('a-input').focus(),50)}
 function setFb(m,c){const e=$id('feedback');e.textContent=m;e.style.color=c||'#2d0000'}
 function updateDots(){for(let i=1;i<=3;i++)$id('d'+i).classList.toggle('on',i<=G.streak)}
 
@@ -1344,7 +1344,9 @@ function updateSetDots(){for(let i=1;i<=3;i++){const el=$id('d'+i),r=G.dotResult
 
 function submitAns(){
   if(G.phase!=='questions')return;
+  const _sb=$id('sub-btn');if(_sb.disabled)return;
   const raw=$id('a-input').value.trim();if(raw==='')return;
+  _sb.disabled=true;
   const ok=Math.abs(parseFloat(raw)-curQ.a)<.06;
   adapt(ok);
   if(_mpCode){
@@ -1762,10 +1764,10 @@ function showDirs(){toggleScroll();showDialog('📖 How to Play',
 // ═══════════════════════════════════════
 const MINI_INFO={
   lava:    {name:'🌋 Lava Ruins',        emoji:'🌋',desc:'React fast — answer before the lava rises!',color:'#ff6622'},
-  ice:     {name:'❄️ Frost Gear Cavern', emoji:'❄️',desc:'Spot the pattern before it freezes!',color:'#44aaff'},
+  ice:     {name:'🌊 Whirlpool Surf',    emoji:'🌊',desc:'Ride the edge of the whirlpool — collect stars and survive!',color:'#00aaff'},
   obstacle:{name:'🧟 Zombie Outbreak',   emoji:'🧟',desc:'Survive the zombie apocalypse with math!',color:'#4caf50'},
-  code:    {name:'🏛️ Ancient Temple',    emoji:'🏛️',desc:'Solve 50 floors of math puzzles!',color:'#ffd700'},
-  maze:    {name:'🌀 Maze Garden',       emoji:'🌀',desc:'Follow the clues — find the center!',color:'#44ff99'},
+  code:    {name:'🧟 Zombie Breakout',   emoji:'🧟',desc:'The outbreak spreads — answer fast to escape!',color:'#5aaf50'},
+  maze:    {name:'🌿 Enchanted Garden',  emoji:'🌿',desc:'Explore magical paths and garden spirits!',color:'#44ff88'},
   pop:     {name:'💥 POPped Your Mind',  emoji:'💥',desc:'Mind-popping mix — all 4 operations plus patterns!',color:'#cc44ff'},
 };
 function openMiniMap(){if(!G.miniUnlocked)return;toggleScroll();$id('mini-map-overlay').classList.add('open')}
@@ -1832,11 +1834,11 @@ function genMiniQ(type){
   return add();
 }
 const MINI_GAME_FILES={
-  ice:'frost-cavern.html',
+  ice:'whirlpool-surf.html',
   lava:'lava-ruins.html',
   obstacle:'obstacle-park.html',
-  code:'puzzle-tower.html',
-  maze:'maze-garden.html',
+  code:'zombie-outbreak.html',
+  maze:'enchanted-garden.html',
   pop:'pop-game.html',
 };
 let mpStreak=0, mpCurQ=null, mpGame=null;

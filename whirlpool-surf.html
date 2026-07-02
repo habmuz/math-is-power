@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Neucha&display=swap" rel="stylesheet">
+<title>🌊 Whirlpool Surf</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  background:radial-gradient(ellipse at 50% 0%,#001a3a,#000d22);
+  font-family:'Neucha',cursive;color:#a0d8ef;
+  display:flex;flex-direction:column;align-items:center;
+  height:100vh;overflow:hidden;padding:6px 8px;gap:5px;
+}
+#hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:860px}
+#hdr h1{font-size:1.1rem;color:#55ccff;letter-spacing:2px;text-shadow:0 0 12px #0088ff}
+#hdr-stats{display:flex;gap:14px;font-size:.72rem;color:#336688}
+#hdr-stats b{color:#66bbee}
+#back-btn{background:none;border:1px solid #1a3a66;color:#336688;
+  border-radius:.4rem;padding:.22rem .55rem;font-size:.68rem;cursor:pointer}
+#back-btn:hover{color:#66aadd;border-color:#4466aa}
+canvas{border-radius:12px;border:2px solid #1a4466;display:block;
+  box-shadow:0 0 50px rgba(0,140,255,.25),0 0 100px rgba(0,80,180,.12)}
+#ctrl{font-size:.64rem;color:#1a4466;letter-spacing:.8px;text-align:center}
+#q-overlay{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(0,10,28,.94);border:2px solid #00ccff;border-radius:14px;
+  padding:20px 28px;text-align:center;z-index:20;min-width:260px;
+  box-shadow:0 0 50px rgba(0,180,255,.35)}
+#q-overlay.show{display:block}
+.qo-label{font-size:.72rem;color:#336688;margin-bottom:6px;letter-spacing:1px}
+.qo-q{font-size:1.5rem;font-weight:900;color:#88ddff;margin-bottom:14px}
+.qo-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+.qo-opt{padding:.5rem 1.2rem;background:linear-gradient(135deg,#003366,#001a44);
+  border:2px solid #0066aa;border-radius:.55rem;color:#88ccff;font-size:1rem;
+  font-weight:700;cursor:pointer;transition:all .15s;font-family:'Neucha',cursive}
+.qo-opt:hover{background:linear-gradient(135deg,#004488,#002255);border-color:#00aaff;color:#ccffff}
+.qo-opt.correct{border-color:#00ff88;background:linear-gradient(135deg,#003322,#001a11);color:#88ffcc}
+.qo-opt.wrong{border-color:#ff3344;background:linear-gradient(135deg,#330011,#1a0008);color:#ff8899}
+#result-msg{font-size:.78rem;margin-top:10px;min-height:1.2em;color:#66aacc}
+#end-overlay{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+  background:rgba(0,10,28,.96);border:2px solid #00aaff;border-radius:14px;
+  padding:28px 36px;text-align:center;z-index:30;min-width:260px}
+#end-overlay.show{display:block}
+.eo-t{font-size:2.2rem;font-weight:900;margin-bottom:8px}
+.eo-s{font-size:.85rem;color:#336688;margin-bottom:16px}
+.eo-btn{padding:.6rem 1.8rem;background:linear-gradient(135deg,#004488,#002255);
+  border:2px solid #0088ff;border-radius:.6rem;color:#88ddff;font-size:.9rem;
+  font-weight:700;cursor:pointer;margin:4px;font-family:'Neucha',cursive}
+.eo-btn:hover{background:linear-gradient(135deg,#0055aa,#003377)}
+</style>
+</head>
+<body>
+<div id="hdr">
+  <button id="back-btn" onclick="goBack()">← Map</button>
+  <h1>🌊 Whirlpool Surf</h1>
+  <div id="hdr-stats">Score: <b id="score">0</b> &nbsp;|&nbsp; Stars: <b id="stars">0</b> &nbsp;|&nbsp; Time: <b id="timer">60</b>s</div>
+</div>
+<canvas id="c"></canvas>
+<div id="ctrl">← → steer · stay in the 🔵 sweet spot · avoid ⚪ wipeout zone</div>
+<div id="q-overlay">
+  <div class="qo-label">⚡ WAVE BOOST — answer to ride!</div>
+  <div class="qo-q" id="q-text"></div>
+  <div class="qo-row" id="q-opts"></div>
+  <div id="result-msg"></div>
+</div>
+<div id="end-overlay">
+  <div class="eo-t" id="eo-title">🌊</div>
+  <div style="font-size:1.1rem;color:#55ccff;margin-bottom:6px" id="eo-score"></div>
+  <div class="eo-s" id="eo-sub"></div>
+  <button class="eo-btn" onclick="restartGame()">Surf Again 🌊</button>
+  <button class="eo-btn" onclick="goBack()">← Map</button>
+</div>
+
+<script>
+const cv=document.getElementById('c'),ctx=cv.getContext('2d');
+const params=new URLSearchParams(location.search);
+const _level=params.get('level')||'P1';
+const _char=params.get('char');
+
+const CW=Math.min(window.innerWidth-20,860);
+const CH=Math.min(window.innerHeight-108,390);
+cv.width=CW;cv.height=CH;
+const cx=CW/2,cy=CH/2;
+
+// Character image
+const charImg=_char?Object.assign(new Image(),{src:_char}):null;
+
+// Game state
+let score=0,starsCollected=0,timeLeft=60,gameOver=false,running=false;
+let qActive=false,boostPending=false;
+let animId=null,timerInt=null,qTimer=null;
+
+// Whirlpool config
+const INNER_R=30;   // wipeout zone radius
+const SWEET_MIN=80; // sweet spot inner
+const SWEET_MAX=140;// sweet spot outer
+const OUTER_R=165;  // too far out
+
+// Surfer state
+let surferAngle=0;  // angle around whirlpool (radians)
+let surferR=110;    // distance from center
+let surferSpeed=1.8;// angular velocity (deg/frame)
+let surferVelR=0;   // radial velocity
+
+// Stars/rings/coins
+let objects=[];
+function spawnObject(){
+  if(objects.length>=8)return;
+  const type=Math.random()<0.6?'star':Math.random()<0.5?'ring':'boost';
+  const angle=Math.random()*Math.PI*2;
+  const r=SWEET_MIN+Math.random()*(SWEET_MAX-SWEET_MIN+30);
+  objects.push({type,angle,r,life:1,collected:false,pulse:Math.random()*Math.PI*2});
+}
+
+// Wave boost questions
+function genQ(){
+  const lv=_level;
+  const isP1=lv==='P1',isP2=lv==='P2';
+  let q,a;
+  if(isP1){const b=Math.floor(Math.random()*5)+1,A=Math.floor(Math.random()*5)+1;q=`${A} + ${b} = ?`;a=A+b;}
+  else if(isP2){const b=Math.floor(Math.random()*10)+2,A=Math.floor(Math.random()*20)+5;q=`${A} + ${b} = ?`;a=A+b;}
+  else{const ops=['+','-','×'];const op=ops[Math.floor(Math.random()*ops.length)];
+    if(op==='+'){const A=Math.floor(Math.random()*30)+10,b=Math.floor(Math.random()*20)+5;q=`${A} + ${b} = ?`;a=A+b;}
+    else if(op==='-'){const b=Math.floor(Math.random()*15)+5,A=b+Math.floor(Math.random()*25)+5;q=`${A} − ${b} = ?`;a=A-b;}
+    else{const m=[2,3,4,5,10][Math.floor(Math.random()*5)],n=Math.floor(Math.random()*9)+1;q=`${n} × ${m} = ?`;a=n*m;}
+  }
+  // Generate wrong options
+  const opts=[a];
+  while(opts.length<4){const w=a+[-3,-2,-1,1,2,3][Math.floor(Math.random()*6)];if(!opts.includes(w)&&w>0)opts.push(w);}
+  opts.sort(()=>Math.random()-.5);
+  return{q,a,opts};
+}
+
+let currentQ=null;
+function showQuestion(){
+  if(qActive)return;
+  qActive=true;
+  currentQ=genQ();
+  document.getElementById('q-text').textContent=currentQ.q;
+  const row=document.getElementById('q-opts');
+  row.innerHTML='';
+  document.getElementById('result-msg').textContent='';
+  currentQ.opts.forEach(o=>{
+    const btn=document.createElement('button');
+    btn.className='qo-opt';btn.textContent=o;
+    btn.onclick=()=>answerQ(o,btn);
+    row.appendChild(btn);
+  });
+  document.getElementById('q-overlay').classList.add('show');
+}
+function answerQ(ans,btn){
+  document.querySelectorAll('.qo-opt').forEach(b=>b.disabled=true);
+  const correct=ans===currentQ.a;
+  btn.classList.add(correct?'correct':'wrong');
+  document.getElementById('result-msg').textContent=correct?'🌊 Boost!':'❌ Correct: '+currentQ.a;
+  if(correct){surferSpeed=Math.min(surferSpeed+0.4,3.5);score+=20;updateHUD();}
+  setTimeout(()=>{
+    document.getElementById('q-overlay').classList.remove('show');
+    qActive=false;
+    qTimer=setTimeout(showQuestion, 7000+(Math.random()*5000));
+  },1000);
+}
+
+// Input
+const keys={};
+document.addEventListener('keydown',e=>{keys[e.key]=true});
+document.addEventListener('keyup',e=>{keys[e.key]=false});
+
+function updateHUD(){
+  document.getElementById('score').textContent=score;
+  document.getElementById('stars').textContent=starsCollected;
+  document.getElementById('timer').textContent=Math.max(0,timeLeft);
+}
+
+function drawWhirlpool(){
+  // Water background
+  ctx.fillStyle='#001a3a';ctx.fillRect(0,0,CW,CH);
+
+  // Outer glow
+  const grad=ctx.createRadialGradient(cx,cy,INNER_R,cx,cy,OUTER_R+20);
+  grad.addColorStop(0,'rgba(0,100,255,0.08)');
+  grad.addColorStop(0.5,'rgba(0,140,255,0.15)');
+  grad.addColorStop(1,'rgba(0,60,140,0.04)');
+  ctx.fillStyle=grad;ctx.beginPath();ctx.arc(cx,cy,OUTER_R+20,0,Math.PI*2);ctx.fill();
+
+  // Whirlpool rings (foam)
+  const t=Date.now()/1000;
+  for(let ring=0;ring<5;ring++){
+    const rr=INNER_R+(ring+1)*26;
+    const alpha=0.06+ring*0.03;
+    ctx.strokeStyle=`rgba(140,220,255,${alpha})`;
+    ctx.lineWidth=2;
+    ctx.setLineDash([8,6]);ctx.lineDashOffset=-t*(ring+1)*8;
+    ctx.beginPath();ctx.arc(cx,cy,rr,0,Math.PI*2);ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // Sweet spot zone (faint green ring)
+  ctx.strokeStyle='rgba(0,255,120,0.12)';ctx.lineWidth=SWEET_MAX-SWEET_MIN;
+  ctx.beginPath();ctx.arc(cx,cy,(SWEET_MIN+SWEET_MAX)/2,0,Math.PI*2);ctx.stroke();
+
+  // Inner danger zone
+  const dg=ctx.createRadialGradient(cx,cy,0,cx,cy,INNER_R+10);
+  dg.addColorStop(0,'rgba(255,80,0,0.25)');
+  dg.addColorStop(1,'rgba(255,80,0,0)');
+  ctx.fillStyle=dg;ctx.beginPath();ctx.arc(cx,cy,INNER_R+12,0,Math.PI*2);ctx.fill();
+
+  // Center vortex eye
+  ctx.fillStyle='rgba(0,0,20,0.9)';ctx.beginPath();ctx.arc(cx,cy,INNER_R,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle='rgba(0,100,200,0.6)';ctx.lineWidth=2;ctx.stroke();
+
+  // Swirl lines in center
+  for(let s=0;s<6;s++){
+    const a=t*2+s*(Math.PI/3);
+    ctx.strokeStyle='rgba(0,80,180,0.3)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(cx,cy,INNER_R-5,a,a+Math.PI*0.8);ctx.stroke();
+  }
+
+  // Seagulls (decorative)
+  ctx.strokeStyle='rgba(200,220,255,0.25)';ctx.lineWidth=1;
+  for(let g=0;g<4;g++){
+    const gx=50+g*200+(Math.sin(t+g)*20);
+    const gy=20+Math.cos(t*0.7+g)*15;
+    ctx.beginPath();ctx.moveTo(gx-8,gy);ctx.quadraticCurveTo(gx-4,gy-5,gx,gy);
+    ctx.moveTo(gx,gy);ctx.quadraticCurveTo(gx+4,gy-5,gx+8,gy);ctx.stroke();
+  }
+}
+
+function drawObjects(){
+  const t=Date.now()/1000;
+  for(const o of objects){
+    if(o.collected)continue;
+    const ox=cx+Math.cos(o.angle)*o.r;
+    const oy=cy+Math.sin(o.angle)*o.r;
+    const pulse=Math.sin(t*3+o.pulse)*0.15+0.85;
+
+    if(o.type==='star'){
+      ctx.font=`${20*pulse}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('⭐',ox,oy);
+    }else if(o.type==='ring'){
+      ctx.strokeStyle='rgba(255,220,0,0.8)';ctx.lineWidth=3*pulse;
+      ctx.beginPath();ctx.arc(ox,oy,12,0,Math.PI*2);ctx.stroke();
+      ctx.strokeStyle='rgba(255,180,0,0.5)';ctx.lineWidth=1;
+      ctx.beginPath();ctx.arc(ox,oy,18,0,Math.PI*2);ctx.stroke();
+    }else{
+      ctx.font=`${18*pulse}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText('💨',ox,oy);
+    }
+    // slow drift
+    o.angle+=0.005;
+  }
+}
+
+function drawSurfer(){
+  const sx=cx+Math.cos(surferAngle)*surferR;
+  const sy=cy+Math.sin(surferAngle)*surferR;
+  const inSweet=surferR>=SWEET_MIN&&surferR<=SWEET_MAX;
+  const tooClose=surferR<SWEET_MIN;
+
+  // Board tilt based on speed
+  ctx.save();ctx.translate(sx,sy);
+  ctx.rotate(surferAngle+Math.PI/2);
+
+  // Wake trail
+  ctx.strokeStyle='rgba(100,200,255,0.3)';ctx.lineWidth=3;
+  ctx.beginPath();
+  for(let t2=1;t2<=6;t2++){
+    const ta=surferAngle-t2*0.12;
+    const tx=Math.cos(ta)*surferR-sx+cx;
+    const ty=Math.sin(ta)*surferR-sy+cy;
+    if(t2===1)ctx.moveTo(tx-sx+cx,ty-sy+cy);else ctx.lineTo(tx-sx+cx,ty-sy+cy);
+  }
+  ctx.restore();
+
+  // Glow ring
+  const glowColor=inSweet?'rgba(0,255,120,0.6)':tooClose?'rgba(255,80,0,0.7)':'rgba(0,120,255,0.5)';
+  ctx.strokeStyle=glowColor;ctx.lineWidth=2;
+  ctx.beginPath();ctx.arc(sx,sy,22,0,Math.PI*2);ctx.stroke();
+
+  if(charImg&&charImg.complete&&charImg.naturalWidth>0){
+    ctx.save();ctx.translate(sx,sy);
+    ctx.rotate(surferAngle+Math.PI/2);
+    ctx.drawImage(charImg,-14,-20,28,36);
+    ctx.restore();
+  }else{
+    ctx.font='24px serif';ctx.textAlign='center';ctx.textBaseline='middle';
+    ctx.fillText('🏄',sx,sy);
+  }
+
+  // Speed boost flash
+  if(surferSpeed>2.5){
+    ctx.strokeStyle='rgba(255,220,0,0.3)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(sx,sy,28,0,Math.PI*2);ctx.stroke();
+  }
+}
+
+function checkCollect(){
+  const sx=cx+Math.cos(surferAngle)*surferR;
+  const sy=cy+Math.sin(surferAngle)*surferR;
+  for(const o of objects){
+    if(o.collected)continue;
+    const ox=cx+Math.cos(o.angle)*o.r;
+    const oy=cy+Math.sin(o.angle)*o.r;
+    const dist=Math.hypot(sx-ox,sy-oy);
+    if(dist<28){
+      o.collected=true;
+      if(o.type==='star'){starsCollected++;score+=15;}
+      else if(o.type==='ring'){score+=25;}
+      else{surferSpeed=Math.min(surferSpeed+0.3,3.5);score+=10;}
+      updateHUD();
+    }
+  }
+  objects=objects.filter(o=>!o.collected);
+}
+
+let wipeFlash=0;
+function update(){
+  if(gameOver||!running)return;
+
+  // Controls
+  if(keys['ArrowLeft']||keys['a']){surferAngle-=0.04;}
+  if(keys['ArrowRight']||keys['d']){surferAngle+=0.04;}
+  if(keys['ArrowUp']||keys['w']){surferVelR-=0.3;}
+  if(keys['ArrowDown']||keys['s']){surferVelR+=0.3;}
+
+  // Natural angular movement from speed
+  surferAngle+=surferSpeed*(Math.PI/180)*1.5;
+
+  // Whirlpool pull toward center
+  const pull=surferR>SWEET_MAX?-0.15:surferR<SWEET_MIN?0.18:0;
+  surferVelR+=pull;
+  surferVelR*=0.88;
+  surferR=Math.max(20,Math.min(OUTER_R+10,surferR+surferVelR));
+
+  // Speed decay
+  surferSpeed=Math.max(1.2,surferSpeed-0.005);
+
+  // Wipeout check
+  if(surferR<INNER_R+5){
+    score=Math.max(0,score-10);
+    surferR=SWEET_MIN;
+    surferVelR=0;
+    surferSpeed=1.2;
+    wipeFlash=15;
+    updateHUD();
+  }
+
+  // Spawn objects
+  if(Math.random()<0.015)spawnObject();
+  checkCollect();
+}
+
+function drawHUD(){
+  // Status label
+  const inSweet=surferR>=SWEET_MIN&&surferR<=SWEET_MAX;
+  const tooClose=surferR<SWEET_MIN;
+  const label=inSweet?'🟢 Sweet Spot!':tooClose?'⚠️ Too Close!':'🔵 Too Far Out';
+  ctx.font='bold 13px Neucha,cursive';ctx.textAlign='left';
+  ctx.fillStyle=inSweet?'#00ff88':tooClose?'#ff4422':'#4488ff';
+  ctx.fillText(label,8,CH-8);
+
+  // Wipeout flash
+  if(wipeFlash>0){
+    ctx.fillStyle=`rgba(255,60,0,${wipeFlash/15*0.3})`;
+    ctx.fillRect(0,0,CW,CH);
+    wipeFlash--;
+  }
+}
+
+function gameLoop(){
+  if(!running)return;
+  update();
+  drawWhirlpool();
+  drawObjects();
+  drawSurfer();
+  drawHUD();
+  animId=requestAnimationFrame(gameLoop);
+}
+
+function endGame(){
+  running=false;gameOver=true;
+  clearTimeout(qTimer);
+  document.getElementById('q-overlay').classList.remove('show');
+  cancelAnimationFrame(animId);
+  const eo=document.getElementById('end-overlay');
+  const grade=score>=300?'🌊 Master Surfer!':score>=150?'⭐ Great Wave!':score>=60?'🤙 Nice Ride!':'🏄 Keep Practising!';
+  document.getElementById('eo-title').textContent=grade;
+  document.getElementById('eo-score').textContent=`Score: ${score} · Stars: ${starsCollected}`;
+  document.getElementById('eo-sub').textContent=score>=300?'You rode the whirlpool like a pro!':score>=150?'Excellent surfing — collect more stars!':'Try to stay in the green sweet spot!';
+  eo.classList.add('show');
+}
+
+function startGame(){
+  score=0;starsCollected=0;timeLeft=60;
+  gameOver=false;running=true;
+  surferAngle=0;surferR=110;surferSpeed=1.8;surferVelR=0;
+  objects=[];wipeFlash=0;qActive=false;
+  document.getElementById('end-overlay').classList.remove('show');
+  document.getElementById('q-overlay').classList.remove('show');
+  updateHUD();
+
+  clearInterval(timerInt);
+  timerInt=setInterval(()=>{
+    if(!running)return;
+    timeLeft--;
+    updateHUD();
+    if(timeLeft<=0){clearInterval(timerInt);endGame();}
+  },1000);
+
+  clearTimeout(qTimer);
+  qTimer=setTimeout(showQuestion,5000+Math.random()*3000);
+
+  cancelAnimationFrame(animId);
+  gameLoop();
+}
+function restartGame(){startGame();}
+function goBack(){
+  running=false;clearInterval(timerInt);clearTimeout(qTimer);cancelAnimationFrame(animId);
+  if(window.parent&&window.parent.closeMiniGameScene)window.parent.closeMiniGameScene();
+  else history.back();
+}
+
+// Touch support
+let touchStartX=null;
+cv.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX;e.preventDefault();},{passive:false});
+cv.addEventListener('touchmove',e=>{
+  if(touchStartX===null)return;
+  const dx=e.touches[0].clientX-touchStartX;
+  surferAngle+=dx*0.003;
+  touchStartX=e.touches[0].clientX;
+  e.preventDefault();
+},{passive:false});
+
+startGame();
+</script>
+</body>
+</html>
