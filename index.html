@@ -119,8 +119,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 @keyframes flicker{0%,100%{opacity:.5;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.3)}}
 #cave-dragon-idle{font-size:90px;filter:drop-shadow(0 0 24px #ff4400);animation:breathe 3s ease-in-out infinite}
 @keyframes breathe{0%,100%{transform:scale(1);filter:drop-shadow(0 0 20px #ff4400)}50%{transform:scale(1.06);filter:drop-shadow(0 0 44px #ff8800)}}
-@keyframes bobaSwirl{0%{background-position:0% 50%}25%{background-position:100% 20%}50%{background-position:80% 100%}75%{background-position:20% 0%}100%{background-position:0% 50%}}
-#cave-goal-text{font-family:'Neucha',cursive;font-size:15px;text-align:center;padding:6px 16px 18px;position:absolute;top:22px;left:0;right:0;letter-spacing:0.5px;line-height:1.5;background:linear-gradient(135deg,#2d6818,#5aaa30,#8ec860,#c8e890,#d8e8b8,#f0e8d8,#e8d8b8,#f0e2cc,#d8e8b8,#8ec860,#4a8a28,#2d6818);background-size:400% 400%;animation:bobaSwirl 5s ease-in-out infinite;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+#cave-goal-text{font-family:'Neucha',cursive;font-size:15px;text-align:center;padding:6px 16px 18px;position:absolute;top:22px;left:0;right:0;letter-spacing:0.5px;line-height:1.5;-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;background-size:100% 100%}
 #cave-dragon-text{color:#ff6600;font-size:12px;letter-spacing:3px;font-style:italic;text-shadow:0 0 10px #ff4400;margin-top:6px}
 
 /* Battle scene */
@@ -1213,6 +1212,42 @@ window.onload=()=>{
   const el=$id('eye-l'),er=$id('eye-r'),zz=$id('zzz'),msg=$id('cover-msg');
   $id('zzz').style.display='block';
   $id('cover').addEventListener('click',wakeBook,{once:true});
+  // Matcha swirl canvas text background
+  (function(){
+    const el=$id('cave-goal-text');if(!el)return;
+    const cv=document.createElement('canvas');
+    cv.width=400;cv.height=76;
+    const c=cv.getContext('2d');
+    let t=0;
+    function frame(){
+      // Cream base
+      c.fillStyle='#f0e5d8';c.fillRect(0,0,400,76);
+      // Swirling matcha blobs — orbit + wobble like ink drops
+      const blobs=[
+        {r:0,speed:0.7,size:32,alpha:0.72},
+        {r:Math.PI*0.4,speed:0.5,size:26,alpha:0.55},
+        {r:Math.PI*0.9,speed:0.9,size:20,alpha:0.65},
+        {r:Math.PI*1.3,speed:0.6,size:28,alpha:0.5},
+        {r:Math.PI*1.7,speed:0.8,size:18,alpha:0.6},
+        {r:Math.PI*0.2,speed:0.4,size:22,alpha:0.45},
+      ];
+      blobs.forEach((b,i)=>{
+        const a=t*b.speed+b.r;
+        const x=200+155*Math.cos(a);
+        const y=38+26*Math.sin(a*1.5+i);
+        const sz=b.size+8*Math.sin(t*1.1+i);
+        const g=c.createRadialGradient(x,y,0,x,y,sz);
+        g.addColorStop(0,`rgba(28,82,14,${b.alpha})`);
+        g.addColorStop(0.45,`rgba(72,140,36,${b.alpha*0.6})`);
+        g.addColorStop(1,'transparent');
+        c.fillStyle=g;
+        c.beginPath();c.ellipse(x,y,sz*1.6,sz*0.65,a*0.35,0,Math.PI*2);c.fill();
+      });
+      el.style.backgroundImage=`url(${cv.toDataURL()})`;
+      t+=0.016;requestAnimationFrame(frame);
+    }
+    frame();
+  })();
   // Boba pearls at bottom of text design
   const bobaEl=$id('boba-pearls');
   if(bobaEl){
