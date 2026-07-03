@@ -7,404 +7,314 @@
 <title>🌿 Enchanted Garden</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{
-  background:radial-gradient(ellipse at 50% 0%,#0a1a06,#060e03);
-  font-family:'Neucha',cursive;color:#88ffbb;
-  display:flex;flex-direction:column;align-items:center;
-  height:100vh;overflow:hidden;padding:6px 8px;gap:5px;
-}
-#hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:860px}
-#hdr h1{font-size:1.05rem;color:#66ffaa;letter-spacing:2px;text-shadow:0 0 12px #00cc55}
-#hdr-stats{display:flex;gap:14px;font-size:.72rem;color:#2a5533}
-#hdr-stats b{color:#55dd88}
-#back-btn{background:none;border:1px solid #1a3a22;color:#2a5533;
-  border-radius:.4rem;padding:.22rem .55rem;font-size:.68rem;cursor:pointer}
-#back-btn:hover{color:#55dd88;border-color:#339944}
-canvas{border-radius:10px;border:2px solid #1a3a22;display:block;
-  box-shadow:0 0 40px rgba(0,180,80,.15)}
-#ctrl{font-size:.64rem;color:#1a3322;letter-spacing:.8px;text-align:center}
-#q-overlay{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  background:rgba(2,12,6,.95);border:2px solid #00ff88;border-radius:14px;
-  padding:20px 28px;text-align:center;z-index:20;min-width:260px;
-  box-shadow:0 0 50px rgba(0,200,90,.3)}
-#q-overlay.show{display:block}
-.qo-who{font-size:1.8rem;margin-bottom:4px}
-.qo-label{font-size:.7rem;color:#2a5533;margin-bottom:6px;letter-spacing:1px}
-.qo-q{font-size:1.5rem;font-weight:900;color:#88ffcc;margin-bottom:14px}
-.qo-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
-.qo-opt{padding:.5rem 1.2rem;background:linear-gradient(135deg,#003322,#001a11);
-  border:2px solid #006633;border-radius:.55rem;color:#88ffcc;font-size:1rem;
-  font-weight:700;cursor:pointer;transition:all .15s;font-family:'Neucha',cursive}
-.qo-opt:hover{background:linear-gradient(135deg,#005533,#002211);border-color:#00cc66;color:#ccffee}
-.qo-opt.correct{border-color:#00ff88;background:linear-gradient(135deg,#004422,#001a11)}
-.qo-opt.wrong{border-color:#ff5555;background:linear-gradient(135deg,#330011,#1a0008);color:#ff9999}
-#q-msg{font-size:.8rem;margin-top:10px;min-height:1.2em}
-#end-overlay{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  background:rgba(2,12,6,.97);border:2px solid #00cc66;border-radius:14px;
-  padding:28px 36px;text-align:center;z-index:30;min-width:260px}
-#end-overlay.show{display:block}
-.eo-t{font-size:2rem;font-weight:900;margin-bottom:8px}
-.eo-s{font-size:.85rem;color:#2a5533;margin-bottom:16px}
-.eo-btn{padding:.6rem 1.8rem;background:linear-gradient(135deg,#003322,#001a11);
-  border:2px solid #00aa55;border-radius:.6rem;color:#88ffcc;font-size:.9rem;
-  font-weight:700;cursor:pointer;margin:4px;font-family:'Neucha',cursive}
-.eo-btn:hover{background:linear-gradient(135deg,#004433,#002211)}
+html,body{height:100%;overflow:hidden}
+body{background:#1a3a10;font-family:'Neucha',cursive;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:6px 8px;gap:4px}
+#hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:900px}
+#hdr h1{font-size:1.1rem;color:#88ffaa;letter-spacing:2px;text-shadow:0 0 10px #44ff66}
+#hdr-r{display:flex;gap:14px;font-size:.75rem;color:#55aa66;align-items:center}
+#hdr-r b{color:#aaffcc}
+#back-btn{background:none;border:1px solid #2a5a2a;color:#44884a;border-radius:.4rem;padding:.22rem .6rem;font-size:.68rem;cursor:pointer}
+#back-btn:hover{color:#88ffaa;border-color:#44aa44}
+#game-area{position:relative;background:transparent;border-radius:12px;overflow:hidden;border:2px solid #2a5a2a}
+#msg{font-size:.9rem;color:#ccffcc;text-align:center;min-height:1.4em;text-shadow:0 0 8px #44ff44}
+#spirit-overlay{display:none;position:absolute;inset:0;background:rgba(0,20,0,.88);z-index:10;align-items:center;justify-content:center;flex-direction:column;gap:12px;border-radius:10px}
+#spirit-overlay.show{display:flex}
+.sp-icon{font-size:3rem;animation:bounce .8s ease-in-out infinite alternate}
+@keyframes bounce{0%{transform:translateY(0)}100%{transform:translateY(-10px)}}
+.sp-who{font-size:1rem;color:#aaffcc;letter-spacing:1px}
+.sp-msg{font-size:1.4rem;color:#ffffff;font-weight:bold;text-align:center;padding:0 20px}
+.sp-btn{padding:.6rem 2rem;background:linear-gradient(135deg,#2a6a2a,#1a4a1a);border:2px solid #66ff66;border-radius:2rem;color:#aaffcc;font-size:1rem;font-weight:bold;cursor:pointer;font-family:'Neucha',cursive;transition:all .2s}
+.sp-btn:hover{background:linear-gradient(135deg,#3a8a3a,#226622);border-color:#88ffaa}
+#end-overlay{display:none;position:absolute;inset:0;background:rgba(0,20,0,.92);z-index:20;align-items:center;justify-content:center;flex-direction:column;gap:12px;border-radius:10px}
+#end-overlay.show{display:flex}
+.eo-icon{font-size:4rem}
+.eo-title{font-size:1.8rem;color:#88ffcc;font-weight:bold}
+.eo-sub{font-size:.9rem;color:#44aa66;text-align:center}
+.eo-btn{padding:.6rem 1.8rem;background:linear-gradient(135deg,#2a6a2a,#1a4a1a);border:2px solid #66ff66;border-radius:2rem;color:#aaffcc;font-size:.95rem;font-weight:bold;cursor:pointer;font-family:'Neucha',cursive;margin:3px}
 </style>
 </head>
 <body>
 <div id="hdr">
   <button id="back-btn" onclick="goBack()">← Map</button>
   <h1>🌿 Enchanted Garden</h1>
-  <div id="hdr-stats">Spirits: <b id="spirits">0</b>/5 &nbsp;|&nbsp; Garden <b id="zone-name">Entry</b></div>
+  <div id="hdr-r">Spirits: <b id="sp-count">0</b>/5 &nbsp;|&nbsp; <b id="zone-lbl">Garden Entry ✨</b></div>
 </div>
 <canvas id="c"></canvas>
-<div id="ctrl">Arrow keys / WASD to explore · answer garden spirits to unlock paths ✨</div>
-<div id="q-overlay">
-  <div class="qo-who" id="qo-who">🌸</div>
-  <div class="qo-label" id="qo-label">A garden spirit whispers…</div>
-  <div class="qo-q" id="q-text"></div>
-  <div class="qo-row" id="q-opts"></div>
-  <div id="q-msg"></div>
+<div id="msg">Use arrow keys to explore! Find the glowing garden spirits 🌸</div>
+
+<div id="spirit-overlay">
+  <div class="sp-icon" id="sp-icon">🌸</div>
+  <div class="sp-who" id="sp-who">A garden spirit appears!</div>
+  <div class="sp-msg" id="sp-msg">Hello, little explorer!</div>
+  <button class="sp-btn" id="sp-btn" onclick="dismissSpirit()">✨ Thank you!</button>
 </div>
 <div id="end-overlay">
-  <div class="eo-t" id="eo-title">✨</div>
-  <div style="font-size:1.1rem;color:#55dd88;margin-bottom:8px" id="eo-sub"></div>
-  <div class="eo-s">You have explored the Enchanted Garden!</div>
+  <div class="eo-icon">🌸</div>
+  <div class="eo-title">Garden Complete! ✨</div>
+  <div class="eo-sub">You found all 5 garden spirits!<br>The enchanted garden glows with magic!</div>
   <button class="eo-btn" onclick="restartGame()">Explore Again 🌿</button>
   <button class="eo-btn" onclick="goBack()">← Map</button>
 </div>
 
 <script>
-const cv=document.getElementById('c'),ctx=cv.getContext('2d');
-const params=new URLSearchParams(location.search);
-const _level=params.get('level')||'P1';
-const _char=params.get('char');
+const cv=document.getElementById('c');
+const ctx=cv.getContext('2d');
 
-const CW=Math.min(window.innerWidth-20,860);
-const CH=Math.min(window.innerHeight-108,390);
-cv.width=CW;cv.height=CH;
+const W=Math.min(window.innerWidth-16,900);
+const H=Math.min(window.innerHeight-100,500);
+cv.width=W; cv.height=H;
+cv.style.width=W+'px'; cv.style.height=H+'px';
 
-const charImg=_char?Object.assign(new Image(),{src:_char}):null;
+const TILE=48;
+const COLS=Math.floor(W/TILE);
+const ROWS=Math.floor(H/TILE);
 
-// Tile sizes
-const TILE=36;
-const COLS=Math.floor(CW/TILE);
-const ROWS=Math.floor(CH/TILE);
-
-// Garden zones (each is a distinct area to visit)
-const ZONES=[
-  {id:'entry',   name:'Garden Entry',   emoji:'🌺',color:'#0d2210'},
-  {id:'flowers', name:'Flower Patch',   emoji:'🌸',color:'#0f1a09'},
-  {id:'mushroom',name:'Mushroom Circle', emoji:'🍄',color:'#150d08'},
-  {id:'willow',  name:'Old Willow Tree',emoji:'🌳',color:'#0a1808'},
-  {id:'pool',    name:'Whisper Pool',   emoji:'🌀',color:'#0a1520'},
-  {id:'statues', name:'Whispering Statues',emoji:'🗿',color:'#0d1008'},
+// Garden zones info
+const SPIRITS=[
+  {emoji:'🌸',name:'Blossom',msg:'These flowers only bloom for kind hearts! 💐',zone:'Flower Patch'},
+  {emoji:'🍄',name:'Mushroom Spirit',msg:'Step on my circle to find the hidden path! 🌟',zone:'Mushroom Circle'},
+  {emoji:'🌳',name:'Willow Wisp',msg:'Do you hear my leaves whispering? Shh... 🍃',zone:'Old Willow Tree'},
+  {emoji:'🌀',name:'Pool Spirit',msg:'The water shows you wonderful visions! ✨',zone:'Whisper Pool'},
+  {emoji:'🗿',name:'Ancient Statue',msg:'I have watched this garden for 1000 years! 😊',zone:'Whispering Statues'},
 ];
 
-// Spirit characters per zone
-const SPIRITS={
-  flowers:{emoji:'🌸',label:'A blooming spirit smiles…'},
-  mushroom:{emoji:'🍄',label:'A glowing mushroom pulses…'},
-  willow:  {emoji:'🌳',label:'The willow whispers softly…'},
-  pool:    {emoji:'🌀',label:'A water spirit ripples…'},
-  statues: {emoji:'🗿',label:'The statue speaks…'},
-};
+// Decorative tiles per zone
+const DECO_TILES=['🌺','🌻','🍀','🌼','🌷','🌸','🍁','🌿','🍃','✨','🌟','💫'];
 
-// Game state
-let spiritsFound=0,running=true,gameOver=false;
-let qActive=false;
-let visitedZones=new Set(['entry']);
-
-// Map: simple tile grid
-// 0=path, 1=wall/bush, 2=spirit encounter, 3=collected
-let mapGrid=[];
-let spiritTiles=[];
-
-function buildMap(){
-  mapGrid=[];
-  spiritTiles=[];
-  for(let r=0;r<ROWS;r++){
-    mapGrid.push([]);
-    for(let c=0;c<COLS;c++){
-      // Border walls
-      if(r===0||r===ROWS-1||c===0||c===COLS-1){mapGrid[r].push(1);}
-      else mapGrid[r].push(0);
-    }
-  }
-  // Add some decorative bushes/walls in a garden pattern
-  const bushPatterns=[
-    // Flower patch divider
-    {r:5,cStart:4,cEnd:10},{r:5,cStart:14,cEnd:20},
-    // Mushroom area
-    {r:10,cStart:2,cEnd:8},{r:10,cStart:16,cEnd:COLS-2},
-    // Willow area separator
-    {r:7,cStart:COLS-10,cEnd:COLS-2},
-  ];
-  bushPatterns.forEach(b=>{
-    for(let c=b.cStart;c<Math.min(b.cEnd,COLS-1);c++){
-      if(c>0)mapGrid[b.r][c]=1;
-    }
-  });
-  // Gaps in walls (paths through)
-  [[5,12],[5,7],[10,4],[10,COLS-5],[7,COLS-6]].forEach(([r,c])=>{
-    if(r>0&&r<ROWS-1&&c>0&&c<COLS-1)mapGrid[r][c]=0;
-  });
-
-  // Place spirit encounter tiles at interesting positions
-  const positions=[
-    [3,6],[3,COLS-6],[ROWS-4,5],[ROWS-4,COLS-6],[Math.floor(ROWS/2),Math.floor(COLS/2)]
-  ];
-  const spiritKeys=['flowers','mushroom','willow','pool','statues'];
-  positions.forEach(([r,c],i)=>{
-    if(r>0&&r<ROWS-1&&c>0&&c<COLS-1){
-      mapGrid[r][c]=2;
-      spiritTiles.push({r,c,spirit:spiritKeys[i],collected:false});
-    }
-  });
-}
-
-// Player
-let px=Math.floor(COLS/2), py=Math.floor(ROWS/2);
-
-// Floating particles
-let particles=[];
-function spawnParticle(){
-  particles.push({
-    x:Math.random()*CW,y:Math.random()*CH,
-    vx:(Math.random()-.5)*0.5,vy:-Math.random()*0.6-0.2,
-    life:1,size:Math.random()*4+2,
-    color:['#88ff88','#ffff44','#ff88ff','#88ffff','#ffaa44'][Math.floor(Math.random()*5)]
-  });
-}
-setInterval(spawnParticle,300);
-
-function getTileColor(tileType,col,row,t){
-  if(tileType===1){
-    // Bush / wall - dark green
-    const shade=0.8+Math.sin(col*1.3+row*1.7)*0.2;
-    const g=Math.floor(55*shade);
-    return `rgb(5,${g},10)`;
-  }
-  if(tileType===2){
-    // Spirit tile - glowing
-    const glow=Math.sin(t*2+col+row)*0.5+0.5;
-    const r=Math.floor(30+glow*20),g=Math.floor(150+glow*80),b=Math.floor(60+glow*40);
-    return `rgb(${r},${g},${b})`;
-  }
-  if(tileType===3){
-    return 'rgb(10,30,15)';
-  }
-  // Path - varied garden ground
-  const d=Math.sin(col*0.8+row*1.2)*0.15;
-  const base=12+Math.floor(d*8);
-  return `rgb(${base},${base+10},${base})`;
-}
-
-function genQ(){
-  const lv=_level;
-  const isP1=lv==='P1',isP2=lv==='P2';
-  let q,a;
-  if(isP1){const b=Math.floor(Math.random()*6)+1,A=Math.floor(Math.random()*6)+1;q=`${A} + ${b} = ?`;a=A+b;}
-  else if(isP2){const b=Math.floor(Math.random()*12)+2,A=b+Math.floor(Math.random()*15)+3;q=`${A} − ${b} = ?`;a=A-b;}
-  else{
-    const op=['+','-','×'][Math.floor(Math.random()*3)];
-    if(op==='+'){const A=Math.floor(Math.random()*30)+10,b=Math.floor(Math.random()*20)+5;q=`${A} + ${b} = ?`;a=A+b;}
-    else if(op==='-'){const b=Math.floor(Math.random()*15)+5,A=b+Math.floor(Math.random()*25)+5;q=`${A} − ${b} = ?`;a=A-b;}
-    else{const m=[2,3,4,5][Math.floor(Math.random()*4)],n=Math.floor(Math.random()*9)+1;q=`${n} × ${m} = ?`;a=n*m;}
-  }
-  const opts=[a];
-  while(opts.length<4){const w=a+[-3,-2,-1,1,2,3][Math.floor(Math.random()*6)];if(!opts.includes(w)&&w>0)opts.push(w);}
-  opts.sort(()=>Math.random()-.5);
-  return{q,a,opts};
-}
-
-let currentQ=null,currentSpirit=null;
-function showSpirit(st){
-  if(qActive)return;
-  qActive=true;
-  currentSpirit=st;
-  const sp=SPIRITS[st.spirit]||{emoji:'✨',label:'A spirit appears…'};
-  document.getElementById('qo-who').textContent=sp.emoji;
-  document.getElementById('qo-label').textContent=sp.label;
-  currentQ=genQ();
-  document.getElementById('q-text').textContent=currentQ.q;
-  const row=document.getElementById('q-opts');
-  row.innerHTML='';
-  document.getElementById('q-msg').textContent='';
-  currentQ.opts.forEach(o=>{
-    const btn=document.createElement('button');
-    btn.className='qo-opt';btn.textContent=o;
-    btn.onclick=()=>answerSpirit(o,btn);
-    row.appendChild(btn);
-  });
-  document.getElementById('q-overlay').classList.add('show');
-}
-
-function answerSpirit(ans,btn){
-  document.querySelectorAll('.qo-opt').forEach(b=>b.disabled=true);
-  const correct=ans===currentQ.a;
-  btn.classList.add(correct?'correct':'wrong');
-  const sp=SPIRITS[currentSpirit.spirit]||{};
-  if(correct){
-    document.getElementById('q-msg').textContent='✨ The spirit smiles and grants you passage!';
-    document.getElementById('q-msg').style.color='#66ff99';
-    setTimeout(()=>{
-      document.getElementById('q-overlay').classList.remove('show');
-      qActive=false;
-      // Mark collected
-      currentSpirit.collected=true;
-      mapGrid[currentSpirit.r][currentSpirit.c]=3;
-      spiritsFound++;
-      document.getElementById('spirits').textContent=spiritsFound;
-      if(spiritsFound>=5)endGame();
-    },1000);
-  }else{
-    document.getElementById('q-msg').textContent=`💫 Correct answer was ${currentQ.a} — try again later!`;
-    document.getElementById('q-msg').style.color='#ff9988';
-    setTimeout(()=>{
-      document.getElementById('q-overlay').classList.remove('show');
-      qActive=false;
-    },1500);
-  }
-}
-
-const keys={};
+let grid=[],spiritCells=[],spiritFound=[];
+let px,py,spiritsCollected=0;
+let running=true,gameOver=false,spiritActive=false;
 let moveTimer=0;
-document.addEventListener('keydown',e=>{keys[e.key]=true;e.preventDefault&&(e.key.includes('Arrow')&&e.preventDefault())});
-document.addEventListener('keyup',e=>{keys[e.key]=false});
+const keys={};
 
-function tryMove(dr,dc){
-  const nr=py+dr,nc=px+dc;
-  if(nr<0||nr>=ROWS||nc<0||nc>=COLS)return;
-  const tile=mapGrid[nr][nc];
-  if(tile===1)return; // wall/bush
-  px=nc;py=nr;
-  // Update zone name
-  document.getElementById('zone-name').textContent=ZONES[Math.floor(Math.random()*ZONES.length)].name;
-  // Check spirit encounter
-  if(tile===2){
-    const st=spiritTiles.find(s=>s.r===nr&&s.c===nc&&!s.collected);
-    if(st)showSpirit(st);
+function buildGrid(){
+  grid=[];
+  for(let r=0;r<ROWS;r++){
+    grid.push([]);
+    for(let c=0;c<COLS;c++){
+      // Border
+      if(r===0||r===ROWS-1||c===0||c===COLS-1){grid[r].push({type:'wall'});}
+      // Bush clusters (decorative walls)
+      else if(
+        (r===3&&c>2&&c<6)||(r===3&&c>COLS-7&&c<COLS-2)||
+        (r===ROWS-4&&c>2&&c<5)||(r===ROWS-4&&c>COLS-6&&c<COLS-2)||
+        (r>3&&r<ROWS-3&&c===Math.floor(COLS/2)&&r!==Math.floor(ROWS/2))
+      ){grid[r].push({type:'bush'});}
+      else{grid[r].push({type:'path',deco:Math.random()<0.12?DECO_TILES[Math.floor(Math.random()*DECO_TILES.length)]:null});}
+    }
   }
+  // Gaps in walls/bushes
+  [[3,4],[3,COLS-5],[ROWS-4,3],[ROWS-4,COLS-4],[Math.floor(ROWS/2),Math.floor(COLS/2)]].forEach(([r,c])=>{
+    if(r>0&&r<ROWS-1&&c>0&&c<COLS-1)grid[r][c]={type:'path'};
+  });
+
+  // Place spirits
+  spiritCells=[];
+  const positions=[
+    [2,Math.floor(COLS*0.25)],[2,Math.floor(COLS*0.75)],
+    [Math.floor(ROWS*0.5),2],[Math.floor(ROWS*0.5),COLS-3],
+    [ROWS-2,Math.floor(COLS/2)]
+  ];
+  positions.forEach(([r,c],i)=>{
+    const rr=Math.max(1,Math.min(ROWS-2,r));
+    const cc=Math.max(1,Math.min(COLS-2,c));
+    grid[rr][cc]={type:'spirit',idx:i,collected:false};
+    spiritCells.push({r:rr,c:cc,idx:i,collected:false});
+  });
+
+  px=Math.floor(COLS/2); py=Math.floor(ROWS/2);
+  spiritsCollected=0;
+  spiritFound=Array(5).fill(false);
 }
 
-function update(t){
-  if(qActive||gameOver)return;
-  moveTimer++;
-  if(moveTimer<8)return;
-  moveTimer=0;
-  if(keys['ArrowUp']||keys['w'])tryMove(-1,0);
-  else if(keys['ArrowDown']||keys['s'])tryMove(1,0);
-  else if(keys['ArrowLeft']||keys['a'])tryMove(0,-1);
-  else if(keys['ArrowRight']||keys['d'])tryMove(0,1);
+function getTileColor(t,r,c){
+  if(t==='wall'||t==='bush')return null; // drawn as emoji
+  if(t==='spirit'){
+    const s=spiritCells.find(x=>x.r===r&&x.c===c);
+    if(s&&s.collected)return '#1a4a1a';
+    return null; // drawn separately
+  }
+  // Path: alternating light greens like a garden
+  const even=(r+c)%2===0;
+  return even?'#2a5e1a':'#336622';
 }
 
-function draw(t){
-  ctx.clearRect(0,0,CW,CH);
+let animT=0;
+function draw(ts){
+  animT=ts||0;
+  ctx.clearRect(0,0,W,H);
 
-  // Tiles
+  // Sky/garden background
+  const bg=ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#0e2e08');
+  bg.addColorStop(1,'#1a4a10');
+  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+
   for(let r=0;r<ROWS;r++){
     for(let c=0;c<COLS;c++){
-      const tile=mapGrid[r][c];
-      ctx.fillStyle=getTileColor(tile,c,r,t/1000);
-      ctx.fillRect(c*TILE,r*TILE,TILE,TILE);
-
-      // Decorations on path tiles
-      if(tile===0&&Math.random()<0.0015){
-        ctx.font='8px serif';ctx.textAlign='center';ctx.textBaseline='middle';
-        ctx.fillText(['·','·','✦'][Math.floor(Math.random()*3)],c*TILE+TILE/2,r*TILE+TILE/2);
+      const cell=grid[r][c];
+      const x=c*TILE, y=r*TILE;
+      const col=getTileColor(cell.type,r,c);
+      if(col){
+        ctx.fillStyle=col;
+        ctx.fillRect(x,y,TILE,TILE);
+        // subtle grid
+        ctx.strokeStyle='rgba(0,80,0,.2)'; ctx.lineWidth=1;
+        ctx.strokeRect(x,y,TILE,TILE);
       }
 
-      // Spirit glow
-      if(tile===2){
-        const sp=spiritTiles.find(s=>s.r===r&&s.c===c&&!s.collected);
-        if(sp){
-          const g=Math.sin(t/500)*0.5+0.5;
-          ctx.font=`${14+g*4}px serif`;ctx.textAlign='center';ctx.textBaseline='middle';
-          const spData=SPIRITS[sp.spirit]||{emoji:'✨'};
-          ctx.fillText(spData.emoji,c*TILE+TILE/2,r*TILE+TILE/2);
+      // Wall/bush
+      if(cell.type==='wall'){
+        ctx.fillStyle='#0a1e06'; ctx.fillRect(x,y,TILE,TILE);
+        ctx.font=`${TILE*0.7}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('🌲',x+TILE/2,y+TILE/2);
+      }
+      if(cell.type==='bush'){
+        ctx.fillStyle='#142e0e'; ctx.fillRect(x,y,TILE,TILE);
+        ctx.font=`${TILE*0.65}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText('🌳',x+TILE/2,y+TILE/2);
+      }
+
+      // Path deco
+      if(cell.type==='path'&&cell.deco){
+        ctx.font=`${TILE*0.45}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.globalAlpha=0.55; ctx.fillText(cell.deco,x+TILE/2,y+TILE/2); ctx.globalAlpha=1;
+      }
+
+      // Spirit tile
+      if(cell.type==='spirit'){
+        const sc=spiritCells.find(s=>s.r===r&&s.c===c);
+        if(sc&&!sc.collected){
+          const pulse=Math.sin(animT/400+c)*0.3+0.7;
+          // Glow
+          const grd=ctx.createRadialGradient(x+TILE/2,y+TILE/2,2,x+TILE/2,y+TILE/2,TILE*0.7);
+          grd.addColorStop(0,`rgba(100,255,150,${0.35*pulse})`);
+          grd.addColorStop(1,'rgba(100,255,150,0)');
+          ctx.fillStyle=grd; ctx.fillRect(x-4,y-4,TILE+8,TILE+8);
+          ctx.font=`${TILE*0.7*pulse}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.fillText(SPIRITS[sc.idx].emoji,x+TILE/2,y+TILE/2);
+        }else if(sc&&sc.collected){
+          ctx.font=`${TILE*0.5}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+          ctx.globalAlpha=0.4; ctx.fillText('⭐',x+TILE/2,y+TILE/2); ctx.globalAlpha=1;
         }
       }
-      if(tile===3){
-        ctx.font='14px serif';ctx.textAlign='center';ctx.textBaseline='middle';
-        ctx.fillText('⭐',c*TILE+TILE/2,r*TILE+TILE/2);
-      }
-
-      // Bush decoration
-      if(tile===1){
-        ctx.font='16px serif';ctx.textAlign='center';ctx.textBaseline='middle';
-        const leafEmoji=(c*3+r*7)%5===0?'🌿':(c+r)%3===0?'🍀':'';
-        if(leafEmoji)ctx.fillText(leafEmoji,c*TILE+TILE/2,r*TILE+TILE/2);
-      }
     }
   }
 
-  // Tile grid subtle lines
-  ctx.strokeStyle='rgba(0,80,20,0.08)';ctx.lineWidth=0.5;
-  for(let r=0;r<ROWS;r++){ctx.beginPath();ctx.moveTo(0,r*TILE);ctx.lineTo(CW,r*TILE);ctx.stroke();}
-  for(let c=0;c<COLS;c++){ctx.beginPath();ctx.moveTo(c*TILE,0);ctx.lineTo(c*TILE,CH);ctx.stroke();}
-
-  // Particles
-  particles=particles.filter(p=>p.life>0);
-  for(const p of particles){
-    p.x+=p.vx;p.y+=p.vy;p.life-=0.015;
-    ctx.globalAlpha=p.life*0.7;
-    ctx.fillStyle=p.color;
-    ctx.beginPath();ctx.arc(p.x,p.y,p.size,0,Math.PI*2);ctx.fill();
+  // Floating sparkles
+  for(let i=0;i<8;i++){
+    const sx=((animT/30+i*137)%W);
+    const sy=((animT/50+i*97)%H);
+    const a=Math.sin(animT/300+i)*0.5+0.5;
+    ctx.globalAlpha=a*0.6;
+    ctx.font='12px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText('✨',sx,sy);
   }
   ctx.globalAlpha=1;
 
   // Player
-  const plx=px*TILE+TILE/2,ply=py*TILE+TILE/2;
-  const bob=Math.sin(t/300)*2;
-  // Glow
-  const radGrad=ctx.createRadialGradient(plx,ply,0,plx,ply,20);
-  radGrad.addColorStop(0,'rgba(0,255,100,0.25)');
-  radGrad.addColorStop(1,'rgba(0,255,100,0)');
-  ctx.fillStyle=radGrad;ctx.beginPath();ctx.arc(plx,ply+bob,20,0,Math.PI*2);ctx.fill();
+  const px2=px*TILE+TILE/2, py2=py*TILE+TILE/2;
+  const bob=Math.sin(animT/250)*3;
+  // Glow ring
+  const pg=ctx.createRadialGradient(px2,py2+bob,0,px2,py2+bob,28);
+  pg.addColorStop(0,'rgba(150,255,180,0.35)');
+  pg.addColorStop(1,'rgba(150,255,180,0)');
+  ctx.fillStyle=pg; ctx.beginPath(); ctx.arc(px2,py2+bob,28,0,Math.PI*2); ctx.fill();
+  // Player emoji
+  ctx.font=`${TILE*0.75}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('🧒',px2,py2+bob);
+}
 
-  if(charImg&&charImg.complete&&charImg.naturalWidth>0){
-    ctx.drawImage(charImg,plx-12,ply+bob-16,24,30);
-  }else{
-    ctx.font='22px serif';ctx.textAlign='center';ctx.textBaseline='middle';
-    ctx.fillText('🧒',plx,ply+bob);
+function tryMove(dr,dc){
+  const nr=py+dr, nc=px+dc;
+  if(nr<0||nr>=ROWS||nc<0||nc>=COLS)return;
+  const cell=grid[nr][nc];
+  if(cell.type==='wall'||cell.type==='bush')return;
+  px=nc; py=nr;
+
+  if(cell.type==='spirit'){
+    const sc=spiritCells.find(s=>s.r===nr&&s.c===nc&&!s.collected);
+    if(sc)showSpirit(sc);
   }
 }
 
-let animId=null;
-function loop(t){
-  if(!running)return;
-  update(t);
-  draw(t);
-  animId=requestAnimationFrame(loop);
+function showSpirit(sc){
+  if(spiritActive)return;
+  spiritActive=true;
+  const sp=SPIRITS[sc.idx];
+  document.getElementById('sp-icon').textContent=sp.emoji;
+  document.getElementById('sp-who').textContent=sp.name+' · '+sp.zone;
+  document.getElementById('sp-msg').textContent=sp.msg;
+  document.getElementById('spirit-overlay').classList.add('show');
+  document.getElementById('zone-lbl').textContent=sp.zone+' ✨';
+  sc.collected=true;
+  grid[sc.r][sc.c].collected=true;
+  spiritsCollected++;
+  document.getElementById('sp-count').textContent=spiritsCollected;
+}
+
+function dismissSpirit(){
+  document.getElementById('spirit-overlay').classList.remove('show');
+  spiritActive=false;
+  if(spiritsCollected>=5){setTimeout(endGame,400);}
 }
 
 function endGame(){
-  running=false;gameOver=true;cancelAnimationFrame(animId);
-  const eo=document.getElementById('end-overlay');
-  document.getElementById('eo-title').textContent='🌸 Garden Complete!';
-  document.getElementById('eo-sub').textContent=`You found all 5 garden spirits! ✨`;
-  eo.classList.add('show');
+  running=false; gameOver=true;
+  cancelAnimationFrame(animId);
+  document.getElementById('end-overlay').classList.add('show');
 }
 
-function startGame(){
-  spiritsFound=0;running=true;gameOver=false;qActive=false;
-  px=Math.floor(COLS/2);py=Math.floor(ROWS/2);
-  particles=[];moveTimer=0;
-  buildMap();
-  document.getElementById('spirits').textContent=0;
+document.addEventListener('keydown',e=>{keys[e.key]=true;['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)&&e.preventDefault()});
+document.addEventListener('keyup',e=>{keys[e.key]=false});
+
+let animId=null;
+function loop(ts){
+  if(!running)return;
+  moveTimer++;
+  if(moveTimer>=10&&!spiritActive){
+    moveTimer=0;
+    if(keys['ArrowUp']||keys['w'])tryMove(-1,0);
+    else if(keys['ArrowDown']||keys['s'])tryMove(1,0);
+    else if(keys['ArrowLeft']||keys['a'])tryMove(0,-1);
+    else if(keys['ArrowRight']||keys['d'])tryMove(0,1);
+  }
+  draw(ts);
+  animId=requestAnimationFrame(loop);
+}
+
+// Touch support
+let touchStart=null;
+document.addEventListener('touchstart',e=>{touchStart={x:e.touches[0].clientX,y:e.touches[0].clientY}},{passive:true});
+document.addEventListener('touchend',e=>{
+  if(!touchStart)return;
+  const dx=e.changedTouches[0].clientX-touchStart.x;
+  const dy=e.changedTouches[0].clientY-touchStart.y;
+  if(Math.abs(dx)>Math.abs(dy)){dx>0?tryMove(0,1):tryMove(0,-1);}
+  else{dy>0?tryMove(1,0):tryMove(-1,0);}
+  touchStart=null;
+},{passive:true});
+
+function restartGame(){
+  spiritActive=false;
+  document.getElementById('spirit-overlay').classList.remove('show');
   document.getElementById('end-overlay').classList.remove('show');
-  document.getElementById('q-overlay').classList.remove('show');
+  running=true; gameOver=false; moveTimer=0;
+  buildGrid();
+  document.getElementById('sp-count').textContent=0;
+  document.getElementById('zone-lbl').textContent='Garden Entry ✨';
+  document.getElementById('msg').textContent='Use arrow keys to explore! Find the glowing garden spirits 🌸';
   cancelAnimationFrame(animId);
   requestAnimationFrame(loop);
 }
-function restartGame(){startGame();}
 function goBack(){
-  running=false;cancelAnimationFrame(animId);
+  running=false; cancelAnimationFrame(animId);
   if(window.parent&&window.parent.closeMiniGameScene)window.parent.closeMiniGameScene();
   else history.back();
 }
-startGame();
+
+buildGrid();
+requestAnimationFrame(loop);
 </script>
 </body>
 </html>
