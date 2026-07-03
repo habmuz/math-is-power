@@ -115,7 +115,8 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 /* Cave scene */
 #cave-scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
 #stalactites{position:absolute;top:0;left:0;right:0;font-size:22px;text-align:center;letter-spacing:-4px;color:#1a1a30;line-height:.7}
-#cave-goal-text{font-family:'Nanum Pen Script',cursive;font-size:22px;text-align:center;padding:4px 16px;position:absolute;top:22px;left:0;right:0;line-height:1.5;background:linear-gradient(to bottom,#3a6a1a,#6a9a38,#b8d870,#eef8d0,#fdfaf0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+#cave-goal-text{font-family:'Nanum Pen Script',cursive;font-size:15px;text-align:center;padding:4px 14px;position:absolute;top:10px;left:0;right:0;line-height:1.6;background:linear-gradient(to bottom,#3a6a1a,#6a9a38,#b8d870,#eef8d0,#fdfaf0);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+#boba-row{position:absolute;bottom:10px;left:0;right:0;text-align:center}
 .flame{position:absolute;bottom:0;font-size:24px;animation:flicker 1.8s ease-in-out infinite}
 @keyframes flicker{0%,100%{opacity:.5;transform:scaleY(1)}50%{opacity:1;transform:scaleY(1.3)}}
 #cave-dragon-idle{font-size:90px;filter:drop-shadow(0 0 24px #ff4400);animation:breathe 3s ease-in-out infinite}
@@ -578,6 +579,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="flame" style="left:48px;animation-delay:.6s">🔥</div>
       <div class="flame" style="right:20px;animation-delay:.3s">🔥</div>
       <div class="flame" style="right:54px;animation-delay:.9s">🔥</div>
+      <div id="boba-row"></div>
     </div>
 
     <!-- Battle scene -->
@@ -1211,6 +1213,15 @@ window.onload=()=>{
   const el=$id('eye-l'),er=$id('eye-r'),zz=$id('zzz'),msg=$id('cover-msg');
   $id('zzz').style.display='block';
   $id('cover').addEventListener('click',wakeBook,{once:true});
+  const bobaRow=$id('boba-row');
+  if(bobaRow){[11,13,10,12,11,14,10,12,11,13].forEach(s=>{
+    const p=document.createElement('span');
+    p.style.cssText=`display:inline-block;width:${s}px;height:${s}px;border-radius:50%;`+
+      `background:radial-gradient(circle at 38% 32%,#7a4428,#3a1a08,#0e0502);`+
+      `box-shadow:0 3px 6px rgba(0,0,0,.85),inset 0 1px 3px rgba(200,140,80,.25);`+
+      `margin:0 3px;vertical-align:bottom`;
+    bobaRow.appendChild(p);
+  });}
 };
 function wakeBook(){
   sfx('correct');
