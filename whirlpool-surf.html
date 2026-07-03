@@ -8,21 +8,20 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 html,body{height:100%;overflow:hidden}
-body{background:radial-gradient(ellipse at 50% 0%,#001a3a,#000d22);font-family:'Neucha',cursive;color:#a0d8ef;display:flex;flex-direction:column;align-items:center;padding:6px 8px;gap:5px}
+body{background:#000d22;font-family:'Neucha',cursive;color:#a0d8ef;display:flex;flex-direction:column;align-items:center;padding:6px 8px;gap:4px}
 #hdr{display:flex;align-items:center;justify-content:space-between;width:100%;max-width:900px}
-#hdr h1{font-size:1.1rem;color:#55ccff;letter-spacing:2px;text-shadow:0 0 12px #0088ff}
+#hdr h1{font-size:1.05rem;color:#55ccff;letter-spacing:2px;text-shadow:0 0 10px #0088ff}
 #hdr-r{display:flex;gap:14px;font-size:.75rem;color:#336688;align-items:center}
 #hdr-r b{color:#66bbee}
 #back-btn{background:none;border:1px solid #1a3a66;color:#336688;border-radius:.4rem;padding:.22rem .55rem;font-size:.68rem;cursor:pointer}
 #back-btn:hover{color:#66aadd;border-color:#4466aa}
-canvas{border-radius:12px;border:2px solid #1a4466;display:block;box-shadow:0 0 50px rgba(0,140,255,.25)}
-#ctrl{font-size:.64rem;color:#335566;letter-spacing:.8px;text-align:center}
-#end-overlay{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,10,28,.96);border:2px solid #00aaff;border-radius:14px;padding:28px 36px;text-align:center;z-index:30;min-width:240px}
+canvas{border-radius:10px;border:2px solid #1a4466;display:block;box-shadow:0 0 40px rgba(0,120,255,.2)}
+#ctrl{font-size:.62rem;color:#224455;letter-spacing:.8px;text-align:center}
+#end-overlay{display:none;position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);background:rgba(0,8,22,.96);border:2px solid #00aaff;border-radius:14px;padding:26px 34px;text-align:center;z-index:30;min-width:240px}
 #end-overlay.show{display:block}
-.eo-t{font-size:2rem;font-weight:900;margin-bottom:8px}
-.eo-s{font-size:.85rem;color:#336688;margin-bottom:14px}
-.eo-btn{padding:.6rem 1.8rem;background:linear-gradient(135deg,#004488,#002255);border:2px solid #0088ff;border-radius:.6rem;color:#88ddff;font-size:.9rem;font-weight:700;cursor:pointer;margin:4px;font-family:'Neucha',cursive}
-.eo-btn:hover{background:linear-gradient(135deg,#0055aa,#003377)}
+.eo-t{font-size:1.9rem;font-weight:900;margin-bottom:8px}
+.eo-s{font-size:.82rem;color:#336688;margin-bottom:14px}
+.eo-btn{padding:.55rem 1.6rem;background:linear-gradient(135deg,#004488,#002255);border:2px solid #0088ff;border-radius:.6rem;color:#88ddff;font-size:.88rem;font-weight:700;cursor:pointer;margin:4px;font-family:'Neucha',cursive}
 </style>
 </head>
 <body>
@@ -32,53 +31,53 @@ canvas{border-radius:12px;border:2px solid #1a4466;display:block;box-shadow:0 0 
   <div id="hdr-r">Score: <b id="score">0</b> &nbsp;|&nbsp; Stars: <b id="stars">0</b> &nbsp;|&nbsp; Time: <b id="timer">60</b>s</div>
 </div>
 <canvas id="c"></canvas>
-<div id="ctrl">← → steer · stay in the green zone · avoid the black hole!</div>
+<div id="ctrl">← → steer your board · ride near whirlpools for bonus points · collect ⭐</div>
 <div id="end-overlay">
   <div class="eo-t" id="eo-title">🌊</div>
-  <div style="font-size:1.1rem;color:#55ccff;margin-bottom:6px" id="eo-score"></div>
+  <div style="font-size:1.05rem;color:#55ccff;margin-bottom:6px" id="eo-score"></div>
   <div class="eo-s" id="eo-sub"></div>
-  <button class="eo-btn" onclick="startGame()">Play Again 🌊</button>
+  <button class="eo-btn" onclick="startGame()">Surf Again 🌊</button>
   <button class="eo-btn" onclick="goBack()">← Map</button>
 </div>
 
 <script>
 const cv=document.getElementById('c'),ctx=cv.getContext('2d');
 const W=Math.min(window.innerWidth-16,900);
-const H=Math.min(window.innerHeight-96,500);
+const H=Math.min(window.innerHeight-90,500);
 cv.width=W; cv.height=H;
-const cx=W/2, cy=H/2;
 
+// ── GAME STATE ──────────────────────────────────────────────
 let score=0,starsCollected=0,timeLeft=60,running=false,gameOver=false;
-let animId=null,timerInt=null,wipeFlash=0;
+let animId=null,timerInt=null,wipeFlash=0,scrollY=0,scrollSpeed=1.5;
 
-// Whirlpool zones
-const INNER_R=36, SWEET_MIN=90, SWEET_MAX=155, OUTER_R=180;
+// ── SURFER ──────────────────────────────────────────────────
+const SURFER={w:36,h:36};
+let sx=W/2,sy=H*0.7,sVx=0;   // surfer world x, screen y
 
-// Surfer
-let sAngle=0,sR=115,sVelR=0,sSpeed=2.0;
+// ── WHIRLPOOLS ──────────────────────────────────────────────
+const WHIRL_SAFE=55,WHIRL_BONUS=95,WHIRL_PULL=130;
+let whirlpools=[];   // {wx,wy,r,spin,age}
+let nextWhirl=180;   // frames until next spawn
 
-// Objects (stars, rings, boosts)
-let objects=[];
-function spawnObj(){
-  if(objects.length>=7)return;
-  const type=Math.random()<0.55?'star':Math.random()<0.5?'ring':'boost';
-  const a=Math.random()*Math.PI*2;
-  const r=SWEET_MIN+Math.random()*(SWEET_MAX-SWEET_MIN+25);
-  objects.push({type,angle:a,r,collected:false,pulse:Math.random()*Math.PI*2});
-}
+// ── COLLECTIBLES ─────────────────────────────────────────────
+let collectibles=[];
+let nextCollect=60;
+
+// ── FOAM PARTICLES ───────────────────────────────────────────
+let foam=[];
 
 const keys={};
 document.addEventListener('keydown',e=>{keys[e.key]=true});
 document.addEventListener('keyup',e=>{keys[e.key]=false});
 
 // Touch
-let touchX=null;
-cv.addEventListener('touchstart',e=>{touchX=e.touches[0].clientX;e.preventDefault();},{passive:false});
-cv.addEventListener('touchmove',e=>{
-  if(touchX===null)return;
-  const dx=e.touches[0].clientX-touchX;
-  sAngle+=dx*0.004; touchX=e.touches[0].clientX; e.preventDefault();
-},{passive:false});
+let touchStartX=null;
+document.addEventListener('touchstart',e=>{touchStartX=e.touches[0].clientX},{passive:true});
+document.addEventListener('touchmove',e=>{
+  if(touchStartX===null)return;
+  sVx+=(e.touches[0].clientX-touchStartX)*0.04;
+  touchStartX=e.touches[0].clientX;
+},{passive:true});
 
 function updateHUD(){
   document.getElementById('score').textContent=score;
@@ -86,193 +85,292 @@ function updateHUD(){
   document.getElementById('timer').textContent=Math.max(0,timeLeft);
 }
 
-function drawScene(t){
-  // Ocean background
-  const bg=ctx.createRadialGradient(cx,cy,0,cx,cy,W*0.7);
-  bg.addColorStop(0,'#002244'); bg.addColorStop(1,'#000e22');
-  ctx.fillStyle=bg; ctx.fillRect(0,0,W,H);
+// ── SPAWN ────────────────────────────────────────────────────
+function spawnWhirlpool(){
+  // ahead of the surfer in world coords
+  const worldSY=scrollY+sy;
+  const wx=80+Math.random()*(W-160);
+  const wy=worldSY-H*0.6-Math.random()*H*0.5;
+  const r=55+Math.random()*35;
+  whirlpools.push({wx,wy,r,spin:0,age:0,bonusGiven:false});
+}
+function spawnCollectible(){
+  const worldSY=scrollY+sy;
+  const wx=40+Math.random()*(W-80);
+  const wy=worldSY-H*0.4-Math.random()*H*0.8;
+  const type=Math.random()<0.6?'star':'ring';
+  collectibles.push({wx,wy,type,collected:false,pulse:Math.random()*Math.PI*2});
+}
 
-  // Whirlpool rings (animated foam)
-  for(let i=4;i>=0;i--){
-    const rr=INNER_R+(i+1)*26;
-    const a=0.06-i*0.008;
-    ctx.strokeStyle=`rgba(120,200,255,${a})`;
-    ctx.lineWidth=2;
-    ctx.setLineDash([8,6]); ctx.lineDashOffset=-t/60*(i+1)*8;
-    ctx.beginPath(); ctx.arc(cx,cy,rr,0,Math.PI*2); ctx.stroke();
+// ── DRAW OCEAN ───────────────────────────────────────────────
+function drawOcean(t){
+  // Gradient ocean
+  const og=ctx.createLinearGradient(0,0,0,H);
+  og.addColorStop(0,'#001833'); og.addColorStop(0.5,'#002244'); og.addColorStop(1,'#001a38');
+  ctx.fillStyle=og; ctx.fillRect(0,0,W,H);
+
+  // Wave lines scrolling
+  ctx.strokeStyle='rgba(100,180,255,0.07)'; ctx.lineWidth=1.5;
+  for(let i=0;i<12;i++){
+    const wy=((scrollY*0.3+i*(H/12)+t/80)%H);
+    ctx.beginPath();
+    ctx.moveTo(0,wy);
+    for(let x2=0;x2<=W;x2+=40){
+      ctx.lineTo(x2,wy+Math.sin(x2/60+t/800+i)*4);
+    }
+    ctx.stroke();
   }
-  ctx.setLineDash([]);
 
-  // Sweet spot ring (green glow band)
-  ctx.strokeStyle='rgba(0,255,120,0.18)';
-  ctx.lineWidth=SWEET_MAX-SWEET_MIN;
-  ctx.beginPath(); ctx.arc(cx,cy,(SWEET_MIN+SWEET_MAX)/2,0,Math.PI*2); ctx.stroke();
-
-  // Danger inner (red glow)
-  const dg=ctx.createRadialGradient(cx,cy,0,cx,cy,INNER_R+14);
-  dg.addColorStop(0,'rgba(255,60,0,0.3)'); dg.addColorStop(1,'rgba(255,60,0,0)');
-  ctx.fillStyle=dg; ctx.beginPath(); ctx.arc(cx,cy,INNER_R+14,0,Math.PI*2); ctx.fill();
-
-  // Vortex center
-  ctx.fillStyle='rgba(0,0,10,0.95)'; ctx.beginPath(); ctx.arc(cx,cy,INNER_R,0,Math.PI*2); ctx.fill();
-  ctx.strokeStyle='rgba(0,80,180,0.5)'; ctx.lineWidth=2; ctx.stroke();
-  // Spiral lines in center
+  // Sunlight shimmer patches
+  ctx.globalAlpha=0.06;
   for(let s=0;s<5;s++){
-    const a=t/800+s*(Math.PI*2/5);
-    ctx.strokeStyle=`rgba(0,60,160,0.3)`; ctx.lineWidth=1;
-    ctx.beginPath(); ctx.arc(cx,cy,INNER_R-6,a,a+Math.PI*0.6); ctx.stroke();
+    const shx=100+s*160+Math.sin(t/1200+s)*40;
+    const shy=H*0.4+Math.cos(t/900+s)*60;
+    const sg=ctx.createRadialGradient(shx,shy,0,shx,shy,80);
+    sg.addColorStop(0,'#ffffaa'); sg.addColorStop(1,'transparent');
+    ctx.fillStyle=sg; ctx.beginPath(); ctx.arc(shx,shy,80,0,Math.PI*2); ctx.fill();
   }
+  ctx.globalAlpha=1;
 
   // Seagulls
-  ctx.strokeStyle='rgba(180,220,255,0.22)'; ctx.lineWidth=1;
-  for(let g=0;g<4;g++){
-    const gx=40+g*220+Math.sin(t/1500+g)*18;
-    const gy=16+Math.cos(t/1100+g)*10;
+  ctx.strokeStyle='rgba(200,230,255,0.2)'; ctx.lineWidth=1;
+  for(let g=0;g<5;g++){
+    const gx=(30+g*190+t/40+g*50)%W;
+    const gy=18+g*12+Math.sin(t/600+g)*8;
     ctx.beginPath();
     ctx.moveTo(gx-7,gy); ctx.quadraticCurveTo(gx-3,gy-5,gx,gy);
     ctx.moveTo(gx,gy); ctx.quadraticCurveTo(gx+3,gy-5,gx+7,gy);
     ctx.stroke();
   }
-
-  // Sunlight shimmer on water
-  for(let sh=0;sh<6;sh++){
-    const sx=80+sh*120+Math.sin(t/800+sh)*30;
-    const sy=H-40+Math.cos(t/600+sh)*15;
-    const a=Math.sin(t/400+sh)*0.5+0.5;
-    ctx.strokeStyle=`rgba(255,240,180,${a*0.12})`; ctx.lineWidth=1+a;
-    ctx.beginPath(); ctx.moveTo(sx-20,sy); ctx.lineTo(sx+20,sy); ctx.stroke();
-  }
 }
 
-function drawObjects(t){
-  for(const o of objects){
-    if(o.collected)continue;
-    const ox=cx+Math.cos(o.angle)*o.r;
-    const oy=cy+Math.sin(o.angle)*o.r;
-    const p=Math.sin(t/300+o.pulse)*0.18+0.82;
+// ── DRAW WHIRLPOOL ───────────────────────────────────────────
+function drawWhirlpool(wp,t){
+  const scx=wp.wx;
+  const scy=wp.wy-scrollY;  // screen y
+
+  // Outer glow
+  const og=ctx.createRadialGradient(scx,scy,wp.r*0.3,scx,scy,wp.r*1.4);
+  og.addColorStop(0,'rgba(0,120,255,0.10)');
+  og.addColorStop(0.5,'rgba(0,160,255,0.07)');
+  og.addColorStop(1,'rgba(0,80,200,0)');
+  ctx.fillStyle=og; ctx.beginPath(); ctx.arc(scx,scy,wp.r*1.4,0,Math.PI*2); ctx.fill();
+
+  // Animated rings
+  ctx.setLineDash([7,5]);
+  for(let i=0;i<4;i++){
+    const rr=wp.r*(0.3+i*0.2);
+    const alpha=0.08+i*0.04;
+    ctx.strokeStyle=`rgba(120,200,255,${alpha})`;
+    ctx.lineWidth=2;
+    ctx.lineDashOffset=-(wp.spin*(i+1)*6);
+    ctx.beginPath(); ctx.arc(scx,scy,rr,0,Math.PI*2); ctx.stroke();
+  }
+  ctx.setLineDash([]);
+
+  // Bonus zone (teal ring)
+  ctx.strokeStyle='rgba(0,220,180,0.18)';
+  ctx.lineWidth=WHIRL_BONUS-WHIRL_SAFE;
+  ctx.beginPath(); ctx.arc(scx,scy,(WHIRL_SAFE+WHIRL_BONUS)/2,0,Math.PI*2); ctx.stroke();
+
+  // Swirl arms
+  for(let arm=0;arm<5;arm++){
+    const a=wp.spin+arm*(Math.PI*2/5);
+    ctx.strokeStyle='rgba(80,180,255,0.15)'; ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.arc(scx,scy,wp.r*0.6,a,a+Math.PI*0.55); ctx.stroke();
+  }
+
+  // Dark center
+  const cg=ctx.createRadialGradient(scx,scy,0,scx,scy,wp.r*0.28);
+  cg.addColorStop(0,'rgba(0,0,15,0.95)'); cg.addColorStop(1,'rgba(0,5,20,0)');
+  ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(scx,scy,wp.r*0.28,0,Math.PI*2); ctx.fill();
+}
+
+// ── DRAW COLLECTIBLES ────────────────────────────────────────
+function drawCollectibles(t){
+  for(const c of collectibles){
+    if(c.collected)continue;
+    const scx=c.wx, scy=c.wy-scrollY;
+    if(scy<-30||scy>H+30)continue;
+    const p=Math.sin(t/280+c.pulse)*0.18+0.82;
     ctx.font=`${20*p}px serif`; ctx.textAlign='center'; ctx.textBaseline='middle';
-    if(o.type==='star')ctx.fillText('⭐',ox,oy);
-    else if(o.type==='ring'){
+    if(c.type==='star')ctx.fillText('⭐',scx,scy);
+    else{
       ctx.strokeStyle=`rgba(255,215,0,${0.85*p})`; ctx.lineWidth=3*p;
-      ctx.beginPath(); ctx.arc(ox,oy,12,0,Math.PI*2); ctx.stroke();
-      ctx.strokeStyle=`rgba(255,180,0,${0.4*p})`; ctx.lineWidth=1;
-      ctx.beginPath(); ctx.arc(ox,oy,18,0,Math.PI*2); ctx.stroke();
+      ctx.beginPath(); ctx.arc(scx,scy,11,0,Math.PI*2); ctx.stroke();
+      ctx.strokeStyle=`rgba(255,180,0,${0.35*p})`; ctx.lineWidth=1;
+      ctx.beginPath(); ctx.arc(scx,scy,17,0,Math.PI*2); ctx.stroke();
     }
-    else ctx.fillText('💨',ox,oy);
-    o.angle+=0.006;
   }
 }
 
-function drawSurfer(){
-  const sx=cx+Math.cos(sAngle)*sR;
-  const sy=cy+Math.sin(sAngle)*sR;
-  const inSweet=sR>=SWEET_MIN&&sR<=SWEET_MAX;
-  const tooClose=sR<SWEET_MIN;
-  const glowColor=inSweet?'rgba(0,255,120,0.7)':tooClose?'rgba(255,80,0,0.8)':'rgba(0,120,255,0.6)';
-
-  // Wake trail
-  for(let i=1;i<=5;i++){
-    const ta=sAngle-i*0.1;
-    const wx=cx+Math.cos(ta)*sR, wy=cy+Math.sin(ta)*sR;
-    ctx.strokeStyle=`rgba(100,200,255,${0.25-i*0.04})`; ctx.lineWidth=3-i*0.4;
-    if(i===1){ctx.beginPath();ctx.moveTo(sx,sy);}
-    ctx.lineTo(wx,wy);
-  }
-  ctx.stroke();
-
-  // Glow ring
-  ctx.strokeStyle=glowColor; ctx.lineWidth=2.5;
-  ctx.beginPath(); ctx.arc(sx,sy,22,0,Math.PI*2); ctx.stroke();
-
-  // Big splash on wipeout
-  if(wipeFlash>0){
-    ctx.fillStyle=`rgba(255,60,0,${wipeFlash/18*0.35})`;
-    ctx.fillRect(0,0,W,H);
-    wipeFlash--;
+// ── DRAW SURFER ──────────────────────────────────────────────
+function drawSurfer(t){
+  // Board wake
+  for(let i=1;i<=6;i++){
+    const wy=sy+i*8;
+    ctx.strokeStyle=`rgba(140,210,255,${0.18-i*0.025})`; ctx.lineWidth=3-i*0.35;
+    ctx.beginPath(); ctx.moveTo(sx-i*3,wy); ctx.lineTo(sx+i*3,wy); ctx.stroke();
   }
 
-  // Surfer emoji
-  ctx.save(); ctx.translate(sx,sy); ctx.rotate(sAngle+Math.PI/2);
-  ctx.font='26px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  // Board shadow
+  ctx.fillStyle='rgba(0,60,120,0.3)';
+  ctx.beginPath(); ctx.ellipse(sx,sy+4,20,8,0,0,Math.PI*2); ctx.fill();
+
+  // Glow
+  const gg=ctx.createRadialGradient(sx,sy,0,sx,sy,28);
+  gg.addColorStop(0,'rgba(80,200,255,0.25)'); gg.addColorStop(1,'rgba(80,200,255,0)');
+  ctx.fillStyle=gg; ctx.beginPath(); ctx.arc(sx,sy,28,0,Math.PI*2); ctx.fill();
+
+  // Surfer + board
+  const lean=Math.max(-0.3,Math.min(0.3,sVx*0.05));
+  ctx.save(); ctx.translate(sx,sy); ctx.rotate(lean);
+  ctx.font='28px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
   ctx.fillText('🏄',0,0);
   ctx.restore();
 
-  // Speed trail stars
-  if(sSpeed>2.6){
-    ctx.font='12px serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  // Speed boost sparkle
+  if(Math.abs(sVx)>3){
+    ctx.font='12px serif'; ctx.textAlign='center';
     ctx.globalAlpha=0.5;
-    ctx.fillText('✨',sx-Math.cos(sAngle)*30,sy-Math.sin(sAngle)*30);
+    ctx.fillText('✨',sx+(sVx>0?-28:28),sy-10);
     ctx.globalAlpha=1;
+  }
+
+  // Wipeout flash
+  if(wipeFlash>0){
+    ctx.fillStyle=`rgba(255,50,0,${wipeFlash/20*0.4})`; ctx.fillRect(0,0,W,H);
+    wipeFlash--;
   }
 }
 
-function drawHUD(){
-  const inSweet=sR>=SWEET_MIN&&sR<=SWEET_MAX;
-  const tooClose=sR<SWEET_MIN;
-  const label=inSweet?'🟢 Sweet Spot!':tooClose?'⚠️ Too Close!':'💙 Move In!';
-  ctx.font='bold 13px Neucha,cursive'; ctx.textAlign='left';
-  ctx.fillStyle=inSweet?'#00ff88':tooClose?'#ff4422':'#4488ff';
-  ctx.fillText(label,10,H-10);
+// ── DRAW FOAM ────────────────────────────────────────────────
+function drawFoam(){
+  foam=foam.filter(f=>f.life>0);
+  for(const f of foam){
+    ctx.globalAlpha=f.life/f.maxLife*0.5;
+    ctx.fillStyle='#aaddff';
+    ctx.beginPath(); ctx.arc(f.x,f.y,f.r,0,Math.PI*2); ctx.fill();
+    f.x+=f.vx; f.y+=f.vy; f.r*=0.95; f.life--;
+  }
+  ctx.globalAlpha=1;
 }
 
-function checkCollect(){
-  const sx=cx+Math.cos(sAngle)*sR;
-  const sy=cy+Math.sin(sAngle)*sR;
-  for(const o of objects){
-    if(o.collected)continue;
-    const ox=cx+Math.cos(o.angle)*o.r;
-    const oy=cy+Math.sin(o.angle)*o.r;
-    if(Math.hypot(sx-ox,sy-oy)<26){
-      o.collected=true;
-      if(o.type==='star'){starsCollected++;score+=15;}
-      else if(o.type==='ring'){score+=25;}
-      else{sSpeed=Math.min(sSpeed+0.4,3.8);score+=10;}
+function spawnFoam(x,y){
+  for(let i=0;i<5;i++){
+    const a=Math.random()*Math.PI*2;
+    foam.push({x,y,vx:Math.cos(a)*1.5,vy:Math.sin(a)*1.5,r:3+Math.random()*4,life:18,maxLife:18});
+  }
+}
+
+// ── UPDATE ───────────────────────────────────────────────────
+function update(){
+  if(!running||gameOver)return;
+
+  // Controls
+  if(keys['ArrowLeft']||keys['a'])sVx-=0.5;
+  if(keys['ArrowRight']||keys['d'])sVx+=0.5;
+  sVx*=0.88;
+  sx=Math.max(20,Math.min(W-20,sx+sVx));
+
+  // Auto scroll forward (world moves up)
+  scrollY+=scrollSpeed;
+  scrollSpeed=Math.min(scrollSpeed+0.003,3.5); // speed up over time
+
+  // Spawn whirlpools
+  if(--nextWhirl<=0){spawnWhirlpool();nextWhirl=140+Math.random()*160;}
+  // Spawn collectibles
+  if(--nextCollect<=0){spawnCollectible();nextCollect=50+Math.random()*80;}
+
+  // Update whirlpools
+  const surferWorldY=scrollY+sy;
+  for(const wp of whirlpools){
+    wp.spin+=0.04; wp.age++;
+    const dx=sx-wp.wx, dy=surferWorldY-wp.wy;
+    const dist=Math.hypot(dx,dy);
+
+    // Pull effect when close
+    if(dist<WHIRL_PULL){
+      const pullStr=(WHIRL_PULL-dist)/WHIRL_PULL*0.4;
+      sVx-=dx/dist*pullStr;
+    }
+
+    // Bonus for riding near edge
+    if(!wp.bonusGiven&&dist>WHIRL_SAFE&&dist<WHIRL_BONUS){
+      wp.bonusGiven=true;
+      score+=30; updateHUD();
+      spawnFoam(sx,sy);
+    }
+
+    // Wipeout if sucked in
+    if(dist<WHIRL_SAFE*0.6){
+      score=Math.max(0,score-15);
+      sx=W/2; sVx=0; wipeFlash=20;
       updateHUD();
     }
   }
-  objects=objects.filter(o=>!o.collected);
+
+  // Remove off-screen whirlpools (behind player)
+  whirlpools=whirlpools.filter(wp=>wp.wy>scrollY-H*0.3);
+
+  // Collect stars/rings
+  for(const c of collectibles){
+    if(c.collected)continue;
+    const dx=sx-c.wx, dy=surferWorldY-c.wy;
+    if(Math.hypot(dx,dy)<24){
+      c.collected=true;
+      if(c.type==='star'){starsCollected++;score+=15;}
+      else score+=25;
+      updateHUD(); spawnFoam(sx,sy);
+    }
+  }
+  collectibles=collectibles.filter(c=>!c.collected||c.type); // keep briefly for anim
 }
 
-function update(){
-  if(!running||gameOver)return;
-  if(keys['ArrowLeft']||keys['a'])sAngle-=0.045;
-  if(keys['ArrowRight']||keys['d'])sAngle+=0.045;
-  if(keys['ArrowUp']||keys['w'])sVelR-=0.35;
-  if(keys['ArrowDown']||keys['s'])sVelR+=0.35;
-  sAngle+=sSpeed*(Math.PI/180)*1.6;
-  const pull=sR>SWEET_MAX?-0.18:sR<SWEET_MIN?0.2:0;
-  sVelR+=pull; sVelR*=0.87;
-  sR=Math.max(22,Math.min(OUTER_R+12,sR+sVelR));
-  sSpeed=Math.max(1.4,sSpeed-0.006);
-  if(sR<INNER_R+5){score=Math.max(0,score-8);sR=SWEET_MIN;sVelR=0;sSpeed=1.4;wipeFlash=18;updateHUD();}
-  if(Math.random()<0.018)spawnObj();
-  checkCollect();
-}
-
-let lastT=0;
+// ── GAME LOOP ─────────────────────────────────────────────────
 function gameLoop(t){
   if(!running)return;
   update();
-  drawScene(t);
-  drawObjects(t);
-  drawSurfer();
-  drawHUD();
+  drawOcean(t);
+  // Draw whirlpools (only visible ones)
+  for(const wp of whirlpools){
+    const scy=wp.wy-scrollY;
+    if(scy>-200&&scy<H+200)drawWhirlpool(wp,t);
+  }
+  drawCollectibles(t);
+  drawFoam();
+  drawSurfer(t);
+  // HUD status
+  const near=whirlpools.find(wp=>{
+    const d=Math.hypot(sx-wp.wx,(scrollY+sy)-wp.wy);
+    return d<WHIRL_BONUS;
+  });
+  ctx.font='bold 13px Neucha,cursive'; ctx.textAlign='left';
+  if(near){
+    ctx.fillStyle='#00ffcc';
+    ctx.fillText('🌀 Whirlpool nearby! +30 bonus!',10,H-10);
+  }else{
+    ctx.fillStyle='#336688';
+    ctx.fillText('🌊 Surfing...',10,H-10);
+  }
   animId=requestAnimationFrame(gameLoop);
 }
 
 function endGame(){
-  running=false; gameOver=true;
-  clearInterval(timerInt); cancelAnimationFrame(animId);
-  const grade=score>=300?'🏆 Master Surfer!':score>=150?'⭐ Great Ride!':score>=60?'🤙 Nice!':'🏄 Keep Going!';
+  running=false;gameOver=true;clearInterval(timerInt);cancelAnimationFrame(animId);
+  const grade=score>=400?'🏆 Legend Surfer!':score>=200?'⭐ Awesome!':score>=80?'🤙 Nice Ride!':'🌊 Keep Surfing!';
   document.getElementById('eo-title').textContent=grade;
   document.getElementById('eo-score').textContent=`Score: ${score} · Stars: ${starsCollected}`;
-  document.getElementById('eo-sub').textContent=score>=150?'You ruled the whirlpool!':'Stay in the green sweet spot!';
+  document.getElementById('eo-sub').textContent='Ride near whirlpools for +30 bonus!';
   document.getElementById('end-overlay').classList.add('show');
 }
 
 function startGame(){
   score=0;starsCollected=0;timeLeft=60;running=true;gameOver=false;
-  sAngle=0;sR=115;sSpeed=2.0;sVelR=0;objects=[];wipeFlash=0;
+  sx=W/2;sy=H*0.7;sVx=0;scrollY=0;scrollSpeed=1.5;
+  whirlpools=[];collectibles=[];foam=[];wipeFlash=0;
+  nextWhirl=120;nextCollect=50;
   document.getElementById('end-overlay').classList.remove('show');
   updateHUD();
   clearInterval(timerInt);
