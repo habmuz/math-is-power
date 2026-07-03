@@ -336,7 +336,8 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 .pnav-btn:hover{background:rgba(139,100,60,1)}
 
 /* ═══ MINI GAME MAP OVERLAY ═══ */
-#mini-map-overlay{position:absolute;inset:0;background:rgba(0,0,0,.92);z-index:80;display:none;align-items:center;justify-content:center}
+#mini-map-overlay{position:absolute;inset:0;background:rgba(4,14,4,.95);z-index:80;display:none;align-items:center;justify-content:center}
+#mini-map-pattern{position:absolute;inset:0;pointer-events:none;overflow:hidden;opacity:.09;font-size:30px;display:flex;flex-wrap:wrap;align-content:flex-start;gap:0;user-select:none;line-height:1}
 #mini-map-overlay.open{display:flex}
 #map-container{width:700px;height:510px;
   background:
@@ -834,6 +835,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
 
 <!-- ══ MINI GAME MAP OVERLAY ══ -->
 <div id="mini-map-overlay">
+  <div id="mini-map-pattern"></div>
   <div id="map-container">
     <div id="map-title">🗺️ MINI GAME WORLD MAP 🗺️</div>
     <div id="map-subtitle">Choose a region to explore &nbsp;·&nbsp; 🪙 <span id="map-token-count">0</span> tokens (1 per level)</div>
@@ -1213,6 +1215,19 @@ window.onload=()=>{
   const el=$id('eye-l'),er=$id('eye-r'),zz=$id('zzz'),msg=$id('cover-msg');
   $id('zzz').style.display='block';
   $id('cover').addEventListener('click',wakeBook,{once:true});
+  // Mini game map background pattern: matcha boba & mochi tiles
+  const pat=$id('mini-map-pattern');
+  if(pat){
+    const tiles=['🧋','🍡','🧋','🍵','🍡','🧋','🍡','🍵'];
+    const cols=Math.ceil(900/42)+1, rows=Math.ceil(600/42)+1;
+    for(let r=0;r<rows;r++){for(let c=0;c<cols;c++){
+      const s=document.createElement('span');
+      s.textContent=tiles[(r*cols+c)%tiles.length];
+      s.style.cssText=`display:inline-block;width:42px;height:42px;text-align:center;line-height:42px;`+
+        (((r+c)%2===0)?'transform:rotate(-15deg)':'transform:rotate(12deg)');
+      pat.appendChild(s);
+    }}
+  }
   const bobaRow=$id('boba-row');
   if(bobaRow){[11,13,10,12,11,14,10,12,11,13].forEach(s=>{
     const p=document.createElement('span');
