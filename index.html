@@ -199,7 +199,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 /* intro panel */
 #panel-intro{align-items:center;justify-content:flex-start;text-align:center;gap:1px!important;padding-top:1px;overflow-y:auto;padding-bottom:6px}
 #panel-intro h2{color:#5a2d00;font-size:16px;margin-bottom:2px;font-family:'Nanum Pen Script',cursive;flex-shrink:0}
-.inst{background:rgba(139,100,60,.1);border-left:3px solid #8b4513;padding:2px 7px;border-radius:0 6px 6px 0;font-size:11px;color:#4a2000;text-align:left;width:100%;line-height:1.28;flex-shrink:0}
+.inst{background:rgba(139,100,60,.1);border-left:3px solid #8b4513;padding:2px 7px;border-radius:0 6px 6px 0;font-size:8.5px;color:#4a2000;text-align:left;width:100%;line-height:1.25;flex-shrink:0}
 #friend-btn{margin-top:4px;padding:5px 16px;background:linear-gradient(#1a6699,#0d3d5c);color:#e0f4ff;border:none;border-radius:16px;font-size:14px;font-family:'Nanum Pen Script',cursive;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3);transition:transform .2s}
 #friend-btn:hover{transform:translateY(-2px)}
 #solo-player-btn{margin-top:2px;padding:5px 16px;background:linear-gradient(135deg,#7a7a52,#cfc4a8);color:#111;border:none;border-radius:16px;font-size:14px;font-family:'Nanum Pen Script',cursive;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.15);transition:transform .2s;font-weight:bold}
@@ -808,7 +808,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
           <option value="P1">P1</option><option value="P2">P2</option><option value="P3" selected>P3</option>
         </select>
       </div>
-      <div class="si"><label>Your Name</label><input id="bm-name-input" type="text" maxlength="20" placeholder="Enter name…" oninput="localStorage.setItem('mip_player_name',this.value)" style="padding:3px 8px;background:rgba(255,215,0,.1);border:1px solid #cc8800;border-radius:8px;color:#ffd700;font-size:12px;font-family:Georgia,serif;outline:none;width:100px"></div>
+      <div class="si"><label>Your Name</label><input id="bm-name-input" type="text" maxlength="20" placeholder="Enter name…" oninput="localStorage.setItem('mip_player_name',this.value)" style="padding:3px 8px;background:#fff8e8;border:1px solid #8b4513;border-radius:8px;color:#2d0000;font-size:12px;font-family:Georgia,serif;outline:none;width:100px"></div>
       <div class="si"><label>Narrator</label><button class="smb act" id="narr-btn" onclick="toggleNarr()">ON</button></div>
       <div class="si"><label>Page Flip</label><button class="smb act" id="flip-btn" onclick="toggleFlip()">Manual</button></div>
       <div class="si"><label>Mini Games</label><button class="smb" id="mini-btn" onclick="openMiniMap()" disabled>🔒 After Ch.1</button></div>
