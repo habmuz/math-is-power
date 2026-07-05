@@ -327,14 +327,14 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 #torn-paper .tp-close{margin-top:8px;background:none;border:1px solid #8b4513;color:#8b4513;border-radius:8px;padding:2px 10px;font-size:10px;cursor:pointer;font-family:Georgia,serif}
 
 /* scroll menu */
-#scroll-menu{position:absolute;top:0;right:0;width:200px;height:100%;background:linear-gradient(160deg,#f0d898,#e8c86a);border-radius:0 8px 8px 0;padding:44px 12px 12px;display:none;flex-direction:column;gap:9px;z-index:15;box-shadow:-4px 0 20px rgba(0,0,0,.3);border-left:3px solid #8b4513}
+#scroll-menu{position:absolute;top:0;right:0;width:155px;height:100%;background:linear-gradient(160deg,#f0d898,#e8c86a);border-radius:0 8px 8px 0;padding:36px 8px 8px;display:none;flex-direction:column;gap:5px;z-index:15;box-shadow:-4px 0 20px rgba(0,0,0,.3);border-left:3px solid #8b4513;overflow-y:auto}
 #scroll-menu.open{display:flex}
-#scroll-menu h3{color:#5a2d00;font-size:12px;text-align:center;border-bottom:1px solid #8b4513;padding-bottom:5px;letter-spacing:2px;font-family:'Neucha',cursive}
+#scroll-menu h3{color:#5a2d00;font-size:10px;text-align:center;border-bottom:1px solid #8b4513;padding-bottom:4px;letter-spacing:2px;font-family:'Neucha',cursive}
 #scroll-menu{font-family:'Neucha',cursive}
-.si label{font-size:9px;color:#8b4513;font-weight:bold;text-transform:uppercase;letter-spacing:1px;display:block;margin-bottom:2px}
-.si select,.smb{padding:4px 7px;border:1px solid #8b4513;border-radius:4px;background:#fdf5e6;color:#2d0000;font-size:11px;font-family:'Neucha',cursive;cursor:pointer;width:100%}
+.si label{font-size:8px;color:#8b4513;font-weight:bold;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:1px}
+.si select,.smb{padding:3px 5px;border:1px solid #8b4513;border-radius:4px;background:#fdf5e6;color:#2d0000;font-size:9.5px;font-family:'Neucha',cursive;cursor:pointer;width:100%}
 .smb.act{background:#8b4513;color:#f6e8cc}
-#close-sm{margin-top:auto;padding:5px;background:#5a2d00;color:#f6e8cc;border:none;border-radius:4px;cursor:pointer;font-family:'Neucha',cursive;font-size:11px}
+#close-sm{margin-top:auto;padding:4px;background:#5a2d00;color:#f6e8cc;border:none;border-radius:4px;cursor:pointer;font-family:'Neucha',cursive;font-size:9.5px}
 #page-nav{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:10;display:none}
 .pnav-btn{padding:5px 14px;background:rgba(139,100,60,.7);color:#f6e8cc;border:none;border-radius:10px;font-size:12px;cursor:pointer;font-family:Georgia,serif;transition:background .2s}
 .pnav-btn:hover{background:rgba(139,100,60,1)}
@@ -808,7 +808,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
           <option value="P1">P1</option><option value="P2">P2</option><option value="P3" selected>P3</option>
         </select>
       </div>
-      <div class="si"><label>Your Name</label><input id="bm-name-input" type="text" maxlength="20" placeholder="Enter name…" oninput="localStorage.setItem('mip_player_name',this.value)" style="padding:3px 8px;background:#fff8e8;border:1px solid #8b4513;border-radius:8px;color:#2d0000;font-size:12px;font-family:Georgia,serif;outline:none;width:100px"></div>
+      <div class="si"><label>Your Name</label><input id="bm-name-input" type="text" maxlength="20" placeholder="Enter name…" oninput="localStorage.setItem('mip_player_name',this.value)" style="padding:2px 5px;background:#fff8e8;border:1px solid #8b4513;border-radius:4px;color:#2d0000;font-size:9.5px;font-family:Georgia,serif;outline:none;width:100%"></div>
       <div class="si"><label>Narrator</label><button class="smb act" id="narr-btn" onclick="toggleNarr()">ON</button></div>
       <div class="si"><label>Page Flip</label><button class="smb act" id="flip-btn" onclick="toggleFlip()">Manual</button></div>
       <div class="si"><label>Mini Games</label><button class="smb" id="mini-btn" onclick="openMiniMap()" disabled>🔒 After Ch.1</button></div>
