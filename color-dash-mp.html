@@ -414,7 +414,7 @@ function renderTiles(){
   });
 }
 function updateAllPlayerSprites(){
-  // Count how many players share each tile, and assign slot index
+  // Group players by tile to detect sharing
   const tileGroups={};
   players.forEach(p=>{
     if(!tileGroups[p.tile])tileGroups[p.tile]=[];
@@ -426,11 +426,13 @@ function updateAllPlayerSprites(){
     const group=tileGroups[p.tile];
     const slotIdx=group.indexOf(p.id);
     const n=group.length;
-    // Spread players horizontally within tile; centre = TW/2-23
-    const spread=Math.min(20,TW/(n+1));
-    const offsetX=(slotIdx-(n-1)/2)*spread;
-    sp.style.left=(col*(TW+TGAP)+TW/2-23+offsetX)+'px';
+    // Divide tile width into equal slots; scale sprite to fit slot
+    const slotW=TW/n;
+    const scale=Math.min(1,(slotW-4)/46); // shrink so sprites don't touch
+    const centerX=col*(TW+TGAP)+slotIdx*slotW+slotW/2;
+    sp.style.left=(centerX-23)+'px'; // 23 = half of full 46px layout box
     sp.style.top=(row*(TH+TGAP)-38)+'px';
+    sp.style.transform=`scale(${scale.toFixed(2)})`;
   });
 }
 
