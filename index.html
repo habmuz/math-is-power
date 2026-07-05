@@ -1157,6 +1157,34 @@ const NL={
   battle:['🐉 The dragon ROARS!','⚡ The cave shakes — FIGHT!','🔥 Battle begins!'],
 };
 function narrate(k){if(!G.narrator)return;$id('narrator').textContent=pick(NL[k]||NL.correct)}
+function smartHint(q,playerVal){
+  const correct=q.a, got=parseFloat(playerVal), qt=q.q;
+  const addM=qt.match(/(\d+)\s*\+\s*(\d+)/);
+  if(addM){
+    const a=+addM[1],b=+addM[2],a1=a%10,b1=b%10,a10=Math.floor(a/10),b10=Math.floor(b/10),os=a1+b1;
+    if(os>=10) return `You got ${got}. Ones: ${a1}+${b1}=${os} → write ${os%10}, carry 1. Tens: ${a10}+${b10}+1=${a10+b10+1}. Answer: ${correct}`;
+    return `You got ${got}. Ones: ${a1}+${b1}=${os}. Tens: ${a10}+${b10}=${a10+b10}. So ${a}+${b}=${correct}`;
+  }
+  const subM=qt.match(/(\d+)\s*[−-]\s*(\d+)/);
+  if(subM){
+    const a=+subM[1],b=+subM[2],a1=a%10,b1=b%10,a10=Math.floor(a/10),b10=Math.floor(b/10);
+    if(a1<b1) return `You got ${got}. Ones: ${a1}<${b1}, borrow 10! ${a1+10}−${b1}=${a1+10-b1}. Tens: ${a10-1}−${b10}=${a10-1-b10}. Answer: ${correct}`;
+    return `You got ${got}. Ones: ${a1}−${b1}=${a1-b1}. Tens: ${a10}−${b10}=${a10-b10}. So ${a}−${b}=${correct}`;
+  }
+  const mulM=qt.match(/(\d+)\s*×\s*(\d+)/);
+  if(mulM){
+    const a=+mulM[1],b=+mulM[2];
+    const steps=Array.from({length:Math.min(a,8)},(_,i)=>(i+1)*b).join(', ')+(a>8?'…':'');
+    return `You got ${got}. Count by ${b}s: ${steps}. So ${a}×${b}=${correct}`;
+  }
+  const divM=qt.match(/(\d+)\s*÷\s*(\d+)/);
+  if(divM){
+    const a=+divM[1],b=+divM[2];
+    return `You got ${got}. Think: ${b}×?=${a}. ${b}×${correct}=${a}. So ${a}÷${b}=${correct}`;
+  }
+  if(qt.includes('next')) return `You got ${got}. ${q.h}. Next is ${correct}`;
+  return `You got ${got} — answer is ${correct}. ${q.h}`;
+}
 function adapt(ok){} // kept for compatibility — chapter now controls topic, not tier
 
 // ═══════════════════════════════════════
@@ -1170,7 +1198,7 @@ const SAVE_KEY='mathIsPower_save_'+SAVE_VERSION;
 // Wipe all old game saves from previous versions
 (function(){
   Object.keys(localStorage).filter(k=>k.startsWith('mathIsPower_')&&k!==SAVE_KEY).forEach(k=>localStorage.removeItem(k));
-  if(!localStorage.getItem(SAVE_KEY)){['mp_lava_lv','mp_obs_lv','mp_frost_lv','mp_maze_lv'].forEach(k=>localStorage.removeItem(k));}
+  if(!localStorage.getItem(SAVE_KEY)){['mp_lava_lv','mp_obs_lv','mp_code_lv'].forEach(k=>localStorage.removeItem(k));}
 })();
 function saveGame(){
   const data={
@@ -1186,7 +1214,7 @@ function saveGame(){
 function loadSave(){
   try{return JSON.parse(localStorage.getItem(SAVE_KEY));}catch{return null;}
 }
-function clearSave(){localStorage.removeItem(SAVE_KEY);['mp_lava_lv','mp_obs_lv','mp_frost_lv','mp_maze_lv'].forEach(k=>localStorage.removeItem(k));}
+function clearSave(){localStorage.removeItem(SAVE_KEY);['mp_lava_lv','mp_obs_lv','mp_code_lv'].forEach(k=>localStorage.removeItem(k));}
 function continueGame(){
   const save=loadSave(); if(!save)return;
   G.chapter=save.chapter;
@@ -1355,12 +1383,12 @@ function submitAns(){
   if(_mpCode){
     // Multiplayer: keep streak system
     if(ok){sfx('correct');narrate('correct');G.streak++;updateDots();if(G.streak>=3){awardGear();G.streak=0;updateDots();if(G.gears.length>=3){setTimeout(goToBattlePage,1400);return}setTimeout(nextQ,1400);return}setFb('✅ Correct! Keep going!','#2d6a00');}
-    else{sfx('wrong');narrate('wrong');G.streak=0;updateDots();setFb(`❌ Hint: ${curQ.h}`,'#8b0000');}
+    else{sfx('wrong');narrate('wrong');G.streak=0;updateDots();setFb(`❌ ${smartHint(curQ,raw)}`,'#8b0000');}
     setTimeout(nextQ,900);
   }else{
     // Solo: set of 3 questions — correct green, wrong red
     if(ok){sfx('correct');narrate('correct');G.setCorrect++;setFb('✅ Correct!','#2d6a00');}
-    else{sfx('wrong');narrate('wrong');setFb(`❌ Answer: ${curQ.a}   💡 ${curQ.h}`,'#8b0000');}
+    else{sfx('wrong');narrate('wrong');setFb(`❌ ${smartHint(curQ,raw)}`,'#8b0000');}
     G.dotResults[G.setQ]=ok?'correct':'wrong';
     G.setQ++;updateSetDots();
     if(G.setQ>=3){const c=G.setCorrect;G.setQ=0;G.setCorrect=0;G.dotResults=['','',''];setTimeout(()=>awardGearBySet(c),950);}
@@ -1769,12 +1797,9 @@ function showDirs(){toggleScroll();showDialog('📖 How to Play',
 // MINI GAME MAP
 // ═══════════════════════════════════════
 const MINI_INFO={
-  lava:    {name:'🌋 Lava Ruins',        emoji:'🌋',desc:'React fast — answer before the lava rises!',color:'#ff6622'},
-  ice:     {name:'🌊 Whirlpool Escape',  emoji:'🌊',desc:'Ride the edge of the whirlpool — collect stars and survive!',color:'#00aaff'},
-  obstacle:{name:'🧟 Zombie Outbreak',   emoji:'🧟',desc:'Survive the zombie apocalypse with math!',color:'#4caf50'},
-  code:    {name:'🧟 Zombie Temple',     emoji:'🧟',desc:'The temple is overrun — survive the zombie curse!',color:'#5aaf50'},
-  maze:    {name:'🌿 Enchanted Garden',  emoji:'🌿',desc:'Explore magical paths and garden spirits!',color:'#44ff88'},
-  pop:     {name:'💥 POPped Your Mind',  emoji:'💥',desc:'Mind-popping mix — all 4 operations plus patterns!',color:'#cc44ff'},
+  lava:    {name:'🌋 Lava Ruins',    emoji:'🌋',desc:'React fast — dodge the lava!',color:'#ff6622'},
+  obstacle:{name:'🏃 Obstacle Park', emoji:'🏃',desc:'Run, jump and survive!',color:'#cc5500'},
+  code:    {name:'🧟 Zombie Temple', emoji:'🧟',desc:'The temple is overrun — survive!',color:'#bb8800'},
 };
 function openMiniMap(){if(!G.miniUnlocked)return;toggleScroll();$id('mini-map-overlay').classList.add('open')}
 function closeMiniMap(){$id('mini-map-overlay').classList.remove('open');$id('mini-play').classList.remove('open')}
@@ -1832,20 +1857,14 @@ function genMiniQ(type){
     return{q:`What comes next?\n${seq.join(', ')},  ?`,a:start+step*5};
   };
   if(type==='lava')    return isEarly?pick([add,sub])():pick([add,sub,mul,div])();
-  if(type==='ice')     return pat();
   if(type==='obstacle')return isEarly?add():pick([add,mul])();
   if(type==='code')    return pat();
-  if(type==='maze')    return isEarly?pick([add,sub])():pick([add,sub,mul,div,pat])();
-  if(type==='pop')     return isEarly?pick([add,sub])():pick([add,sub,mul,div,pat])();
   return add();
 }
 const MINI_GAME_FILES={
-  ice:'whirlpool-surf.html',
   lava:'lava-ruins.html',
   obstacle:'obstacle-park.html',
   code:'zombie-outbreak.html',
-  maze:'enchanted-garden.html',
-  pop:'pop-game.html',
 };
 let mpStreak=0, mpCurQ=null, mpGame=null;
 function playMiniGame(type){
