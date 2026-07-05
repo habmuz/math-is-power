@@ -39,6 +39,10 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 #continue-btn:hover{transform:translateY(-3px)}
 #cover-msg{color:#ffcc88;font-size:13px;font-style:italic;min-height:20px;text-align:center}
 #cover-creators{position:absolute;bottom:18px;left:0;right:0;text-align:center;color:rgba(255,215,0,.75);font-size:11px;letter-spacing:3px;font-family:Georgia,serif;text-transform:uppercase;border-top:1px solid rgba(255,215,0,.2);padding-top:10px;margin:0 30px}
+#player-name-wrap{display:none;flex-direction:column;align-items:center;gap:5px}
+#player-name-wrap label{color:#ffcc88;font-size:11px;letter-spacing:1px}
+#player-name-input{padding:7px 16px;background:rgba(255,215,0,.1);border:2px solid #cc8800;border-radius:20px;color:#ffd700;font-size:14px;font-family:Georgia,serif;text-align:center;outline:none;width:190px}
+#player-name-input:focus{border-color:#ffd700}
 
 /* ══ OPEN BOOK ══ */
 #book{position:absolute;inset:0;display:none;box-shadow:0 20px 60px rgba(0,0,0,.9)}
@@ -339,7 +343,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 #mini-map-overlay{position:absolute;inset:0;background:rgba(4,14,4,.88);z-index:80;display:none;align-items:center;justify-content:center}
 #mini-map-overlay.open{display:flex}
 #map-container{width:700px;height:510px;
-  background:linear-gradient(rgba(5,15,3,.42),rgba(5,15,3,.42)),url('mini-game-bg.png') center/cover;
+  background:linear-gradient(160deg,#0a1f0a 0%,#061406 100%);
   border:3px solid #3a6a3a;border-radius:18px;position:relative;overflow:hidden}
 #map-title{text-align:center;color:#aaffaa;font-size:24px;padding:9px;letter-spacing:3px;
   text-shadow:0 0 10px #44ff44;border-bottom:1px solid #2a4a2a}
@@ -548,10 +552,24 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     <div id="zzz">z z z</div>
   </div>
   <div id="cover-msg">tap to wake the book…</div>
-  <button id="open-btn" style="display:none" onclick="openBook()">Open the Book! ✨</button>
+  <button id="open-btn" style="display:none" onclick="showNamePopup()">Open the Book! ✨</button>
   <button id="continue-btn" style="display:none" onclick="continueGame()">📖 Continue Adventure</button>
   <div id="save-info" style="color:#ffcc88;font-size:11px;font-style:italic;display:none"></div>
   <div id="cover-creators">CREATORS: Nazmin and Thiyazhini</div>
+</div>
+
+<!-- ══ NAME POPUP ══ -->
+<div id="name-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;align-items:center;justify-content:center">
+  <div style="background:linear-gradient(160deg,#4a0e00,#8b2500);border:3px solid #ffd700;border-radius:20px;padding:30px 36px;text-align:center;box-shadow:0 8px 40px rgba(0,0,0,.8);min-width:280px">
+    <div style="font-size:24px;margin-bottom:6px">📖✨</div>
+    <div style="color:#ffd700;font-size:18px;font-family:Georgia,serif;font-weight:bold;margin-bottom:4px">What's your name, Scholar?</div>
+    <div style="color:#ffcc88;font-size:12px;margin-bottom:16px;font-style:italic">You can change this anytime in the bookmark</div>
+    <input id="name-popup-input" type="text" maxlength="20" placeholder="Enter your name…"
+      onkeydown="if(event.key==='Enter')confirmName()"
+      style="padding:9px 18px;background:rgba(255,215,0,.12);border:2px solid #cc8800;border-radius:20px;color:#ffd700;font-size:15px;font-family:Georgia,serif;text-align:center;outline:none;width:100%;margin-bottom:16px;display:block">
+    <button onclick="confirmName()"
+      style="padding:10px 32px;background:linear-gradient(#ffd700,#cc8800);color:#2d0000;border:none;border-radius:20px;font-size:15px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;box-shadow:0 3px 12px rgba(0,0,0,.4)">Let's Go! 🚀</button>
+  </div>
 </div>
 
 <!-- ══ OPEN BOOK ══ -->
@@ -672,8 +690,9 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="inst">⚙️ Collect <b>3 Gears</b> → left strip glows → flip page → 🐉 Dragon Battle → 🔐 Password Machine → Chapter Complete!</div>
       <div class="inst">📈 <b>Level</b>: P1 = smallest numbers · P2 = medium · P3 = harder. &nbsp;🧩 <b>Solo Player</b>: play alone. &nbsp;🔗 <b>Play with Friend</b>: battle on two devices!</div>
       <div class="inst">🏠 <b>Gear Base</b>: see ALL gears collected across every chapter (button below or in bookmark).</div>
-      <div class="inst">🔖 <b>Blue Bookmark</b> (top-right) = on-the-go menu: <b>Level</b> · <b>Narrator</b> (hints ON/OFF) · <b>Page Flip</b> (Manual/Auto) · <b>Mini Games</b> · <b>Gear Base</b> · <b>How to Play</b> · <b>Tokens</b> · <b>Reset Chapter</b> · <b>Invite Friend</b></div>
-      <div class="inst">🪙 Earn <b>5 Tokens</b> per chapter · unlocks after Ch.1 · spend 1 Token to enter a Mini Game · each level inside costs 1 more!</div>
+      <div class="inst">✏️ <b>Your Name</b>: set it when you open the book — change it anytime from the <b>Blue Bookmark</b> menu.</div>
+      <div class="inst">🔖 <b>Blue Bookmark</b> (top-right) = on-the-go menu: <b>Your Name</b> · <b>Level</b> · <b>Narrator</b> (hints ON/OFF) · <b>Page Flip</b> (Manual/Auto) · <b>Mini Games</b> · <b>Gear Base</b> · <b>How to Play</b> · <b>Tokens</b> · <b>Reset Chapter</b> · <b>Invite Friend</b></div>
+      <div class="inst">🪙 Earn <b>5 Tokens</b> per chapter (Ch.9 gives <b>20 Tokens!</b>) · unlocks after Ch.1 · spend 1 Token to enter a Mini Game · each level inside costs 1 more!</div>
       <select id="level-select" onchange="G.level=this.value;if(G.phase==='questions'&&curQ)nextQ()">
         <option value="P1" selected>P1</option>
         <option value="P2">P2</option>
@@ -789,6 +808,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
           <option value="P1">P1</option><option value="P2">P2</option><option value="P3" selected>P3</option>
         </select>
       </div>
+      <div class="si"><label>Your Name</label><input id="bm-name-input" type="text" maxlength="20" placeholder="Enter name…" oninput="localStorage.setItem('mip_player_name',this.value)" style="padding:3px 8px;background:rgba(255,215,0,.1);border:1px solid #cc8800;border-radius:8px;color:#ffd700;font-size:12px;font-family:Georgia,serif;outline:none;width:100px"></div>
       <div class="si"><label>Narrator</label><button class="smb act" id="narr-btn" onclick="toggleNarr()">ON</button></div>
       <div class="si"><label>Page Flip</label><button class="smb act" id="flip-btn" onclick="toggleFlip()">Manual</button></div>
       <div class="si"><label>Mini Games</label><button class="smb" id="mini-btn" onclick="openMiniMap()" disabled>🔒 After Ch.1</button></div>
@@ -835,12 +855,12 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <defs>
         <marker id="dot" markerWidth="6" markerHeight="6" refX="3" refY="3"><circle cx="3" cy="3" r="2" fill="#5a8a5a"/></marker>
       </defs>
-      <!-- center = 350,270 -->
-      <line x1="350" y1="270" x2="90"  y2="155" stroke="#4a7a4a" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
-      <line x1="350" y1="270" x2="80"  y2="380" stroke="#4a7a4a" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
-      <line x1="350" y1="270" x2="555" y2="380" stroke="#4a7a4a" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
-      <line x1="350" y1="270" x2="555" y2="155" stroke="#4a7a4a" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
-      <line x1="350" y1="270" x2="350" y2="120" stroke="#4a7a4a" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
+      <!-- center = 350,330 -->
+      <line x1="350" y1="330" x2="90"  y2="155" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
+      <line x1="350" y1="330" x2="80"  y2="380" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
+      <line x1="350" y1="330" x2="555" y2="380" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
+      <line x1="350" y1="330" x2="555" y2="155" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
+      <line x1="350" y1="330" x2="350" y2="120" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
     </svg>
 
     <!-- 🌋 Lava — RED — top-left -->
@@ -894,7 +914,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     </div>
 
     <!-- 💥 POPped Your Mind — PURPLE — CENTER -->
-    <div class="map-pin p-pop" style="left:350px;top:270px" onclick="playMiniGame('pop')">
+    <div class="map-pin p-pop" style="left:350px;top:330px" onclick="playMiniGame('pop')">
       <div class="pin-flag" style="background:#6600cc;--fc:#6600cc;--fg:rgba(170,68,255,.8);border-color:rgba(200,150,255,.5)">
         <div class="pin-icon">💥</div>
         <div class="pin-fname">POPped<br>YOUR MIND</div>
@@ -1247,6 +1267,21 @@ function wakeBook(){
     }
   },2000);
 }
+function showNamePopup(){
+  const popup=$id('name-popup');
+  const ni=$id('name-popup-input');
+  ni.value=localStorage.getItem('mip_player_name')||'';
+  popup.style.display='flex';
+  setTimeout(()=>ni.focus(),80);
+}
+function confirmName(){
+  const ni=$id('name-popup-input');
+  const name=ni.value.trim()||'Scholar';
+  localStorage.setItem('mip_player_name',name);
+  const bmni=$id('bm-name-input');if(bmni)bmni.value=name;
+  $id('name-popup').style.display='none';
+  openBook();
+}
 function openBook(){
   sfx('flip');
   $id('cover').style.transform='rotateY(-90deg)';
@@ -1480,7 +1515,8 @@ function launchFightScene(){
           +'&p'+(i+1)+'c='+encodeURIComponent(p.charName);
     });
   } else {
-    src='battle.html?solo=1&pw='+pw+'&gears='+gearsParam+'&level='+lvl+'&chapter='+G.chapter+'&p1n=Scholar&p1g='+G.soloChar.gender+'&p1c='+encodeURIComponent(G.soloChar.name);
+    const _pn=encodeURIComponent((localStorage.getItem('mip_player_name')||'').trim()||'Scholar');
+    src='battle.html?solo=1&pw='+pw+'&gears='+gearsParam+'&level='+lvl+'&chapter='+G.chapter+'&p1n='+_pn+'&p1g='+G.soloChar.gender+'&p1c='+encodeURIComponent(G.soloChar.name);
   }
   $id('mp-iframe').src=src;
   _cSendGame({type:'sync_flip',target:'fight'});
@@ -1642,7 +1678,8 @@ function mEnter(){
     sfx('victory'); $id('m-msg').textContent='✅ CODE ACCEPTED! Chapter complete!';
     for(let i=0;i<3;i++)$id('ms-'+i).style.background='#003300';
     if(G.chapter===1){G.miniUnlocked=true;$id('mini-btn').disabled=false;$id('mini-btn').textContent='🎮 Play'}
-    G.tokens+=5;updateTokenDisplay();
+    const _tokEarn=G.chapter===9?20:5;
+    G.tokens+=_tokEarn;updateTokenDisplay();
     setTimeout(()=>{
       if(G.chapter>=10){clearSave();endGame();return}
       G.chapter++;
@@ -1679,6 +1716,7 @@ function updateTokenDisplay(){const el=$id('token-count');if(el)el.textContent=G
 function toggleScroll(){
   const isOpen=$id('scroll-menu').classList.toggle('open');
   $id('bookmark').classList.toggle('hidden', isOpen);
+  if(isOpen){const ni=$id('bm-name-input');if(ni)ni.value=localStorage.getItem('mip_player_name')||'';}
 }
 function toggleNarr(){G.narrator=!G.narrator;const b=$id('narr-btn');b.textContent=G.narrator?'ON':'OFF';b.classList.toggle('act',G.narrator);$id('narrator').style.display=G.narrator?'':'none'}
 function toggleFlip(){
@@ -1948,7 +1986,7 @@ function closingBookAnimation(){
     book.style.opacity='';
     book.style.transition='';
     // Reset cover buttons, show closed state
-    $id('open-btn').style.display='none';
+    $id('open-btn').style.display='block';
     $id('continue-btn').style.display='none';
     $id('save-info').style.display='none';
     cover.style.display='flex';
@@ -1963,7 +2001,7 @@ function closingBookAnimation(){
     const el=$id('eye-l'),er=$id('eye-r'),mouth=$id('mouth');
     el.classList.remove('closed'); er.classList.remove('closed');
     mouth.className='happy';
-    $id('cover-msg').textContent='Adventure complete! 🏆 Well done, Scholar!';
+    $id('cover-msg').textContent='Adventure complete! 🏆 Well done, '+(localStorage.getItem('mip_player_name')||'Scholar')+'!';
   },900);
   // Eyes slowly close
   setTimeout(()=>{

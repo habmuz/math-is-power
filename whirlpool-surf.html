@@ -176,31 +176,47 @@ function drawShore(t){
 
 // ── DRAW WHIRLPOOL ────────────────────────────────────────────
 function drawWhirlpool(wp,t){
-  const scx=wp.wx, scy=wp.wy+scrollY;  // screen y: world moves opposite to scroll
+  const scx=wp.wx, scy=wp.wy+scrollY;
   if(scy<-160||scy>H+160)return;
 
-  const og=ctx.createRadialGradient(scx,scy,wp.r*0.2,scx,scy,wp.r*1.5);
-  og.addColorStop(0,'rgba(0,120,255,0.12)');
-  og.addColorStop(1,'rgba(0,80,200,0)');
-  ctx.fillStyle=og; ctx.beginPath(); ctx.arc(scx,scy,wp.r*1.5,0,Math.PI*2); ctx.fill();
-  ctx.setLineDash([7,5]);
-  for(let i=0;i<4;i++){
-    const rr=wp.r*(0.28+i*0.22);
-    ctx.strokeStyle=`rgba(110,195,255,${0.09+i*0.04})`; ctx.lineWidth=2;
-    ctx.lineDashOffset=-(wp.spin*(i+1)*6);
+  // Outer danger glow
+  const og=ctx.createRadialGradient(scx,scy,wp.r*0.2,scx,scy,wp.r*1.8);
+  og.addColorStop(0,'rgba(0,180,255,0.7)');
+  og.addColorStop(0.5,'rgba(0,100,220,0.35)');
+  og.addColorStop(1,'rgba(0,60,180,0)');
+  ctx.fillStyle=og; ctx.beginPath(); ctx.arc(scx,scy,wp.r*1.8,0,Math.PI*2); ctx.fill();
+
+  // Spinning rings — bright & thick
+  ctx.setLineDash([8,4]);
+  for(let i=0;i<5;i++){
+    const rr=wp.r*(0.2+i*0.2);
+    const alpha=0.55+i*0.09;
+    ctx.strokeStyle=`rgba(80,210,255,${alpha})`; ctx.lineWidth=2.5;
+    ctx.lineDashOffset=-(wp.spin*(i+1)*7);
     ctx.beginPath(); ctx.arc(scx,scy,rr,0,Math.PI*2); ctx.stroke();
   }
   ctx.setLineDash([]);
+
   // Swirl arms
-  for(let arm=0;arm<5;arm++){
-    const a=wp.spin+arm*(Math.PI*2/5);
-    ctx.strokeStyle='rgba(80,180,255,0.18)'; ctx.lineWidth=2;
-    ctx.beginPath(); ctx.arc(scx,scy,wp.r*0.55,a,a+0.6); ctx.stroke();
+  for(let arm=0;arm<6;arm++){
+    const a=wp.spin+arm*(Math.PI*2/6);
+    ctx.strokeStyle='rgba(150,230,255,0.75)'; ctx.lineWidth=2.5;
+    ctx.beginPath(); ctx.arc(scx,scy,wp.r*0.6,a,a+0.65); ctx.stroke();
   }
-  // Dark core
-  const cg=ctx.createRadialGradient(scx,scy,0,scx,scy,wp.r*0.3);
-  cg.addColorStop(0,'rgba(0,0,15,0.96)'); cg.addColorStop(1,'rgba(0,5,20,0)');
-  ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(scx,scy,wp.r*0.3,0,Math.PI*2); ctx.fill();
+
+  // Warning label
+  ctx.save();
+  ctx.globalAlpha=0.9;
+  ctx.font=`bold ${Math.round(wp.r*0.55)}px sans-serif`;
+  ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillStyle='#ff4444';
+  ctx.fillText('⚠️',scx,scy);
+  ctx.restore();
+
+  // Dark sucking core
+  const cg=ctx.createRadialGradient(scx,scy,0,scx,scy,wp.r*0.38);
+  cg.addColorStop(0,'rgba(0,0,20,0.98)'); cg.addColorStop(1,'rgba(0,5,20,0)');
+  ctx.fillStyle=cg; ctx.beginPath(); ctx.arc(scx,scy,wp.r*0.38,0,Math.PI*2); ctx.fill();
 }
 
 // ── DRAW COLLECTIBLES ─────────────────────────────────────────
