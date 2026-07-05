@@ -327,14 +327,14 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 #torn-paper .tp-close{margin-top:8px;background:none;border:1px solid #8b4513;color:#8b4513;border-radius:8px;padding:2px 10px;font-size:10px;cursor:pointer;font-family:Georgia,serif}
 
 /* scroll menu */
-#scroll-menu{position:absolute;top:0;right:0;width:180px;height:auto;background:linear-gradient(160deg,#f0d898,#e8c86a);border-radius:0 8px 8px 0;padding:40px 10px 10px;display:none;flex-direction:column;gap:7px;z-index:15;box-shadow:-4px 0 20px rgba(0,0,0,.3);border-left:3px solid #8b4513;border-bottom:3px solid #8b4513}
+#scroll-menu{position:absolute;top:0;right:0;width:170px;max-height:598px;overflow-y:auto;background:linear-gradient(160deg,#f0d898,#e8c86a);border-radius:0 8px 8px 0;padding:36px 8px 8px;display:none;flex-direction:column;gap:3px;z-index:15;box-shadow:-4px 0 20px rgba(0,0,0,.3);border-left:3px solid #8b4513;border-bottom:3px solid #8b4513}
 #scroll-menu.open{display:flex}
-#scroll-menu h3{color:#5a2d00;font-size:10px;text-align:center;border-bottom:1px solid #8b4513;padding-bottom:4px;letter-spacing:2px;font-family:'Neucha',cursive}
+#scroll-menu h3{color:#5a2d00;font-size:9px;text-align:center;border-bottom:1px solid #8b4513;padding-bottom:3px;letter-spacing:2px;font-family:'Neucha',cursive}
 #scroll-menu{font-family:'Neucha',cursive}
-.si label{font-size:10px;color:#8b4513;font-weight:bold;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:2px}
-.si select,.smb{padding:5px 7px;border:1px solid #8b4513;border-radius:4px;background:#fdf5e6;color:#2d0000;font-size:12px;font-family:'Neucha',cursive;cursor:pointer;width:100%}
+.si label{font-size:9px;color:#8b4513;font-weight:bold;text-transform:uppercase;letter-spacing:.5px;display:block;margin-bottom:1px}
+.si select,.smb{padding:3px 6px;border:1px solid #8b4513;border-radius:4px;background:#fdf5e6;color:#2d0000;font-size:11px;font-family:'Neucha',cursive;cursor:pointer;width:100%}
 .smb.act{background:#8b4513;color:#f6e8cc}
-#close-sm{margin-top:6px;padding:6px;background:#5a2d00;color:#f6e8cc;border:none;border-radius:4px;cursor:pointer;font-family:'Neucha',cursive;font-size:12px;width:100%}
+#close-sm{margin-top:4px;padding:4px;background:#5a2d00;color:#f6e8cc;border:none;border-radius:4px;cursor:pointer;font-family:'Neucha',cursive;font-size:11px;width:100%}
 #page-nav{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:10;display:none}
 .pnav-btn{padding:5px 14px;background:rgba(139,100,60,.7);color:#f6e8cc;border:none;border-radius:10px;font-size:12px;cursor:pointer;font-family:Georgia,serif;transition:background .2s}
 .pnav-btn:hover{background:rgba(139,100,60,1)}
@@ -699,8 +699,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
         <option value="P3">P3</option>
       </select>
       <button id="solo-player-btn" onclick="openSoloPicker()">🧩 Solo Player</button>
-      <button id="friend-btn" onclick="openMpOverlay()">🔗 Play with Friend</button>
-      <button id="colordash-mp-btn" onclick="openColorDashMP()" style="margin-top:4px;padding:8px 20px;background:linear-gradient(135deg,#6600cc,#aa33ff);color:#fff;border:none;border-radius:14px;font-size:13px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3)">🎨 Color Dash Multiplayer</button>
+      <button id="friend-btn" onclick="activateMpMode()">🔗 Play with Friend</button>
       <button id="gear-base-btn-inline" onclick="openGearRoom()" style="margin-top:6px;padding:8px 24px;background:linear-gradient(#ffd700,#cc8800);color:#2d0000;border:none;border-radius:14px;font-size:14px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25);display:none;flex-shrink:0;align-self:center">🏠 Gear Base</button>
     </div>
 
@@ -819,7 +818,6 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="si"><label>Reset Chapter</label><button class="smb" style="color:#aa0000;border-color:#aa0000" onclick="resetChapter()">🔄 Redo Chapter</button></div>
       <div class="si"><label>Admin</label><button class="smb" onclick="adminLogin()">🔐 Admin</button></div>
       <div class="si"><label>Multiplayer</label><button class="smb" onclick="openMpOverlay();toggleScroll()">🔗 Invite Friend</button></div>
-      <div class="si"><label>Color Dash MP</label><button class="smb" onclick="openColorDashMP();toggleScroll()">🎨 Color Dash 2-5P</button></div>
       <button id="close-sm" onclick="toggleScroll()">✕ Close</button>
     </div>
   </div>
@@ -1815,10 +1813,17 @@ const MINI_INFO={
   code:    {name:'🧟 Zombie Temple',  emoji:'🧟',desc:'The temple is overrun — survive!',color:'#bb8800'},
   dash:    {name:'🎨 Color Dash',     emoji:'🎨',desc:'Step on the right color before time runs out!',color:'#cc44ff'},
 };
+function activateMpMode(){
+  G.mpMode=true;
+  const btn=$id('friend-btn');
+  btn.textContent='🔗 Multiplayer ON ✓';
+  btn.style.background='linear-gradient(135deg,#2d6a00,#44aa00)';
+  openMpOverlay();
+}
 function openColorDashMP(){
   if(G.tokens<=0){showDialog('🪙 No Tokens!','You need 1 token to play Color Dash MP.\nEarn tokens by completing chapters!','OK',()=>{});return;}
   G.tokens--;updateTokenDisplay();saveGame();
-  $id('mini-game-iframe').src='color-dash-mp.html';
+  $id('mini-game-iframe').src='color-dash-mp.html?mp='+(G.mpMode?'1':'0');
   $id('mini-game-scene').style.display='block';
 }
 function openMiniMap(){if(!G.miniUnlocked)return;toggleScroll();$id('mini-map-overlay').classList.add('open')}

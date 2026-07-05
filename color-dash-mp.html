@@ -90,7 +90,7 @@ body{font-family:'Fredoka One',cursive;background:radial-gradient(ellipse at top
   <h1>🎨 Color Dash</h1>
   <p>Everyone shares this screen. Choose your color and step on the right tile before time runs out!</p>
   <div style="font-size:.9rem;color:#ffd700">How many players?</div>
-  <div class="player-count-btns">
+  <div class="player-count-btns" id="pc-btns">
     <button class="pc-btn active" onclick="setPC(2)">2</button>
     <button class="pc-btn" onclick="setPC(3)">3</button>
     <button class="pc-btn" onclick="setPC(4)">4</button>
@@ -154,6 +154,8 @@ const TW=110,TH=82,TGAP=12;
 const AW=COLS*(TW+TGAP)-TGAP;
 const AH=ROWS*(TH+TGAP)-TGAP;
 
+const _mpMode=new URLSearchParams(location.search).get('mp')==='1';
+
 let numPlayers=2,players=[],tileEls=[],tileColors=[];
 let round=1,announced=0,phase='idle',timer=0,timerMax=5,timerTick=null;
 const START_TILES=[7,2,0,4,5];
@@ -162,7 +164,7 @@ const START_TILES=[7,2,0,4,5];
 let _pc=2;
 function setPC(n){
   _pc=n;
-  document.querySelectorAll('.pc-btn').forEach((b,i)=>b.classList.toggle('active',i+2===n));
+  document.querySelectorAll('.pc-btn').forEach(b=>b.classList.toggle('active',Number(b.dataset.n)===n));
   renderKeyInfo();
 }
 function renderKeyInfo(){
@@ -174,6 +176,17 @@ function renderKeyInfo(){
     row.innerHTML=`<div class="pki-dot" style="background:${p.color}"></div><div class="pki-name">${p.label}</div><div class="pki-keys">${p.keyLabel}</div>`;
     ki.appendChild(row);
   }
+}
+// Add data-n to existing count buttons so active-state logic works reliably
+document.querySelectorAll('#pc-btns .pc-btn').forEach((b,i)=>b.dataset.n=String(i+2));
+
+// If accessed from multiplayer mode, prepend a solo (1P) option
+if(_mpMode){
+  const soloBtn=document.createElement('button');
+  soloBtn.className='pc-btn';soloBtn.textContent='Solo';
+  soloBtn.dataset.n='1';
+  soloBtn.onclick=()=>setPC(1);
+  document.getElementById('pc-btns').prepend(soloBtn);
 }
 renderKeyInfo();
 
@@ -276,7 +289,7 @@ function startRound(){
   document.getElementById('announce-sub').textContent='⬇ MOVE TO A '+c.name+' TILE ⬇';
 
   speak(c.name+'!');beep(440+announced*80,.15,'sine',.2);
-  setTimeout(startCountdown,1900);
+  setTimeout(startCountdown,1000);
 }
 
 function getRoundTime(r){return Math.max(2,5-(r-1)*3/49);}
@@ -401,10 +414,22 @@ function renderTiles(){
   });
 }
 function updateAllPlayerSprites(){
+  // Count how many players share each tile, and assign slot index
+  const tileGroups={};
+  players.forEach(p=>{
+    if(!tileGroups[p.tile])tileGroups[p.tile]=[];
+    tileGroups[p.tile].push(p.id);
+  });
   players.forEach(p=>{
     const sp=document.getElementById('ps'+p.id);if(!sp)return;
     const row=Math.floor(p.tile/COLS),col=p.tile%COLS;
-    sp.style.left=(col*(TW+TGAP)+TW/2-23)+'px';
+    const group=tileGroups[p.tile];
+    const slotIdx=group.indexOf(p.id);
+    const n=group.length;
+    // Spread players horizontally within tile; centre = TW/2-23
+    const spread=Math.min(20,TW/(n+1));
+    const offsetX=(slotIdx-(n-1)/2)*spread;
+    sp.style.left=(col*(TW+TGAP)+TW/2-23+offsetX)+'px';
     sp.style.top=(row*(TH+TGAP)-38)+'px';
   });
 }
