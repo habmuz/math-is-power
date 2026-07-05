@@ -849,22 +849,17 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     <div id="map-subtitle">Choose a region to explore &nbsp;·&nbsp; 🪙 <span id="map-token-count">0</span> tokens (1 per level)</div>
     <button id="map-close" onclick="closeMiniMap()">✕ EXIT</button>
 
-    <!-- 5-region world map -->
+    <!-- 3-region world map — Y pattern (thirds) -->
     <!-- SVG dashed paths from center to each pin -->
     <svg id="map-svg" viewBox="0 0 700 510" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <marker id="dot" markerWidth="6" markerHeight="6" refX="3" refY="3"><circle cx="3" cy="3" r="2" fill="#5a8a5a"/></marker>
-      </defs>
-      <!-- center = 350,330 -->
-      <line x1="350" y1="330" x2="90"  y2="155" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
-      <line x1="350" y1="330" x2="80"  y2="380" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
-      <line x1="350" y1="330" x2="555" y2="380" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
-      <line x1="350" y1="330" x2="555" y2="155" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
-      <line x1="350" y1="330" x2="350" y2="120" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".7"/>
+      <!-- center = 350,310 | radius 170 | 120° apart -->
+      <line x1="350" y1="310" x2="203" y2="163" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
+      <line x1="350" y1="310" x2="497" y2="163" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
+      <line x1="350" y1="310" x2="350" y2="480" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
     </svg>
 
-    <!-- 🌋 Lava — RED — top-left -->
-    <div class="map-pin" style="left:90px;top:155px" onclick="playMiniGame('lava')">
+    <!-- 🌋 Lava — RED — top-left (1/3) -->
+    <div class="map-pin" style="left:203px;top:163px" onclick="playMiniGame('lava')">
       <div class="pin-flag" style="background:#c03000;--fc:#c03000;--fg:rgba(255,68,0,.7)">
         <div class="pin-icon">🌋</div>
         <div class="pin-fname">LAVA RUINS</div>
@@ -873,8 +868,8 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="pin-base"></div>
     </div>
 
-    <!-- 🏃 Obstacle — ORANGE — bottom-left -->
-    <div class="map-pin" style="left:80px;top:380px" onclick="playMiniGame('obstacle')">
+    <!-- 🏃 Obstacle — ORANGE — top-right (1/3) -->
+    <div class="map-pin" style="left:497px;top:163px" onclick="playMiniGame('obstacle')">
       <div class="pin-flag" style="background:#cc5500;--fc:#cc5500;--fg:rgba(255,140,0,.7)">
         <div class="pin-icon">🏃</div>
         <div class="pin-fname">OBSTACLE PARK</div>
@@ -883,41 +878,11 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="pin-base"></div>
     </div>
 
-    <!-- 🧟 Zombie Temple — YELLOW — bottom-right -->
-    <div class="map-pin" style="left:555px;top:380px" onclick="playMiniGame('code')">
+    <!-- 🧟 Zombie Temple — YELLOW — bottom-center (1/3) -->
+    <div class="map-pin" style="left:350px;top:480px" onclick="playMiniGame('code')">
       <div class="pin-flag" style="background:#bb8800;--fc:#bb8800;--fg:rgba(255,210,0,.7)">
         <div class="pin-icon">🧟</div>
         <div class="pin-fname">ZOMBIE TEMPLE</div>
-      </div>
-      <div class="pin-pole"></div>
-      <div class="pin-base"></div>
-    </div>
-
-    <!-- 🌊 Whirlpool Escape — BLUE — top-right -->
-    <div class="map-pin" style="left:555px;top:155px" onclick="playMiniGame('ice')">
-      <div class="pin-flag" style="background:#0066aa;--fc:#0066aa;--fg:rgba(0,160,255,.7)">
-        <div class="pin-icon">🌊</div>
-        <div class="pin-fname">WHIRLPOOL ESCAPE</div>
-      </div>
-      <div class="pin-pole"></div>
-      <div class="pin-base"></div>
-    </div>
-
-    <!-- 🌿 Enchanted Garden — GREEN — top-center -->
-    <div class="map-pin" style="left:350px;top:120px" onclick="playMiniGame('maze')">
-      <div class="pin-flag" style="background:#226622;--fc:#226622;--fg:rgba(80,200,80,.7)">
-        <div class="pin-icon">🌿</div>
-        <div class="pin-fname">ENCHANTED GARDEN</div>
-      </div>
-      <div class="pin-pole"></div>
-      <div class="pin-base"></div>
-    </div>
-
-    <!-- 💥 POPped Your Mind — PURPLE — CENTER -->
-    <div class="map-pin p-pop" style="left:350px;top:330px" onclick="playMiniGame('pop')">
-      <div class="pin-flag" style="background:#6600cc;--fc:#6600cc;--fg:rgba(170,68,255,.8);border-color:rgba(200,150,255,.5)">
-        <div class="pin-icon">💥</div>
-        <div class="pin-fname">POPped<br>YOUR MIND</div>
       </div>
       <div class="pin-pole"></div>
       <div class="pin-base"></div>
