@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&display=swap" rel="stylesheet">
+<title>🎨 Color Dash</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Fredoka One',cursive;background:radial-gradient(ellipse at top,#1a0a2e,#0a0a1a);color:#fff;display:flex;flex-direction:column;align-items:center;user-select:none}
+#hdr{width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.1);flex-shrink:0}
+#back-btn{background:none;border:1px solid #555;color:#aaa;border-radius:6px;padding:4px 10px;font-size:.75rem;cursor:pointer;font-family:inherit}
+#back-btn:hover{color:#fff;border-color:#aaa}
+#round-display{font-size:1.1rem;color:#ffd700;letter-spacing:1px}
+#timer-num{font-size:1.5rem;font-weight:900;min-width:2ch;text-align:center}
+#timer-bar-wrap{width:100%;height:12px;background:rgba(255,255,255,.12);flex-shrink:0}
+#timer-bar{height:100%;width:100%;background:linear-gradient(to right,#ff4444,#ffcc00,#44ff88);transition:width .08s linear}
+#announce-box{flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:center;height:110px;gap:4px}
+#announce-label{font-size:4rem;font-weight:900;letter-spacing:6px;text-shadow:0 0 40px currentColor,0 0 80px currentColor}
+#announce-sub{font-size:.8rem;color:rgba(255,255,255,.5);letter-spacing:2px;text-transform:uppercase}
+#arena-wrap{flex:1;display:flex;align-items:center;justify-content:center;width:100%;position:relative}
+#arena{position:relative}
+.tile{position:absolute;border-radius:18px;transition:transform .45s cubic-bezier(.36,.07,.19,.97),opacity .45s ease,box-shadow .3s;overflow:hidden}
+.tile::before{content:'';position:absolute;top:0;left:0;right:0;height:40%;background:rgba(255,255,255,.22);border-radius:18px 18px 50% 50%}
+.tile.fallen{transform:translateY(220px) scale(0.15) rotate(18deg)!important;opacity:0!important}
+#player{position:absolute;width:54px;height:54px;display:flex;align-items:center;justify-content:center;font-size:2rem;transition:left .13s ease,top .13s ease;z-index:10;pointer-events:none}
+#player img{width:100%;height:100%;object-fit:cover;border-radius:50%;border:3px solid #fff;box-shadow:0 0 14px rgba(255,255,255,.6)}
+#status-bar{flex-shrink:0;height:46px;display:flex;align-items:center;justify-content:center;font-size:1rem;letter-spacing:1px}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.9);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:100;gap:14px;text-align:center;padding:20px}
+.overlay.show{display:flex}
+.ov-icon{font-size:5rem;animation:bounceIn .6s ease}
+.ov-title{font-size:2.6rem;font-weight:900}
+.ov-sub{font-size:1rem;color:#bbb;max-width:340px}
+.ov-btn{padding:12px 32px;border:none;border-radius:24px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;margin:4px;transition:transform .15s}
+.ov-btn:hover{transform:translateY(-2px)}
+#controls-hint{flex-shrink:0;font-size:.7rem;color:rgba(255,255,255,.3);padding:6px;letter-spacing:1px}
+@keyframes bounceIn{0%{transform:scale(0);opacity:0}60%{transform:scale(1.2)}100%{transform:scale(1);opacity:1}}
+@keyframes announcePop{0%{transform:scale(0.3);opacity:0}70%{transform:scale(1.1)}100%{transform:scale(1);opacity:1}}
+@keyframes survivePop{0%{transform:scale(1)}50%{transform:scale(1.15)}100%{transform:scale(1)}}
+</style>
+</head>
+<body>
+
+<div id="hdr">
+  <button id="back-btn" onclick="goBack()">← Map</button>
+  <div id="round-display">Round 1 / 50</div>
+  <div id="timer-num">—</div>
+</div>
+<div id="timer-bar-wrap"><div id="timer-bar"></div></div>
+
+<div id="announce-box">
+  <div id="announce-label" style="color:#fff">Color Dash!</div>
+  <div id="announce-sub">Step on the announced color tile</div>
+</div>
+
+<div id="arena-wrap"><div id="arena"></div></div>
+
+<div id="status-bar"></div>
+<div id="controls-hint">← → ↑ ↓ Arrow Keys to move &nbsp;|&nbsp; Swipe on mobile</div>
+
+<!-- Game Over -->
+<div class="overlay" id="go-overlay">
+  <div class="ov-icon">💀</div>
+  <div class="ov-title" style="color:#ff4444">FELL OFF!</div>
+  <div class="ov-sub" id="go-sub"></div>
+  <button class="ov-btn" style="background:#4466ff;color:#fff" onclick="restartGame()">Try Again 🎮</button>
+  <button class="ov-btn" style="background:#333;color:#fff" onclick="goBack()">← Map</button>
+</div>
+
+<!-- Win -->
+<div class="overlay" id="win-overlay">
+  <div class="ov-icon">🏆</div>
+  <div class="ov-title" style="color:#ffd700">CHAMPION!</div>
+  <div class="ov-sub">All 50 rounds survived! You're a Color Dash legend!</div>
+  <button class="ov-btn" style="background:#44cc44;color:#fff" onclick="restartGame()">Play Again 🎮</button>
+  <button class="ov-btn" style="background:#333;color:#fff" onclick="goBack()">← Map</button>
+</div>
+
+<script>
+const COLORS=[
+  {name:'RED',    fill:'#ff3333',dark:'#aa0000',glow:'rgba(255,50,50,.6)'},
+  {name:'BLUE',   fill:'#3399ff',dark:'#0055cc',glow:'rgba(50,150,255,.6)'},
+  {name:'GREEN',  fill:'#22dd55',dark:'#009922',glow:'rgba(50,220,80,.6)'},
+  {name:'YELLOW', fill:'#ffdd00',dark:'#bb9900',glow:'rgba(255,220,0,.6)'},
+  {name:'PURPLE', fill:'#aa33ff',dark:'#6600cc',glow:'rgba(170,50,255,.6)'},
+  {name:'ORANGE', fill:'#ff8822',dark:'#cc5500',glow:'rgba(255,140,50,.6)'},
+];
+
+const COLS=5,ROWS=2,COUNT=10;
+const TW=110,TH=82,TGAP=12;
+const AW=COLS*(TW+TGAP)-TGAP;
+const AH=ROWS*(TH+TGAP)-TGAP;
+
+let tileEls=[],tileColors=[],playerTile=7;
+let round=1,announced=0,phase='idle',timer=0,timerMax=5,timerTick=null,locked=false;
+
+const params=new URLSearchParams(location.search);
+const charImg=params.get('char')||'';
+
+function goBack(){
+  try{window.parent.closeMiniGameScene&&window.parent.closeMiniGameScene();}catch(e){}
+}
+
+// ── AUDIO ──
+let _ac=null;
+function ac(){if(!_ac)_ac=new(window.AudioContext||window.webkitAudioContext)();return _ac;}
+function beep(freq,dur,type='square',vol=0.18){
+  try{const o=ac().createOscillator(),g=ac().createGain();
+  o.connect(g);g.connect(ac().destination);
+  o.type=type;o.frequency.value=freq;
+  g.gain.setValueAtTime(vol,ac().currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001,ac().currentTime+dur);
+  o.start();o.stop(ac().currentTime+dur);}catch(e){}
+}
+function speak(text){
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.rate=0.85;u.pitch=1.2;u.volume=1;speechSynthesis.speak(u);}catch(e){}
+}
+
+// ── INIT ──
+function init(){
+  const arena=document.getElementById('arena');
+  arena.style.width=AW+'px';arena.style.height=AH+'px';
+  arena.innerHTML='';tileEls=[];
+
+  for(let i=0;i<COUNT;i++){
+    const row=Math.floor(i/COLS),col=i%COLS;
+    const div=document.createElement('div');
+    div.className='tile';
+    div.style.cssText=`left:${col*(TW+TGAP)}px;top:${row*(TH+TGAP)}px;width:${TW}px;height:${TH}px`;
+    arena.appendChild(div);
+    tileEls.push(div);
+  }
+
+  const p=document.createElement('div');p.id='player';
+  if(charImg){const img=document.createElement('img');img.src=decodeURIComponent(charImg);img.onerror=()=>{p.textContent='🧒'};p.appendChild(img);}
+  else p.textContent='🧒';
+  arena.appendChild(p);
+
+  document.addEventListener('keydown',e=>{
+    if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))e.preventDefault();
+    const map={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'};
+    if(map[e.key])move(map[e.key]);
+  });
+  let tx=0,ty=0;
+  document.addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+  document.addEventListener('touchend',e=>{
+    const dx=e.changedTouches[0].clientX-tx,dy=e.changedTouches[0].clientY-ty;
+    if(Math.abs(dx)>Math.abs(dy)){move(dx>30?'right':'left');}
+    else{move(dy>30?'down':'up');}
+  });
+
+  startGame();
+}
+
+function startGame(){round=1;playerTile=7;locked=false;updatePlayer();startRound();}
+function restartGame(){
+  document.getElementById('go-overlay').classList.remove('show');
+  document.getElementById('win-overlay').classList.remove('show');
+  clearInterval(timerTick);
+  // Reset tile elements
+  tileEls.forEach(t=>t.classList.remove('fallen'));
+  const p=document.getElementById('player');
+  if(p){p.style.transform='';p.style.opacity='1';}
+  startGame();
+}
+
+// ── ROUND ──
+function startRound(){
+  phase='announce';locked=false;
+  document.getElementById('round-display').textContent=`Round ${round} / 50`;
+  document.getElementById('status-bar').textContent='';
+  document.getElementById('status-bar').style.color='#fff';
+  tileEls.forEach(t=>t.classList.remove('fallen'));
+
+  // Randomize tiles — ensure announced color appears ≥2 times
+  announced=Math.floor(Math.random()*6);
+  tileColors=Array.from({length:COUNT},()=>Math.floor(Math.random()*6));
+  const hits=tileColors.reduce((a,c,i)=>c===announced?[...a,i]:a,[]);
+  if(hits.length<2){
+    let n=hits.length;
+    while(n<2){const ri=Math.floor(Math.random()*COUNT);tileColors[ri]=announced;n++;}
+  }
+  renderTiles();
+
+  const c=COLORS[announced];
+  const lbl=document.getElementById('announce-label');
+  lbl.textContent=c.name+'!';
+  lbl.style.color=c.fill;
+  lbl.style.textShadow=`0 0 40px ${c.fill},0 0 80px ${c.fill}`;
+  lbl.style.animation='none';void lbl.offsetWidth;lbl.style.animation='announcePop .5s ease forwards';
+  document.getElementById('announce-sub').textContent='⬇ STEP ON A '+c.name+' TILE ⬇';
+
+  speak(c.name+'!');
+  beep(440+announced*80,.15,'sine',.25);
+  setTimeout(startCountdown,1900);
+}
+
+function getRoundTime(r){return Math.max(2,5-(r-1)*3/49);}
+
+function startCountdown(){
+  phase='countdown';
+  timerMax=getRoundTime(round);timer=timerMax;
+  document.getElementById('timer-num').textContent=Math.ceil(timer);
+  document.getElementById('timer-bar').style.width='100%';
+  clearInterval(timerTick);
+  const tick=50;let lastCeil=Math.ceil(timer);
+  timerTick=setInterval(()=>{
+    timer-=tick/1000;
+    const frac=Math.max(0,timer/timerMax);
+    document.getElementById('timer-bar').style.width=(frac*100)+'%';
+    const ceil=Math.ceil(Math.max(0,timer));
+    document.getElementById('timer-num').textContent=ceil;
+    if(ceil!==lastCeil&&ceil<=3&&ceil>0){beep(880+ceil*50,.08,'sine',.2);lastCeil=ceil;}
+    if(timer<=0){clearInterval(timerTick);evaluate();}
+  },tick);
+}
+
+function evaluate(){
+  phase='falling';locked=true;
+  document.getElementById('timer-num').textContent='0';
+  const survived=tileColors[playerTile]===announced;
+
+  // Drop wrong tiles
+  tileEls.forEach((t,i)=>{
+    if(tileColors[i]!==announced) setTimeout(()=>t.classList.add('fallen'),Math.random()*180+20);
+  });
+
+  if(!survived){
+    setTimeout(()=>{
+      const p=document.getElementById('player');
+      if(p){p.style.transition='left .12s,top .12s,transform .5s,opacity .5s';p.style.transform='translateY(220px) scale(0.15) rotate(20deg)';p.style.opacity='0';}
+      beep(150,.6,'sawtooth',.3);
+    },300);
+    setTimeout(()=>{
+      document.getElementById('go-sub').textContent=`Survived ${round-1} round${round===1?'':'s'}. The color was ${COLORS[announced].name}!`;
+      document.getElementById('go-overlay').classList.add('show');
+    },1100);
+    return;
+  }
+
+  // Survived
+  beep(660,.12,'sine',.2);setTimeout(()=>beep(880,.15,'sine',.2),150);setTimeout(()=>beep(1100,.2,'sine',.2),300);
+  document.getElementById('status-bar').textContent='✅ Round '+round+' complete!';
+  document.getElementById('status-bar').style.color=COLORS[announced].fill;
+  document.getElementById('announce-label').textContent='✓ '+COLORS[announced].name+'!';
+
+  if(round>=50){
+    setTimeout(()=>{
+      for(let i=3;i>=0;i--) setTimeout(()=>beep(440+i*220,.3,'sine',.25),i*200);
+      document.getElementById('win-overlay').classList.add('show');
+    },1500);
+    return;
+  }
+
+  round++;
+  setTimeout(()=>{
+    tileEls.forEach(t=>t.classList.remove('fallen'));
+    const p=document.getElementById('player');
+    if(p){p.style.transform='';p.style.opacity='1';p.style.transition='left .13s ease,top .13s ease';}
+    locked=false;
+    setTimeout(startRound,500);
+  },1600);
+}
+
+// ── RENDER ──
+function renderTiles(){
+  tileEls.forEach((t,i)=>{
+    const c=COLORS[tileColors[i]];
+    t.style.background=`linear-gradient(160deg,${c.fill},${c.dark})`;
+    t.style.boxShadow=`0 8px 0 ${c.dark},0 2px 18px ${c.glow}`;
+  });
+}
+
+function updatePlayer(){
+  const row=Math.floor(playerTile/COLS),col=playerTile%COLS;
+  const x=col*(TW+TGAP)+TW/2-27;
+  const y=row*(TH+TGAP)-46;
+  const p=document.getElementById('player');
+  if(p){p.style.left=x+'px';p.style.top=y+'px';}
+}
+
+// ── MOVE ──
+function move(dir){
+  if(locked||phase==='falling'||phase==='idle')return;
+  const row=Math.floor(playerTile/COLS),col=playerTile%COLS;
+  let n=playerTile;
+  if(dir==='left'&&col>0)n--;
+  if(dir==='right'&&col<COLS-1)n++;
+  if(dir==='up'&&row>0)n-=COLS;
+  if(dir==='down'&&row<ROWS-1)n+=COLS;
+  if(n!==playerTile){playerTile=n;updatePlayer();beep(330,.04,'square',.1);}
+}
+
+window.onload=init;
+</script>
+</body>
+</html>

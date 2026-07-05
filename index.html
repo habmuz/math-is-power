@@ -347,7 +347,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
   border:3px solid #3a6a3a;border-radius:18px;position:relative;overflow:hidden}
 #map-title{text-align:center;color:#aaffaa;font-size:24px;padding:9px;letter-spacing:3px;
   text-shadow:0 0 10px #44ff44;border-bottom:1px solid #2a4a2a}
-#map-subtitle{text-align:center;color:#ffffff;font-size:13px;padding:5px;opacity:.9}
+#map-subtitle{text-align:center;color:#ffffff;font-size:13px;padding:5px 60px;opacity:.9;position:relative;z-index:5}
 #map-close{position:absolute;top:8px;right:10px;background:none;border:2px solid #66aa66;
   color:#66aa66;border-radius:6px;padding:3px 10px;cursor:pointer;font-size:12px}
 /* SVG paths */
@@ -852,14 +852,14 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     <!-- 3-region world map — Y pattern (thirds) -->
     <!-- SVG dashed paths from center to each pin -->
     <svg id="map-svg" viewBox="0 0 700 510" xmlns="http://www.w3.org/2000/svg">
-      <!-- center = 350,310 | radius 170 | 120° apart -->
-      <line x1="350" y1="310" x2="203" y2="163" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
-      <line x1="350" y1="310" x2="497" y2="163" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
-      <line x1="350" y1="310" x2="350" y2="480" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
+      <!-- center = 350,340 -->
+      <line x1="350" y1="340" x2="175" y2="230" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
+      <line x1="350" y1="340" x2="525" y2="230" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
+      <line x1="350" y1="340" x2="350" y2="460" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
     </svg>
 
-    <!-- 🌋 Lava — RED — top-left (1/3) -->
-    <div class="map-pin" style="left:203px;top:163px" onclick="playMiniGame('lava')">
+    <!-- 🌋 Lava — RED — top-left -->
+    <div class="map-pin" style="left:175px;top:230px" onclick="playMiniGame('lava')">
       <div class="pin-flag" style="background:#c03000;--fc:#c03000;--fg:rgba(255,68,0,.7)">
         <div class="pin-icon">🌋</div>
         <div class="pin-fname">LAVA RUINS</div>
@@ -868,8 +868,8 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="pin-base"></div>
     </div>
 
-    <!-- 🏃 Obstacle — ORANGE — top-right (1/3) -->
-    <div class="map-pin" style="left:497px;top:163px" onclick="playMiniGame('obstacle')">
+    <!-- 🏃 Obstacle — ORANGE — top-right -->
+    <div class="map-pin" style="left:525px;top:230px" onclick="playMiniGame('obstacle')">
       <div class="pin-flag" style="background:#cc5500;--fc:#cc5500;--fg:rgba(255,140,0,.7)">
         <div class="pin-icon">🏃</div>
         <div class="pin-fname">OBSTACLE PARK</div>
@@ -878,8 +878,8 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="pin-base"></div>
     </div>
 
-    <!-- 🧟 Zombie Temple — YELLOW — bottom-center (1/3) -->
-    <div class="map-pin" style="left:350px;top:480px" onclick="playMiniGame('code')">
+    <!-- 🧟 Zombie Temple — YELLOW — bottom-center -->
+    <div class="map-pin" style="left:350px;top:460px" onclick="playMiniGame('code')">
       <div class="pin-flag" style="background:#bb8800;--fc:#bb8800;--fg:rgba(255,210,0,.7)">
         <div class="pin-icon">🧟</div>
         <div class="pin-fname">ZOMBIE TEMPLE</div>
