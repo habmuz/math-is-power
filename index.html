@@ -54,7 +54,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 /* pages */
 .page{flex:1;height:600px;position:relative;overflow:hidden}
 #page-l{background:linear-gradient(160deg,#0a0a18,#150a28,#080810);border-radius:8px 0 0 8px}
-#page-r{background:linear-gradient(160deg,#f6e8cc,#ede0b0,#e8d89a);border-radius:0 8px 8px 0}
+#page-r{background:linear-gradient(160deg,#f6e8cc,#ede0b0,#e8d89a);border-radius:0 8px 8px 0;overflow:visible}
 #page-r::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(transparent,transparent 28px,rgba(139,100,60,.07) 29px);pointer-events:none}
 
 /* ── PAGE FLIP ── */
@@ -699,7 +699,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
         <option value="P3">P3</option>
       </select>
       <button id="solo-player-btn" onclick="openSoloPicker()">🧩 Solo Player</button>
-      <button id="friend-btn" onclick="activateMpMode()">🔗 Play with Friend</button>
+      <button id="friend-btn" onclick="openMpOverlay()">🔗 Play with Friend</button>
       <button id="gear-base-btn-inline" onclick="openGearRoom()" style="margin-top:6px;padding:8px 24px;background:linear-gradient(#ffd700,#cc8800);color:#2d0000;border:none;border-radius:14px;font-size:14px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25);display:none;flex-shrink:0;align-self:center">🏠 Gear Base</button>
     </div>
 
@@ -1815,10 +1815,6 @@ const MINI_INFO={
 };
 function activateMpMode(){
   G.mpMode=true;
-  const btn=$id('friend-btn');
-  btn.textContent='🔗 Multiplayer ON ✓';
-  btn.style.background='linear-gradient(135deg,#2d6a00,#44aa00)';
-  openMpOverlay();
 }
 function openColorDashMP(){
   if(G.tokens<=0){showDialog('🪙 No Tokens!','You need 1 token to play Color Dash MP.\nEarn tokens by completing chapters!','OK',()=>{});return;}
@@ -2205,7 +2201,7 @@ function initPeer(code){
         }
         renderLobby();
         if($id('mp-overlay').classList.contains('open')){
-          $id('mp-overlay').classList.remove('open'); openCharPanel();
+          $id('mp-overlay').classList.remove('open'); openCharPanel(); activateMpMode();
         }
       });
       conn.on('data',function(data){
@@ -2708,6 +2704,7 @@ function _cHandleGame(msg){
     (msg.presentPlayers||[]).forEach(n=>_lobby[n]={});
     _lobby[_myPlayer]={ts:Date.now()};
     _p2Joined=true;
+    activateMpMode();
     renderPcGrid();
     renderLobby();
   } else if(msg.type==='game_status'){
