@@ -700,6 +700,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       </select>
       <button id="solo-player-btn" onclick="openSoloPicker()">🧩 Solo Player</button>
       <button id="friend-btn" onclick="openMpOverlay()">🔗 Play with Friend</button>
+      <button id="colordash-mp-btn" onclick="openColorDashMP()" style="margin-top:4px;padding:8px 20px;background:linear-gradient(135deg,#6600cc,#aa33ff);color:#fff;border:none;border-radius:14px;font-size:13px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.3)">🎨 Color Dash Multiplayer</button>
       <button id="gear-base-btn-inline" onclick="openGearRoom()" style="margin-top:6px;padding:8px 24px;background:linear-gradient(#ffd700,#cc8800);color:#2d0000;border:none;border-radius:14px;font-size:14px;font-family:Georgia,serif;font-weight:bold;cursor:pointer;box-shadow:0 3px 10px rgba(0,0,0,.25);display:none;flex-shrink:0;align-self:center">🏠 Gear Base</button>
     </div>
 
@@ -818,6 +819,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="si"><label>Reset Chapter</label><button class="smb" style="color:#aa0000;border-color:#aa0000" onclick="resetChapter()">🔄 Redo Chapter</button></div>
       <div class="si"><label>Admin</label><button class="smb" onclick="adminLogin()">🔐 Admin</button></div>
       <div class="si"><label>Multiplayer</label><button class="smb" onclick="openMpOverlay();toggleScroll()">🔗 Invite Friend</button></div>
+      <div class="si"><label>Color Dash MP</label><button class="smb" onclick="openColorDashMP();toggleScroll()">🎨 Color Dash 2-5P</button></div>
       <button id="close-sm" onclick="toggleScroll()">✕ Close</button>
     </div>
   </div>
@@ -852,14 +854,15 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     <!-- 3-region world map — Y pattern (thirds) -->
     <!-- SVG dashed paths from center to each pin -->
     <svg id="map-svg" viewBox="0 0 700 510" xmlns="http://www.w3.org/2000/svg">
-      <!-- center = 350,340 -->
-      <line x1="350" y1="340" x2="175" y2="230" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
-      <line x1="350" y1="340" x2="525" y2="230" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
-      <line x1="350" y1="340" x2="350" y2="460" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
+      <!-- center = 350,310 | 4 pins in X pattern -->
+      <line x1="350" y1="310" x2="155" y2="200" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
+      <line x1="350" y1="310" x2="545" y2="200" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
+      <line x1="350" y1="310" x2="155" y2="420" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
+      <line x1="350" y1="310" x2="545" y2="420" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
     </svg>
 
     <!-- 🌋 Lava — RED — top-left -->
-    <div class="map-pin" style="left:175px;top:230px" onclick="playMiniGame('lava')">
+    <div class="map-pin" style="left:155px;top:200px" onclick="playMiniGame('lava')">
       <div class="pin-flag" style="background:#c03000;--fc:#c03000;--fg:rgba(255,68,0,.7)">
         <div class="pin-icon">🌋</div>
         <div class="pin-fname">LAVA RUINS</div>
@@ -869,7 +872,7 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     </div>
 
     <!-- 🏃 Obstacle — ORANGE — top-right -->
-    <div class="map-pin" style="left:525px;top:230px" onclick="playMiniGame('obstacle')">
+    <div class="map-pin" style="left:545px;top:200px" onclick="playMiniGame('obstacle')">
       <div class="pin-flag" style="background:#cc5500;--fc:#cc5500;--fg:rgba(255,140,0,.7)">
         <div class="pin-icon">🏃</div>
         <div class="pin-fname">OBSTACLE PARK</div>
@@ -878,11 +881,21 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="pin-base"></div>
     </div>
 
-    <!-- 🧟 Zombie Temple — YELLOW — bottom-center -->
-    <div class="map-pin" style="left:350px;top:460px" onclick="playMiniGame('code')">
+    <!-- 🧟 Zombie Temple — YELLOW — bottom-left -->
+    <div class="map-pin" style="left:155px;top:420px" onclick="playMiniGame('code')">
       <div class="pin-flag" style="background:#bb8800;--fc:#bb8800;--fg:rgba(255,210,0,.7)">
         <div class="pin-icon">🧟</div>
         <div class="pin-fname">ZOMBIE TEMPLE</div>
+      </div>
+      <div class="pin-pole"></div>
+      <div class="pin-base"></div>
+    </div>
+
+    <!-- 🎨 Color Dash — PURPLE — bottom-right -->
+    <div class="map-pin" style="left:545px;top:420px" onclick="playMiniGame('dash')">
+      <div class="pin-flag" style="background:#6600cc;--fc:#6600cc;--fg:rgba(170,68,255,.8)">
+        <div class="pin-icon">🎨</div>
+        <div class="pin-fname">COLOR DASH</div>
       </div>
       <div class="pin-pole"></div>
       <div class="pin-base"></div>
@@ -1797,10 +1810,17 @@ function showDirs(){toggleScroll();showDialog('📖 How to Play',
 // MINI GAME MAP
 // ═══════════════════════════════════════
 const MINI_INFO={
-  lava:    {name:'🌋 Lava Ruins',    emoji:'🌋',desc:'React fast — dodge the lava!',color:'#ff6622'},
-  obstacle:{name:'🏃 Obstacle Park', emoji:'🏃',desc:'Run, jump and survive!',color:'#cc5500'},
-  code:    {name:'🧟 Zombie Temple', emoji:'🧟',desc:'The temple is overrun — survive!',color:'#bb8800'},
+  lava:    {name:'🌋 Lava Ruins',     emoji:'🌋',desc:'React fast — dodge the lava!',color:'#ff6622'},
+  obstacle:{name:'🏃 Obstacle Park',  emoji:'🏃',desc:'Run, jump and survive!',color:'#cc5500'},
+  code:    {name:'🧟 Zombie Temple',  emoji:'🧟',desc:'The temple is overrun — survive!',color:'#bb8800'},
+  dash:    {name:'🎨 Color Dash',     emoji:'🎨',desc:'Step on the right color before time runs out!',color:'#cc44ff'},
 };
+function openColorDashMP(){
+  if(G.tokens<=0){showDialog('🪙 No Tokens!','You need 1 token to play Color Dash MP.\nEarn tokens by completing chapters!','OK',()=>{});return;}
+  G.tokens--;updateTokenDisplay();saveGame();
+  $id('mini-game-iframe').src='color-dash-mp.html';
+  $id('mini-game-scene').style.display='block';
+}
 function openMiniMap(){if(!G.miniUnlocked)return;toggleScroll();$id('mini-map-overlay').classList.add('open')}
 function closeMiniMap(){$id('mini-map-overlay').classList.remove('open');$id('mini-play').classList.remove('open')}
 function closeMiniPlay(){$id('mini-play').classList.remove('open')}
@@ -1865,6 +1885,7 @@ const MINI_GAME_FILES={
   lava:'lava-ruins.html',
   obstacle:'obstacle-park.html',
   code:'zombie-outbreak.html',
+  dash:'color-dash.html',
 };
 let mpStreak=0, mpCurQ=null, mpGame=null;
 function playMiniGame(type){
