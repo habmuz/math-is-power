@@ -90,14 +90,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
   100%{opacity:0}
 }
 /* Manual page-flip strip (spine tab on right page) */
-#page-flip-strip{
-  position:absolute;left:-14px;top:8%;bottom:8%;width:14px;
-  border-radius:4px 0 0 4px;
-  background:linear-gradient(to left,#d4a96a,#c08040,#a86830);
-  box-shadow:-3px 0 8px rgba(0,0,0,.35),inset -2px 0 4px rgba(255,255,255,.15);
-  cursor:pointer;z-index:25;display:none;
-  transition:width .2s,box-shadow .2s;
-}
+#page-flip-strip{display:none!important}
 #page-flip-strip:hover{
   width:20px;
   box-shadow:-5px 0 16px rgba(0,0,0,.5),inset -2px 0 6px rgba(255,255,255,.25);
