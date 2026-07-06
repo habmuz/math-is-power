@@ -1043,7 +1043,7 @@ const G = {
   mpPlayers:[],
   partnerGears:[],
   soloChar:{name:'Leo',gender:'boy',img:'chars/ad8d4e23-eec4-4ae2-9d31-76b420af265d.png'},
-  setQ:0, setCorrect:0, dotResults:['','',''],
+  setQ:0, setCorrect:0, dotResults:['',''],
   tokens:0,
 };
 
@@ -1349,7 +1349,7 @@ function startChapter(){
   }
   G.phase='questions'; G.streak=0; G.gears=[]; G.password=[]; G.partnerGears=[];
   G.consC=0; G.consW=0; G.immunityUsed=false; G.defending=false;
-  G.setQ=0; G.setCorrect=0; G.dotResults=['','',''];
+  G.setQ=0; G.setCorrect=0; G.dotResults=['',''];
   G.machineAttempts=0; $id('torn-paper').style.display='none'; $id('flip-zone').style.display='none'; $id('machine').classList.remove('visible');
   $id('q-flip-btn').style.display='none';
   $id('a-input').disabled=false;$id('sub-btn').disabled=false;$id('a-input').placeholder='?';
@@ -1374,7 +1374,7 @@ function updateDots(){for(let i=1;i<=2;i++)$id('d'+i).classList.toggle('on',i<=G
 // ═══════════════════════════════════════
 // ANSWER SUBMISSION
 // ═══════════════════════════════════════
-function updateSetDots(){for(let i=1;i<=3;i++){const el=$id('d'+i),r=G.dotResults[i-1];el.classList.remove('on','correct','wrong');if(r==='correct')el.classList.add('correct');else if(r==='wrong')el.classList.add('wrong');}}
+function updateSetDots(){for(let i=1;i<=2;i++){const el=$id('d'+i),r=G.dotResults[i-1];if(!el)return;el.classList.remove('on','correct','wrong');if(r==='correct')el.classList.add('correct');else if(r==='wrong')el.classList.add('wrong');}}
 
 function submitAns(){
   if(G.phase!=='questions')return;
@@ -1394,7 +1394,7 @@ function submitAns(){
     else{sfx('wrong');narrate('wrong');setFb(`❌ ${smartHint(curQ,raw)}`,'#8b0000');}
     G.dotResults[G.setQ]=ok?'correct':'wrong';
     G.setQ++;updateSetDots();
-    if(G.setQ>=3){const c=G.setCorrect;G.setQ=0;G.setCorrect=0;G.dotResults=['','',''];setTimeout(()=>awardGearBySet(c),950);}
+    if(G.setQ>=2){const c=G.setCorrect;G.setQ=0;G.setCorrect=0;G.dotResults=['',''];setTimeout(()=>awardGearBySet(c),950);}
     else{setTimeout(nextQ,950);}
   }
 }
@@ -1403,18 +1403,17 @@ function awardGearBySet(correct){
   const i=G.gears.length;
   let gear=null;
   if(correct===1)gear=GEARS.t1[rnd(0,GEARS.t1.length-1)];
-  else if(correct===2)gear=GEARS.t2[rnd(0,GEARS.t2.length-1)];
-  else if(correct===3)gear=GEARS.t3[rnd(0,GEARS.t3.length-1)];
+  else if(correct===2)gear=GEARS.t3[rnd(0,GEARS.t3.length-1)];
   const d=rnd(0,9);G.password.push(d);
   const pd=$id('p'+i);if(pd){pd.textContent=d;pd.classList.add('shown');}
   if(gear){
     G.gears.push(gear);G.allGears.push(gear);renderGears();sfx('gear');
-    const t=GEARS.t3.some(g=>g.name===gear.name)?3:GEARS.t2.some(g=>g.name===gear.name)?2:1;
-    const stars=['','⭐','⭐⭐','🏆'][correct];
-    setFb(`${stars} ${correct}/3 correct! ${gear.emoji} ${gear.name} (Type ${t} Gear) earned!`,'#8b4513');
+    const t=GEARS.t3.some(g=>g.name===gear.name)?3:1;
+    const stars=['','⭐','🏆'][correct]||'';
+    setFb(`${stars} ${correct}/2 correct! ${gear.emoji} ${gear.name} (Type ${t} Gear) earned!`,'#8b4513');
   }else{
     sfx('wrong');
-    setFb('😔 0/3 correct — no gear this round. Password digit still saved!','#660000');
+    setFb('😔 0/2 correct — no gear this round. Password digit still saved!','#660000');
   }
   narrate('gear');updateSetDots();updateFlipStrip();
   if(_mpCode)_cSendGame({type:'gear_earned',gear});
@@ -1779,7 +1778,7 @@ function resetChapter(){
   if(!confirm('Redo this chapter from the start?\n(Your chapter progress and tokens are kept.)')) return;
   G.gears=[];G.password=[];G.partnerGears=[];
   G.phase='questions';G.streak=0;G.setQ=0;G.setCorrect=0;
-  G.dotResults=['','',''];G.immunityUsed=false;G.defending=false;
+  G.dotResults=['',''];G.immunityUsed=false;G.defending=false;
   G.consC=0;G.consW=0;
   $id('machine').classList.remove('visible');
   $id('battle-scene').style.display='none';
