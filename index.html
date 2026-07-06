@@ -2166,13 +2166,25 @@ function mpJoin(){
   openCharPanel();
   initPeer(code);
 }
+function _mpShowError(msg){
+  const el=$id('mp-lobby-status');
+  if(el){el.textContent=msg;el.style.color='#ef4444';}
+  else showDialog('❌ Multiplayer Error',msg,'OK',()=>{});
+}
 function initPeer(code){
   if(_myPeer){try{_myPeer.destroy();}catch(e){}_myPeer=null;}
   _peerConns={};
+  // Timeout: show error if no connection after 20s
+  const _connTimeout=setTimeout(()=>{
+    if(Object.keys(_peerConns).length===0)
+      _mpShowError('⚠️ No connection after 20s — school firewall may be blocking it. Try a different network.');
+  },20000);
   if(_myPlayer===1){
     _myPeer=new Peer('mathpower-'+code);
+    _myPeer.on('open',()=>clearTimeout(_connTimeout));
     _myPeer.on('error',function(err){
-      if(err.type==='unavailable-id') $id('mp-lobby-status').textContent='Code busy — generate a new code';
+      if(err.type==='unavailable-id') _mpShowError('Code already in use — generate a new one');
+      else _mpShowError('Connection failed ('+err.type+') — network may be blocking this');
     });
     _myPeer.on('connection',function(conn){
       conn.on('open',function(){
@@ -2230,7 +2242,9 @@ function initPeer(code){
         },1500);
       });
     });
-    _myPeer.on('error',function(err){console.warn('PeerJS joiner error:',err.type);});
+    _myPeer.on('error',function(err){
+      _mpShowError('❌ Could not connect ('+err.type+') — check the code is correct, or your school network may be blocking multiplayer.');
+    });
   }
 }
 // Mini game + battle relay message handler
