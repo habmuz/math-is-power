@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🌉 Broken Bridge</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:100%;overflow:hidden;background:#1a0a2e;font-family:'Segoe UI',sans-serif;color:#fff;user-select:none}
+#game-canvas{display:block;margin:0 auto}
+/* HUD */
+#hud{position:fixed;top:0;left:0;right:0;display:flex;align-items:center;justify-content:space-between;padding:6px 14px;background:rgba(0,0,0,.6);font-size:13px;z-index:10}
+#level-info{font-weight:700;color:#ffd700}
+#timer-wrap{display:flex;align-items:center;gap:6px}
+#timer-bar-bg{width:140px;height:10px;background:rgba(255,255,255,.15);border-radius:5px;overflow:hidden}
+#timer-bar{height:100%;background:linear-gradient(to right,#22dd55,#ffdd00,#ff4444);border-radius:5px;transition:width .1s linear}
+#timer-num{font-weight:700;min-width:3ch;text-align:right}
+#tools-row{display:flex;gap:8px}
+.tool-slot{width:32px;height:32px;border-radius:8px;border:2px solid rgba(255,255,255,.2);background:rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;font-size:18px;position:relative}
+.tool-slot.active{border-color:#ffd700;background:rgba(255,215,0,.15)}
+#planks-count{font-weight:700;color:#c8a96a}
+/* Overlays */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.88);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:20;gap:14px;text-align:center;padding:20px}
+.overlay.show{display:flex}
+.ov-title{font-size:2rem;font-weight:900}
+.ov-sub{font-size:.9rem;color:#bbb;max-width:340px}
+.ov-btn{padding:10px 32px;border:none;border-radius:20px;font-size:1rem;font-weight:700;cursor:pointer;font-family:inherit;margin:4px;background:#7c3aed;color:#fff}
+.ov-btn.sec{background:#333}
+#start-overlay .ov-title{color:#ffd700}
+</style>
+</head>
+<body>
+<div id="hud">
+  <div id="level-info">🌉 Level 1</div>
+  <div id="timer-wrap">
+    <div id="timer-bar-bg"><div id="timer-bar"></div></div>
+    <div id="timer-num">60</div>
+  </div>
+  <div id="tools-row">
+    <div class="tool-slot" id="slot-screwdriver" title="Screwdriver">🪛</div>
+    <div class="tool-slot" id="slot-wrench" title="Wrench">🔧</div>
+    <div class="tool-slot" id="slot-hammer" title="Hammer">🔨</div>
+    <div class="tool-slot" id="slot-shovel" title="Shovel">🪣</div>
+  </div>
+  <div id="planks-count">🪵 0</div>
+</div>
+
+<canvas id="game-canvas"></canvas>
+
+<!-- Start -->
+<div class="overlay show" id="start-overlay">
+  <div class="ov-title">🌉 Broken Bridge</div>
+  <div class="ov-sub">Collect planks · Rotate crystals to unlock tools · Repair 5 bridge sections · Reach the castle before the Crocogon destroys it!</div>
+  <div style="font-size:.8rem;color:#aaa;margin-top:4px">WASD / Arrow Keys to move · E to pick up / use · Space to repair</div>
+  <button class="ov-btn" onclick="startLevel(currentLevel)">▶ Start Level 1</button>
+  <button class="ov-btn sec" onclick="goBack()">← Back to Map</button>
+</div>
+<!-- Win -->
+<div class="overlay" id="win-overlay">
+  <div class="ov-title" style="color:#ffd700">🏰 Castle Reached!</div>
+  <div class="ov-sub" id="win-msg"></div>
+  <button class="ov-btn" id="next-btn" onclick="nextLevel()">▶ Next Level</button>
+  <button class="ov-btn sec" onclick="goBack()">← Map</button>
+</div>
+<!-- Lose -->
+<div class="overlay" id="lose-overlay">
+  <div class="ov-title" style="color:#ef4444">💀 Bridge Collapsed!</div>
+  <div class="ov-sub" id="lose-msg"></div>
+  <button class="ov-btn" onclick="startLevel(currentLevel)">🔄 Retry</button>
+  <button class="ov-btn sec" onclick="goBack()">← Map</button>
+</div>
+
+<script>
+// ── LEVEL CONFIG (50 levels) ──────────────────────────────────────
+function makeLevels(){
+  const L=[];
+  for(let i=1;i<=50;i++){
+    const t=i-1; // 0-based progression
+    L.push({
+      level:i,
+      timeLimit: Math.max(25, 90 - t*1.2),           // 90s→25s
+      sections: Math.min(5, 2 + Math.floor(t/10)),    // 2→5 sections
+      planksPerSection: 1 + Math.floor(t/12),         // 1→5 planks needed
+      plankCount: Math.max(2, 8 - Math.floor(t/8)),   // 8→2 planks on map
+      plankDistance: 80 + t*8,                         // planks get farther
+      crystalSpin: Math.max(1, 4 - Math.floor(t/15)), // rotation clicks needed
+      toolsAvailable: Math.min(4, 1+Math.floor(t/12)),// 1→4 tools
+      crocogonSpeed: 0.4 + t*0.025,                   // crocogon gets faster
+      crocogonAttackRate: Math.max(2, 12-t*0.2),      // attacks more often
+      crocogonDamage: 1 + Math.floor(t/15),           // deals more damage
+      crocogonAppears: t >= 5,                          // appears from level 6
+    });
+  }
+  return L;
+}
+const LEVELS=makeLevels();
+let currentLevel=1;
+
+// ── CANVAS SETUP ──────────────────────────────────────────────────
+const canvas=document.getElementById('game-canvas');
+const ctx=canvas.getContext('2d');
+const W=800,H=500;
+canvas.width=W;canvas.height=H;
+function resize(){
+  const s=Math.min(window.innerWidth/W,(window.innerHeight-44)/H);
+  canvas.style.width=W*s+'px';canvas.style.height=H*s+'px';
+}
+window.addEventListener('resize',resize);resize();
+
+// ── GAME STATE ─────────────────────────────────────────────────────
+let state={};
+let animId=null,timerInterval=null;
+let keys={};
+document.addEventListener('keydown',e=>{keys[e.code]=true;e.preventDefault();});
+document.addEventListener('keyup',e=>{keys[e.code]=false;});
+
+const COLORS={
+  sky:'#1a0a2e',ground:'#2d4a1e',path:'#8B6914',bridge:'#5a3010',
+  plank:'#c8a055',crystal:'#44aaff',castle:'#8b8bcc',player:'#ff9922',
+  crocogon:'#22aa44',water:'#0033aa',repair:'#22dd55',
+};
+
+function startLevel(lvl){
+  if(lvl>50){showWinGame();return;}
+  currentLevel=lvl;
+  hideAll();
+  const cfg=LEVELS[lvl-1];
+  document.getElementById('level-info').textContent='🌉 Level '+lvl;
+
+  state={
+    cfg,
+    phase:'play',
+    time:cfg.timeLimit,
+    planks:0,
+    tools:{screwdriver:false,wrench:false,hammer:false,shovel:false},
+    sections:Array.from({length:cfg.sections},(_,i)=>({
+      id:i,
+      x:150+i*(480/cfg.sections),
+      y:280,
+      hp:cfg.planksPerSection,
+      maxHp:cfg.planksPerSection,
+      repaired:false,
+    })),
+    plankItems:genPlanks(cfg),
+    crystals:genCrystals(cfg),
+    player:{x:60,y:300,vx:0,vy:0,spd:3.5,onGround:true},
+    crocogon:cfg.crocogonAppears?{x:750,y:280,dir:-1,timer:0,hp:10,maxHp:10,attackTimer:0}:null,
+    castle:{x:730,y:260,w:50,h:60},
+    msg:'',msgTimer:0,
+    won:false,lost:false,
+  };
+
+  clearInterval(timerInterval);
+  timerInterval=setInterval(tickTimer,1000);
+  if(animId)cancelAnimationFrame(animId);
+  gameLoop();
+}
+
+function genPlanks(cfg){
+  const planks=[];
+  for(let i=0;i<cfg.plankCount;i++){
+    planks.push({
+      x:120+Math.random()*(W-240),
+      y:200+Math.random()*120,
+      collected:false,
+    });
+  }
+  return planks;
+}
+const TOOL_NAMES=['screwdriver','wrench','hammer','shovel'];
+const TOOL_EMOJI=['🪛','🔧','🔨','🪣'];
+function genCrystals(cfg){
+  return TOOL_NAMES.slice(0,cfg.toolsAvailable).map((tool,i)=>({
+    x:100+i*150,y:180,
+    tool,
+    spins:0,
+    needed:cfg.crystalSpin,
+    unlocked:false,
+    timer:0,
+  }));
+}
+
+function tickTimer(){
+  if(state.phase!=='play')return;
+  state.time--;
+  if(state.time<=0){state.time=0;lose('Time ran out!');}
+}
+
+function lose(msg){
+  if(state.lost||state.won)return;
+  state.lost=true;state.phase='over';
+  clearInterval(timerInterval);
+  document.getElementById('lose-msg').textContent=msg;
+  document.getElementById('lose-overlay').classList.add('show');
+}
+function win(){
+  if(state.lost||state.won)return;
+  state.won=true;state.phase='over';
+  clearInterval(timerInterval);
+  const timeLeft=Math.ceil(state.time);
+  document.getElementById('win-msg').textContent=
+    'Level '+currentLevel+' complete! '+timeLeft+'s remaining.';
+  const nb=document.getElementById('next-btn');
+  nb.style.display=currentLevel>=50?'none':'';
+  document.getElementById('win-overlay').classList.add('show');
+}
+function nextLevel(){startLevel(currentLevel+1);}
+function hideAll(){['start-overlay','win-overlay','lose-overlay'].forEach(id=>document.getElementById(id).classList.remove('show'));}
+function goBack(){clearInterval(timerInterval);if(animId)cancelAnimationFrame(animId);try{window.parent.closeMiniGameScene&&window.parent.closeMiniGameScene();}catch(e){}}
+function showWinGame(){
+  document.getElementById('win-msg').textContent='🏆 You completed ALL 50 levels! Master Bridge Builder!';
+  document.getElementById('next-btn').style.display='none';
+  document.getElementById('win-overlay').classList.add('show');
+}
+
+// ── GAME LOOP ─────────────────────────────────────────────────────
+function gameLoop(){
+  update();
+  draw();
+  if(!state.won&&!state.lost) animId=requestAnimationFrame(gameLoop);
+}
+
+function update(){
+  if(state.phase!=='play')return;
+  const p=state.player,cfg=state.cfg;
+
+  // Player movement
+  const spd=p.spd*(state.tools.shovel?1.4:1);
+  if(keys['ArrowLeft']||keys['KeyA']) p.x-=spd;
+  if(keys['ArrowRight']||keys['KeyD']) p.x+=spd;
+  if(keys['ArrowUp']||keys['KeyW']||keys['Space']){
+    if(p.onGround){p.vy=-10;p.onGround=false;}
+  }
+  p.vy+=0.55;p.y+=p.vy;
+  if(p.y>=300){p.y=300;p.vy=0;p.onGround=true;}
+  p.x=Math.max(20,Math.min(W-20,p.x));
+
+  // Pick up planks (E key)
+  if(keys['KeyE']){
+    state.plankItems.forEach(pl=>{
+      if(!pl.collected&&Math.abs(p.x-pl.x)<24&&Math.abs(p.y-pl.y)<24){
+        pl.collected=true;state.planks++;
+        flash('🪵 Plank collected!');
+      }
+    });
+    // Interact with crystals
+    state.crystals.forEach(cr=>{
+      if(!cr.unlocked&&Math.abs(p.x-cr.x)<30&&Math.abs(p.y-cr.y)<30){
+        cr.timer=Date.now();
+        if(Date.now()-cr.timer<200){
+          cr.spins++;cr.timer=Date.now();
+          if(cr.spins>=cr.needed){
+            cr.unlocked=true;state.tools[cr.tool]=true;
+            flash(TOOL_EMOJI[TOOL_NAMES.indexOf(cr.tool)]+' '+cr.tool+' unlocked!');
+          }
+        }
+      }
+    });
+    // Repair bridge (Space/E near broken section)
+    state.sections.forEach(sec=>{
+      if(!sec.repaired&&state.planks>0&&Math.abs(p.x-sec.x)<30&&Math.abs(p.y-sec.y)<40){
+        const speed=state.tools.hammer?2:state.tools.wrench?1.5:1;
+        const cost=Math.ceil(1/speed);
+        if(state.planks>=cost){
+          state.planks-=cost;sec.hp--;
+          if(sec.hp<=0){sec.repaired=true;flash('✅ Section repaired!');}
+          else flash('🔨 Repairing... ('+sec.hp+' left)');
+        }
+      }
+    });
+  }
+
+  // Crystal spin on E press (separate cooldown)
+  if(keys['KeyE']){
+    state.crystals.forEach(cr=>{
+      if(!cr.unlocked&&Math.abs(p.x-cr.x)<30&&Math.abs(p.y-cr.y)<30){
+        if(!cr._lastSpin||Date.now()-cr._lastSpin>300){
+          cr.spins++;cr._lastSpin=Date.now();
+          if(cr.spins>=cr.needed){
+            cr.unlocked=true;state.tools[cr.tool]=true;
+            flash(TOOL_EMOJI[TOOL_NAMES.indexOf(cr.tool)]+' '+cr.tool+' unlocked!');
+          } else flash('🔮 Crystal: '+cr.spins+'/'+cr.needed);
+        }
+      }
+    });
+  }
+
+  // Crocogon
+  if(state.crocogon){
+    const cr=state.crocogon;
+    cr.x+=cfg.crocogonSpeed*cr.dir;
+    if(cr.x<50||cr.x>W-50)cr.dir*=-1;
+    cr.attackTimer+=1/60;
+    if(cr.attackTimer>=cfg.crocogonAttackRate){
+      cr.attackTimer=0;
+      // Attack nearest unreparied section
+      let target=state.sections.find(s=>!s.repaired);
+      if(target){
+        target.hp=Math.min(target.maxHp,target.hp+cfg.crocogonDamage);
+        flash('🐊 Crocogon attacked!');
+      }
+    }
+  }
+
+  // Check win: all sections repaired AND player reaches castle
+  const allRepaired=state.sections.every(s=>s.repaired);
+  if(allRepaired){
+    const c=state.castle;
+    if(p.x>c.x-10&&p.x<c.x+c.w+10&&p.y>c.y-10){win();}
+  }
+
+  // Update HUD
+  updateHUD();
+
+  // Msg timer
+  if(state.msgTimer>0)state.msgTimer--;
+}
+
+let _lastFlash='';
+function flash(msg){_lastFlash=msg;state.msg=msg;state.msgTimer=80;}
+
+function updateHUD(){
+  const pct=state.time/state.cfg.timeLimit;
+  document.getElementById('timer-bar').style.width=(pct*100)+'%';
+  document.getElementById('timer-num').textContent=Math.ceil(state.time);
+  document.getElementById('planks-count').textContent='🪵 '+state.planks;
+  TOOL_NAMES.forEach(t=>{
+    document.getElementById('slot-'+t).classList.toggle('active',!!state.tools[t]);
+  });
+}
+
+// ── DRAW ──────────────────────────────────────────────────────────
+function draw(){
+  // Sky
+  ctx.fillStyle='#1a0a2e';ctx.fillRect(0,0,W,H);
+  // Stars
+  ctx.fillStyle='rgba(255,255,255,.5)';
+  for(let i=0;i<40;i++){ctx.fillRect(i*21%W,(i*37)%160,1,1);}
+  // Ground
+  ctx.fillStyle='#2d4a1e';ctx.fillRect(0,320,W,H-320);
+  // Water under bridge sections
+  state.sections.forEach(sec=>{
+    if(!sec.repaired){
+      ctx.fillStyle='#0033aa';
+      ctx.fillRect(sec.x-25,280,50,45);
+    }
+  });
+  // Path
+  ctx.fillStyle='#8B6914';ctx.fillRect(40,305,W-80,18);
+  // Planks on ground
+  state.plankItems.forEach(pl=>{
+    if(pl.collected)return;
+    ctx.fillStyle='#c8a055';
+    ctx.fillRect(pl.x-10,pl.y-4,20,8);
+    ctx.fillStyle='rgba(0,0,0,.2)';
+    ctx.fillRect(pl.x-10,pl.y+3,20,1);
+  });
+  // Bridge sections
+  state.sections.forEach((sec,i)=>{
+    const alpha=sec.repaired?1:sec.hp/sec.maxHp;
+    ctx.fillStyle=sec.repaired?'#5a3010':'#aa5500';
+    ctx.globalAlpha=Math.max(0.3,alpha);
+    ctx.fillRect(sec.x-25,sec.y-4,50,10);
+    ctx.globalAlpha=1;
+    // HP dots
+    for(let j=0;j<sec.maxHp;j++){
+      ctx.fillStyle=j<(sec.maxHp-sec.hp)?'#22dd55':'#ff4444';
+      ctx.beginPath();ctx.arc(sec.x-10+j*8,sec.y-14,4,0,Math.PI*2);ctx.fill();
+    }
+  });
+  // Crystals
+  state.crystals.forEach((cr,i)=>{
+    const spin=cr.spins/cr.needed;
+    ctx.save();
+    ctx.translate(cr.x,cr.y);
+    ctx.rotate(spin*Math.PI*2);
+    ctx.fillStyle=cr.unlocked?'#ffd700':'#44aaff';
+    ctx.beginPath();ctx.moveTo(0,-14);ctx.lineTo(10,10);ctx.lineTo(-10,10);ctx.closePath();ctx.fill();
+    ctx.restore();
+    ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(cr.x-16,cr.y+14,32,14);
+    ctx.fillStyle='#fff';ctx.font='9px sans-serif';ctx.textAlign='center';
+    ctx.fillText(cr.unlocked?'✓':cr.spins+'/'+cr.needed,cr.x,cr.y+24);
+  });
+  // Castle
+  const c=state.castle;
+  ctx.fillStyle='#8b8bcc';ctx.fillRect(c.x,c.y,c.w,c.h);
+  ctx.fillStyle='#6060aa';ctx.fillRect(c.x+10,c.y+20,14,30);// door
+  ctx.fillStyle='#ff6622';
+  for(let t=0;t<3;t++)ctx.fillRect(c.x+t*15-2,c.y-8,10,12);// battlements
+  if(state.sections.every(s=>s.repaired)){
+    ctx.fillStyle='rgba(255,215,0,.3)';ctx.fillRect(c.x-10,c.y-10,c.w+20,c.h+20);
+    ctx.fillStyle='#ffd700';ctx.font='12px sans-serif';ctx.textAlign='center';
+    ctx.fillText('⬆ REACH ME!',c.x+c.w/2,c.y-16);
+  }
+  // Crocogon
+  if(state.crocogon){
+    const cr=state.crocogon;
+    ctx.save();
+    if(cr.dir<0)ctx.scale(-1,1),ctx.translate(-W,0);
+    const cx=cr.dir<0?W-cr.x:cr.x;
+    ctx.fillStyle='#22aa44';
+    ctx.fillRect(cx-20,cr.y-10,40,22);// body
+    ctx.fillRect(cx+15,cr.y-5,14,8);  // snout
+    ctx.fillStyle='#ff4444';
+    ctx.fillRect(cx-20,cr.y-18,40,10); // back spines
+    ctx.fillStyle='#fff';ctx.fillRect(cx-8,cr.y-12,6,6);ctx.fillRect(cx+2,cr.y-12,6,6);// eyes
+    ctx.fillStyle='#000';ctx.fillRect(cx-6,cr.y-10,4,4);ctx.fillRect(cx+4,cr.y-10,4,4);
+    ctx.restore();
+  }
+  // Player
+  const p=state.player;
+  ctx.fillStyle='#ff9922';
+  ctx.beginPath();ctx.arc(p.x,p.y-16,12,0,Math.PI*2);ctx.fill();// head
+  ctx.fillStyle='#ff7700';
+  ctx.fillRect(p.x-8,p.y-4,16,20);// body
+  // Flash message
+  if(state.msgTimer>0){
+    ctx.globalAlpha=Math.min(1,state.msgTimer/20);
+    ctx.fillStyle='rgba(0,0,0,.7)';ctx.fillRect(W/2-100,H/2-18,200,30);
+    ctx.fillStyle='#fff';ctx.font='bold 13px sans-serif';ctx.textAlign='center';
+    ctx.fillText(state.msg,W/2,H/2);
+    ctx.globalAlpha=1;
+  }
+  // Level progress
+  const repaired=state.sections.filter(s=>s.repaired).length;
+  ctx.fillStyle='rgba(0,0,0,.5)';ctx.fillRect(8,H-22,100,14);
+  ctx.fillStyle='#22dd55';ctx.fillRect(8,H-22,(repaired/state.sections.length)*100,14);
+  ctx.fillStyle='#fff';ctx.font='9px sans-serif';ctx.textAlign='left';
+  ctx.fillText('Bridge: '+repaired+'/'+state.sections.length,11,H-11);
+}
+</script>
+</body>
+</html>

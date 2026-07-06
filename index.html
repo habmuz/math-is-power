@@ -871,11 +871,11 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="pin-base"></div>
     </div>
 
-    <!-- 🧟 Zombie Temple — YELLOW — bottom-left -->
+    <!-- 🌉 Broken Bridge — YELLOW — bottom-left -->
     <div class="map-pin" style="left:155px;top:420px" onclick="playMiniGame('code')">
       <div class="pin-flag" style="background:#bb8800;--fc:#bb8800;--fg:rgba(255,210,0,.7)">
         <div class="pin-icon">🧟</div>
-        <div class="pin-fname">ZOMBIE TEMPLE</div>
+        <div class="pin-fname">BROKEN BRIDGE</div>
       </div>
       <div class="pin-pole"></div>
       <div class="pin-base"></div>
@@ -1802,7 +1802,7 @@ function showDirs(){toggleScroll();showDialog('📖 How to Play',
 const MINI_INFO={
   lava:    {name:'🌋 Lava Ruins',     emoji:'🌋',desc:'React fast — dodge the lava!',color:'#ff6622'},
   obstacle:{name:'🏃 Obstacle Park',  emoji:'🏃',desc:'Run, jump and survive!',color:'#cc5500'},
-  code:    {name:'🧟 Zombie Temple',  emoji:'🧟',desc:'The temple is overrun — survive!',color:'#bb8800'},
+  bridge:  {name:'🌉 Broken Bridge',  emoji:'🌉',desc:'Repair the bridge before the Crocogon destroys it!',color:'#bb8800'},
   dash:    {name:'🎨 Color Dash',     emoji:'🎨',desc:'Step on the right color before time runs out!',color:'#cc44ff'},
 };
 function activateMpMode(){
@@ -1877,7 +1877,7 @@ function genMiniQ(type){
 const MINI_GAME_FILES={
   lava:'lava-ruins.html',
   obstacle:'obstacle-park.html',
-  code:'zombie-outbreak.html',
+  bridge:'broken-bridge.html',
   dash:'color-dash.html',
 };
 let mpStreak=0, mpCurQ=null, mpGame=null;
