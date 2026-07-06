@@ -2539,7 +2539,24 @@ document.addEventListener('keydown',function(e){
   }
 });
 
+function _getRoleForKey(key){
+  const [gender,...rest]=key.split('_');const name=rest.join('_');
+  const list=_CHARS[gender+'s']||[];
+  const c=list.find(x=>x.name===name);return c?c.role:null;
+}
 function doMpBattle(_noBroadcast){
+  // Validate party: exactly 1 fighter, exactly 1 pattern_master or math_master
+  const roles=Object.keys(_pcSel).map(_getRoleForKey);
+  const fighters=roles.filter(r=>r==='fighter').length;
+  const specialists=roles.filter(r=>r==='pattern_master'||r==='math_master').length;
+  if(fighters!==1||specialists!==1){
+    let msg='Party must have:\n• Exactly 1 Fighter ⚔️';
+    if(fighters!==1) msg+='\n  (currently '+fighters+')';
+    msg+='\n• Exactly 1 Pattern Master 🔮 or 4 Ops Master 🔢';
+    if(specialists!==1) msg+='\n  (currently '+specialists+')';
+    showDialog('❌ Invalid Party',msg,'OK',()=>{});
+    return;
+  }
   if(!_noBroadcast && _cCode) _cSendGame({type:'start'});
   doFlip(()=>{
     $id('cave-scene').style.display='flex';
