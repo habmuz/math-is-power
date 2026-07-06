@@ -2121,22 +2121,18 @@ function closeDialog(){
   </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/peerjs@1.5.2/dist/peerjs.min.js"></script>
 <script>
 var _mpCode=null;
-var _myPlayer=0;        // 1=host, 2+= joiner
-var _p2Joined=false;    // at least one other player is connected
-var _maxPlayers=2;      // total expected players (set by host)
-var _lobby={};          // {playerNum: {ts}} — who's in the lobby
-var _nextPlayerNum=2;   // host assigns numbers starting from 2
-var _pendingJoin=[];    // playerNums queued to join at next chapter end
-var _isMidGame=false;   // true when this device joins while game is in progress
+var _myPlayer=0;
+var _p2Joined=false;
+var _maxPlayers=2;
+var _lobby={};
+var _nextPlayerNum=2;
+var _pendingJoin=[];
+var _isMidGame=false;
 var _joinTimeout=null;
-var _presenceInterval=null;
-var _pollInterval=null;
-var _myPeer=null;
-var _peerConns={};
-function openMpOverlay(){if(_myPeer){try{_myPeer.destroy();}catch(e){}_myPeer=null;}_peerConns={};clearInterval(_presenceInterval);clearInterval(_pollInterval);if(_cEvt){_cEvt.close();_cEvt=null;}_cCode=null;$id('mp-overlay').classList.add('open');$id('mp-code-disp').textContent='——';$id('mp-cnt-row').style.display='none';_mpCode=null;_myPlayer=0;_p2Joined=false;_lobby={};_nextPlayerNum=2;$id('mp-join-inp').value='';renderLobby();}
+var _hereInterval=null;
+function openMpOverlay(){clearInterval(_hereInterval);if(_cEvt){_cEvt.close();_cEvt=null;}_cCode=null;$id('mp-overlay').classList.add('open');$id('mp-code-disp').textContent='——';$id('mp-cnt-row').style.display='none';_mpCode=null;_myPlayer=0;_p2Joined=false;_lobby={};_nextPlayerNum=2;$id('mp-join-inp').value='';renderLobby();}
 function mpSetCount(el,n){_maxPlayers=n;document.querySelectorAll('.mp-cnt-btn').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderLobby();}
 function mpGenerate(){
   _mpCode=Math.floor(100000+Math.random()*900000).toString();
@@ -2166,86 +2162,26 @@ function mpJoin(){
   openCharPanel();
   initPeer(code);
 }
-function _mpShowError(msg){
-  const el=$id('mp-lobby-status');
-  if(el){el.textContent=msg;el.style.color='#ef4444';}
-  else showDialog('❌ Multiplayer Error',msg,'OK',()=>{});
-}
 function initPeer(code){
-  if(_myPeer){try{_myPeer.destroy();}catch(e){}_myPeer=null;}
-  _peerConns={};
-  // Timeout: show error if no connection after 20s
-  const _connTimeout=setTimeout(()=>{
-    if(Object.keys(_peerConns).length===0)
-      _mpShowError('⚠️ No connection after 20s — school firewall may be blocking it. Try a different network.');
-  },20000);
-  if(_myPlayer===1){
-    _myPeer=new Peer('mathpower-'+code);
-    _myPeer.on('open',()=>clearTimeout(_connTimeout));
-    _myPeer.on('error',function(err){
-      if(err.type==='unavailable-id') _mpShowError('Code already in use — generate a new one');
-      else _mpShowError('Connection failed ('+err.type+') — network may be blocking this');
-    });
-    _myPeer.on('connection',function(conn){
-      conn.on('open',function(){
-        var n=_nextPlayerNum++;
-        _peerConns[n]=conn;
-        _lobby[n]={ts:Date.now()};
-        conn.send({type:'welcome',player:n,maxPlayers:_maxPlayers,
-                   presentPlayers:Object.keys(_lobby).map(Number),_game:true});
-        Object.keys(_peerConns).forEach(function(pn){
-          if(parseInt(pn)!==n&&_peerConns[pn].open)
-            try{_peerConns[pn].send({type:'here',player:n,maxPlayers:_maxPlayers,_game:true});}catch(e){}
-        });
-        if(G.chapter>0){
-          _pendingJoin.push(n); showJoinNotif(n);
-          conn.send({type:'game_status',inGame:true,chapter:G.chapter,_game:true});
-        } else {
-          _p2Joined=true; renderPcGrid();
-        }
-        renderLobby();
-        if($id('mp-overlay').classList.contains('open')){
-          $id('mp-overlay').classList.remove('open'); openCharPanel(); activateMpMode();
-        }
-      });
-      conn.on('data',function(data){
-        if(!data._game)return;
-        _cHandleGame(data);
-        Object.keys(_peerConns).forEach(function(pn){
-          if(_peerConns[pn]!==conn&&_peerConns[pn].open)
-            try{_peerConns[pn].send(data);}catch(e){}
-        });
-      });
-      conn.on('close',function(){
-        Object.keys(_peerConns).forEach(function(pn){
-          if(_peerConns[pn]===conn)delete _peerConns[pn];
-        });
-        _p2Joined=Object.keys(_peerConns).length>0;
-        renderLobby(); renderPcGrid();
-      });
-    });
-  } else {
-    _myPeer=new Peer();
-    _myPeer.on('open',function(){
-      var conn=_myPeer.connect('mathpower-'+code);
-      _peerConns[1]=conn;
-      conn.on('data',function(data){if(data._game)_cHandleGame(data);});
-      conn.on('close',function(){
-        setTimeout(function(){
-          if(!_myPeer||!_mpCode)return;
-          var nc=_myPeer.connect('mathpower-'+code);
-          _peerConns[1]=nc;
-          nc.on('data',function(d){if(d._game)_cHandleGame(d);});
-          nc.on('open',function(){
-            if(_myPlayer) nc.send({type:'here',player:_myPlayer,maxPlayers:0,_game:true});
-          });
-        },1500);
-      });
-    });
-    _myPeer.on('error',function(err){
-      _mpShowError('❌ Could not connect ('+err.type+') — check the code is correct, or your school network may be blocking multiplayer.');
-    });
+  // All game messages now use ntfy.sh (HTTPS) — works on school networks
+  clearInterval(_hereInterval);
+  if(_myPlayer===2){
+    // Joiner announces themselves to host
+    _cSendGame({type:'join',reqSid:_cSID});
+    _joinTimeout=setTimeout(()=>{
+      if(!_p2Joined){
+        const el=$id('mp-lobby-status');
+        if(el){el.textContent='⚠️ No response after 20s — check the code is correct';el.style.color='#ef4444';}
+      }
+    },20000);
   }
+  // Broadcast presence every 8 seconds so lobby stays updated
+  _hereInterval=setInterval(()=>{
+    if(_mpCode&&_myPlayer)
+      _cSendGame({type:'here',player:_myPlayer,maxPlayers:(_myPlayer===1?_maxPlayers:0)});
+  },8000);
+  // Announce immediately
+  if(_myPlayer) _cSendGame({type:'here',player:_myPlayer,maxPlayers:(_myPlayer===1?_maxPlayers:0)});
 }
 // Mini game + battle relay message handler
 window.addEventListener('message',function(e){
@@ -2611,7 +2547,15 @@ function initChat(code){
       const d=JSON.parse(e.data);
       if(d.event==='keepalive')return;
       const msg=JSON.parse(d.message||d.body||'{}');
-      if(!msg.sid||msg.sid===_cSID||msg._game)return;
+      if(!msg.sid||msg.sid===_cSID)return; // ignore own messages
+      if(msg._game){
+        // Directed message — only handle if forSid matches us or it's broadcast
+        if(msg.forSid&&msg.forSid!==_cSID)return;
+        _cHandleGame(msg);
+        return;
+      }
+      // Chat message
+      if(!msg.text)return;
       _cAppend(msg.name,msg.text,false);
       if(!_cOpen){
         _cUnread++;
@@ -2669,22 +2613,21 @@ function _cAppend(name, text, mine){
 
 function retryConnection(){
   if(!_mpCode||!_myPlayer)return;
-  initPeer(_mpCode);
+  _cSendGame({type:'here',player:_myPlayer,maxPlayers:(_myPlayer===1?_maxPlayers:0)});
+  if(_myPlayer===2) _cSendGame({type:'join',reqSid:_cSID});
   var btn=$id('pc-retry-btn');
   if(btn){btn.textContent='🔄 Retrying…';btn.disabled=true;
     setTimeout(function(){btn.textContent='🔄 Retry Connection';btn.disabled=false;},5000);}
 }
 
 function _cSendGame(data){
-  var msg=Object.assign({_game:true},data);
-  if(_myPlayer===1){
-    Object.values(_peerConns).forEach(function(conn){
-      if(conn&&conn.open)try{conn.send(msg);}catch(e){}
-    });
-  } else {
-    var hc=_peerConns[1];
-    if(hc&&hc.open)try{hc.send(msg);}catch(e){}
-  }
+  if(!_cCode)return;
+  const msg=Object.assign({_game:true,sid:_cSID},data);
+  fetch('https://ntfy.sh/mathpower-'+_cCode,{
+    method:'POST',
+    headers:{'Content-Type':'text/plain'},
+    body:JSON.stringify(msg)
+  }).catch(()=>{});
 }
 
 
@@ -2697,30 +2640,26 @@ scaleScene();
 
 function _cHandleGame(msg){
   if(msg.type==='join'){
-    // Someone wants to join — host assigns a player number
     if(_myPlayer===1){
-      const n=_nextPlayerNum++;
-      _lobby[n]={sid:msg.reqSid};
+      // Check if this sid already has a player number
+      const existing=Object.entries(_lobby).find(([k,v])=>v.sid===msg.reqSid);
+      const n=existing?parseInt(existing[0]):_nextPlayerNum++;
+      _lobby[n]={sid:msg.reqSid,ts:Date.now()};
       _cSendGame({type:'welcome',forSid:msg.reqSid,player:n,maxPlayers:_maxPlayers,
-                  presentPlayers:Object.keys(_lobby).map(Number)});
+                  presentPlayers:Object.keys(_lobby).filter(k=>!isNaN(k)).map(Number)});
       if(G.chapter>0){
-        // Mid-game join
-        _pendingJoin.push(n);
-        showJoinNotif(n);
+        _pendingJoin.push(n); showJoinNotif(n);
         _cSendGame({type:'game_status',forSid:msg.reqSid,inGame:true,chapter:G.chapter});
       } else {
-        _p2Joined=true;
-        renderPcGrid();
+        _p2Joined=true; activateMpMode(); renderPcGrid();
       }
       renderLobby();
-    } else {
-      // Non-host: still update lobby count when we see a new joiner
-      const tmpKey='tmp_'+msg.reqSid;
-      _lobby[tmpKey]={};
-      renderLobby();
+      if($id('mp-overlay').classList.contains('open')){
+        $id('mp-overlay').classList.remove('open'); openCharPanel();
+      }
     }
   } else if(msg.type==='welcome'){
-    // Received directly via PeerJS — always for this device
+    // forSid filtered by SSE handler so this is always for us
     clearTimeout(_joinTimeout);
     _myPlayer=msg.player; _maxPlayers=msg.maxPlayers;
     _lobby={};
@@ -2791,7 +2730,6 @@ function _cHandleGame(msg){
     if(msg.maxPlayers && _myPlayer!==1) _maxPlayers = msg.maxPlayers;
     if(isNew && _myPlayer) _cSendGame({type:'here', player:_myPlayer, maxPlayers:(_myPlayer===1?_maxPlayers:0)});
     _p2Joined = Object.keys(_lobby).length >= 2;
-    if(_p2Joined) clearInterval(_pollInterval);
     renderLobby();
     renderPcGrid();
     // Auto-advance Player 1 out of the overlay as soon as any second player joins
