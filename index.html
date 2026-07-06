@@ -54,7 +54,7 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 /* pages */
 .page{flex:1;height:600px;position:relative;overflow:hidden}
 #page-l{background:linear-gradient(160deg,#0a0a18,#150a28,#080810);border-radius:8px 0 0 8px}
-#page-r{background:linear-gradient(160deg,#f6e8cc,#ede0b0,#e8d89a);border-radius:0 8px 8px 0;overflow:visible}
+#page-r{background:linear-gradient(160deg,#f6e8cc,#ede0b0,#e8d89a);border-radius:0 8px 8px 0}
 #page-r::after{content:'';position:absolute;inset:0;background:repeating-linear-gradient(transparent,transparent 28px,rgba(139,100,60,.07) 29px);pointer-events:none}
 
 /* ── PAGE FLIP ── */
@@ -258,10 +258,10 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
 #book-wrap{overflow:visible}
 #bookmark{
   position:absolute;
-  top:-72px;
+  top:10px;
   right:0;
-  width:46px;
-  height:220px;
+  width:40px;
+  height:100px;
   background:linear-gradient(to right,#004d80,#0088cc,#33bbff,#0088cc,#004d80);
   cursor:pointer;
   z-index:30;
@@ -277,8 +277,8 @@ body{background:#0a0005;display:flex;align-items:center;justify-content:center;m
   transition:top .25s ease;
   user-select:none;
 }
-#bookmark:hover{top:-56px}
-#bookmark.open{top:-56px}
+#bookmark:hover{top:18px}
+#bookmark.open{top:18px}
 #bm-icon{font-size:20px;filter:drop-shadow(0 0 4px #ff8800)}
 #bm-text{writing-mode:vertical-rl;text-orientation:mixed;color:#ffd700;font-size:10px;font-family:'Neucha',cursive;font-weight:bold;letter-spacing:2px;text-shadow:0 0 6px #ff8800;margin-top:2px}
 #bm-chapter{writing-mode:vertical-rl;color:rgba(255,220,150,.7);font-size:9px;font-family:'Neucha',cursive;letter-spacing:1px;margin-top:4px}
