@@ -967,7 +967,6 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     <button class="adm-btn" onclick="admSkipToEnd()">📖 Skip to End</button>
     <button class="adm-btn" onclick="admSkipToFight()">⚔️ Skip to Fight</button>
     <button class="adm-btn" style="background:#116611" onclick="G.tokens+=200;updateTokenDisplay();saveGame();alert('✅ +200 tokens added!')">🪙 +200 Tokens</button>
-    <button class="adm-btn" style="background:#5a1a88" onclick="admUnlockMiniGames()">🎮 Unlock Mini Games</button>
     <button class="adm-btn danger" onclick="admReset()">🗑 Reset Game</button>
     <button class="adm-btn close-adm" onclick="closeAdmin()">✕ Close</button>
   </div>
@@ -1749,22 +1748,18 @@ function openAdmin(){
   $id('admin-overlay').classList.add('open');
 }
 function closeAdmin(){$id('admin-overlay').classList.remove('open')}
-function admUnlockMiniGames(){
-  if(G.miniUnlocked){alert('✅ Mini games already unlocked!');return;}
-  G.miniUnlocked=true;
-  if(G.chapter<2)G.chapter=2;
-  if(G.tokens<5)G.tokens=5;
-  $id('mini-btn').disabled=false;$id('mini-btn').textContent='🎮 Play';
-  $id('adm-ch').textContent=G.chapter;
-  updateTokenDisplay();saveGame();
-  closeAdmin();
-  alert('✅ Mini games unlocked! Chapter skipped to 2, tokens set to at least 5.');
+function _checkMiniUnlock(){
+  if(!G.miniUnlocked&&G.chapter>=2){
+    G.miniUnlocked=true;
+    $id('mini-btn').disabled=false;$id('mini-btn').textContent='🎮 Play';
+  }
 }
 function admShowPw(){$id('adm-pw').textContent=G.password.length?G.password.join(''):'No password yet this chapter';}
 function admSkip(){
   if(G.chapter>=10){alert('Already at last chapter!');return}
   closeAdmin();
   G.chapter++;
+  _checkMiniUnlock();
   $id('chapter-title').textContent=`📖 Chapter ${G.chapter} of 10`;
   saveGame();
   $id('flip-zone').style.display='none';
@@ -1780,6 +1775,7 @@ function admSkipN(){
   if(!n||n<1||n>12)return;
   closeAdmin();
   G.chapter=n;
+  _checkMiniUnlock();
   $id('chapter-title').textContent=`📖 Chapter ${G.chapter} of 10`;
   saveGame();
   doFlip(()=>{$id('battle-scene').style.display='none';$id('machine').classList.remove('visible');$id('cave-scene').style.display='flex';showPanel('q');},()=>startChapter());
