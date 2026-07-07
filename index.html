@@ -2603,11 +2603,7 @@ function sendChat(){
   const inp = $id('chat-inp');
   const text = inp.value.trim();
   if(!text || !_cCode) return;
-  let name = localStorage.getItem('mathpower-name');
-  if(!name){
-    name = (prompt('📖 Your name for chat:') || 'Scholar').substring(0,16);
-    localStorage.setItem('mathpower-name', name);
-  }
+  const name = (localStorage.getItem('mip_player_name')||'Scholar').trim().substring(0,16);
   const msg = {sid:_cSID, name:name, text:text};
   _cAppend(name, text, true);
   fetch('https://ntfy.sh/mathpower-'+_cCode, {
