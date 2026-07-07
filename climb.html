@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🧗 Climb — Reflex Mini Game</title>
+<style>
+:root{
+  --dusk1:#1a1033;
+  --dusk2:#2b1550;
+  --dusk3:#4a2a6b;
+  --bark:#5b3a24;
+  --bark-dim:#3a2417;
+  --leaf:#4caf6a;
+  --leaf-dim:#265c37;
+  --gold:#f2b84b;
+  --danger:#e0523f;
+  --cloud:rgba(255,255,255,.05);
+  --ivory:#f3ecd9;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{
+  font-family:Georgia,serif;
+  background:
+    radial-gradient(ellipse at 80% 5%, rgba(242,184,75,.15), transparent 45%),
+    radial-gradient(ellipse at 20% 100%, rgba(76,175,106,.14), transparent 55%),
+    linear-gradient(180deg,var(--dusk1),var(--dusk2) 45%,var(--dusk3));
+  color:var(--ivory);
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  overflow:hidden;
+  position:relative;
+  user-select:none;
+}
+.cloud-layer{position:fixed;inset:0;pointer-events:none;z-index:1;
+  background-image:
+    radial-gradient(ellipse 55% 20% at 15% 15%, var(--cloud), transparent),
+    radial-gradient(ellipse 60% 25% at 85% 35%, var(--cloud), transparent),
+    radial-gradient(ellipse 70% 30% at 45% 85%, var(--cloud), transparent);
+  animation:cloudDrift 26s ease-in-out infinite alternate;
+}
+@keyframes cloudDrift{0%{transform:translateX(-2%)}100%{transform:translateX(2%)}}
+#stage{width:900px;max-width:96vw;height:640px;max-height:94vh;position:relative;z-index:2;
+  border:2px solid var(--bark);border-radius:14px;
+  background:linear-gradient(180deg,#241636,#170f28);
+  box-shadow:0 0 60px rgba(242,184,75,.14), inset 0 0 80px rgba(0,0,0,.6);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+/* ══ HEADER ══ */
+#hdr{display:flex;align-items:center;justify-content:space-between;
+  padding:10px 18px;border-bottom:1px solid rgba(242,184,75,.25);
+  background:linear-gradient(180deg,rgba(60,35,20,.5),transparent);
+}
+#hdr .title{font-size:15px;letter-spacing:3px;color:var(--gold);text-shadow:0 0 10px rgba(242,184,75,.6);display:flex;align-items:center;gap:8px}
+#badges{display:flex;gap:8px;align-items:center}
+.badge{font-size:11px;color:var(--leaf);border:1px solid var(--leaf-dim);padding:3px 10px;border-radius:10px;letter-spacing:1px;background:rgba(76,175,106,.08)}
+#exit-btn{background:rgba(224,82,63,.15);border:1px solid var(--danger);color:#ffb3a5;
+  padding:5px 12px;border-radius:8px;font-size:11px;cursor:pointer;font-family:Georgia,serif;letter-spacing:1px}
+#exit-btn:hover{background:rgba(224,82,63,.3)}
+/* ══ GRIP BAR ══ */
+#grip-wrap{padding:6px 18px 0}
+#grip-lbl{font-size:10px;color:#cbb8e6;letter-spacing:2px;display:flex;justify-content:space-between;margin-bottom:3px}
+#grip-track{height:10px;border-radius:6px;background:#160f24;border:1px solid rgba(242,184,75,.3);overflow:hidden}
+#grip-fill{height:100%;background:linear-gradient(90deg,var(--danger),var(--gold),var(--leaf));width:100%;transition:width .4s ease}
+/* ══ LANE (the climb + falling hazards) ══ */
+#lane{position:relative;flex:1;margin:10px 18px 4px;border-radius:10px;
+  background:linear-gradient(180deg,#1e1330,#120b1e);
+  border:1px solid rgba(242,184,75,.18);
+  overflow:hidden;
+}
+.track{position:absolute;top:0;bottom:0;width:33.333%;border-right:1px dashed rgba(242,184,75,.12)}
+.track:last-child{border-right:none}
+#ground-line{position:absolute;left:0;right:0;bottom:64px;height:1px;background:rgba(242,184,75,.25)}
+#climber{position:absolute;bottom:18px;font-size:34px;
+  filter:drop-shadow(0 0 8px rgba(242,184,75,.5));z-index:3;
+  transition:left .16s ease, bottom .5s ease;transform:translateX(-50%)}
+#climber .climber-icon{display:inline-block;animation:climbBob 1.1s ease-in-out infinite}
+@keyframes climbBob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-5px) rotate(3deg)}}
+#climber.hit{animation:climberHit .5s ease}
+@keyframes climberHit{0%,100%{transform:translateX(-50%)}25%{transform:translateX(-65%) rotate(-8deg)}75%{transform:translateX(-35%) rotate(8deg)}}
+/* ══ ASCENT RAIL — visual height progress up the tower ══ */
+#ascent-rail{position:absolute;right:6px;top:10px;bottom:10px;width:16px;z-index:1;
+  background:linear-gradient(180deg, rgba(76,175,106,.22), rgba(91,58,36,.35));
+  border-radius:8px;border:1px solid rgba(242,184,75,.22)}
+#ascent-flag{position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-size:13px}
+#ascent-ground{position:absolute;bottom:-6px;left:50%;transform:translateX(-50%);font-size:12px}
+#ascent-marker{position:absolute;left:50%;transform:translate(-50%,-50%);font-size:13px;
+  transition:top .5s ease;filter:drop-shadow(0 0 4px rgba(242,184,75,.7))}
+.hazard{position:absolute;font-size:30px;transform:translateX(-50%);
+  filter:drop-shadow(0 0 8px rgba(224,82,63,.4));transition:top linear;z-index:2}
+.hazard.gone{animation:hazardGone .4s ease forwards}
+@keyframes hazardGone{0%{opacity:1;transform:translateX(-50%) scale(1)}100%{opacity:0;transform:translateX(-50%) scale(.4) translateY(20px)}}
+#thud{position:absolute;pointer-events:none;font-size:20px;font-weight:bold;
+  text-shadow:0 0 8px rgba(0,0,0,.8);animation:thudUp .7s ease forwards}
+@keyframes thudUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-35px)}}
+/* ══ NARRATOR / FEEDBACK ══ */
+#footer{padding:8px 18px 14px;display:flex;flex-direction:column;gap:8px;
+  background:linear-gradient(0deg,rgba(20,12,32,.7),transparent);
+  border-top:1px solid rgba(242,184,75,.2);
+}
+#narrator{font-size:12px;color:#cbb8e6;font-style:italic;text-align:center;min-height:16px}
+#feedback{text-align:center;font-size:13px;font-weight:bold;min-height:16px}
+#combo-row{display:flex;gap:6px;justify-content:center;align-items:center}
+.sdot{width:11px;height:11px;border-radius:50%;background:#241636;border:2px solid var(--bark);transition:all .3s}
+.sdot.on{background:var(--gold);border-color:var(--gold);box-shadow:0 0 8px var(--gold)}
+.slabel{font-size:9px;color:#cbb8e6;letter-spacing:1px}
+/* ══ CONTROLS ══ */
+#controls{display:flex;justify-content:center;gap:16px;margin-top:2px}
+.ctl-btn{width:64px;height:44px;border-radius:10px;border:2px solid var(--bark);
+  background:rgba(242,184,75,.1);color:var(--ivory);font-size:22px;cursor:pointer;font-family:Georgia,serif}
+.ctl-btn:active{background:rgba(242,184,75,.3);transform:scale(.95)}
+/* ══ START / END OVERLAYS ══ */
+.ov{position:absolute;inset:0;background:rgba(10,6,18,.94);z-index:10;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:20px}
+.ov h2{font-size:26px;color:var(--gold);text-shadow:0 0 16px rgba(242,184,75,.6);letter-spacing:2px}
+.ov p{font-size:12px;color:#cbb8e6;max-width:400px;line-height:1.6}
+.lvl-row{display:flex;gap:8px}
+.lvl-btn{padding:8px 18px;border:2px solid var(--bark);border-radius:8px;background:rgba(242,184,75,.08);
+  color:var(--ivory);font-size:14px;font-family:Georgia,serif;cursor:pointer;font-weight:bold}
+.lvl-btn.sel{background:var(--bark);border-color:var(--gold);color:#fff6e3;box-shadow:0 0 12px rgba(242,184,75,.4)}
+#start-btn{padding:11px 34px;background:linear-gradient(var(--gold),#c98f2c);color:#241636;
+  border:none;border-radius:22px;font-size:15px;font-weight:bold;cursor:pointer;font-family:Georgia,serif;
+  box-shadow:0 4px 16px rgba(242,184,75,.35);margin-top:4px}
+#start-btn:hover{transform:translateY(-2px)}
+#end-stats{font-size:12px;color:var(--leaf);margin-top:2px}
+</style>
+</head>
+<body>
+<div class="cloud-layer"></div>
+<div id="stage">
+  <div id="hdr">
+    <div class="title"><span>🧗</span> CLIMB</div>
+    <div id="badges">
+      <div class="badge" id="round-badge">ROUND 1 / 50</div>
+      <div class="badge" id="hazard-badge">HAZARD 1 / 10</div>
+      <button id="exit-btn" onclick="exitGame()">✕ EXIT</button>
+    </div>
+  </div>
+
+  <div id="grip-wrap">
+    <div id="grip-lbl"><span>🤚 GRIP STRENGTH</span><span id="grip-pct">100%</span></div>
+    <div id="grip-track"><div id="grip-fill"></div></div>
+  </div>
+
+  <div id="lane">
+    <div class="track"></div><div class="track"></div><div class="track"></div>
+    <div id="ground-line"></div>
+    <div id="climber"><span class="climber-icon">🧗</span></div>
+    <div id="ascent-rail">
+      <div id="ascent-flag">🚩</div>
+      <div id="ascent-marker">🧗</div>
+      <div id="ascent-ground">🌱</div>
+    </div>
+  </div>
+
+  <div id="footer">
+    <div id="narrator">Get ready — hazards will start falling from above!</div>
+    <div id="feedback"></div>
+    <div id="combo-row">
+      <span class="slabel">COMBO</span>
+      <div class="sdot" id="d1"></div><div class="sdot" id="d2"></div><div class="sdot" id="d3"></div><div class="sdot" id="d4"></div><div class="sdot" id="d5"></div>
+      <span class="slabel">→ REGEN GRIP</span>
+    </div>
+    <div id="controls">
+      <button class="ctl-btn" id="btn-left" onclick="moveLane(-1)">⬅️</button>
+      <button class="ctl-btn" id="btn-right" onclick="moveLane(1)">➡️</button>
+    </div>
+  </div>
+
+  <!-- START OVERLAY -->
+  <div class="ov" id="ov-start">
+    <h2>🧗 CLIMB</h2>
+    <p>Rocks, coconuts and branches drop down the tower in one of three tracks — left, center or right.
+    Move off the track before it lands or you'll lose grip strength. Survive 10 hazards per round across
+    50 rounds to reach the summit. Hazards fall faster every round!</p>
+    <div class="lvl-row" id="lvl-row">
+      <button class="lvl-btn" data-lvl="easy" onclick="pickDifficulty('easy',this)">Easy</button>
+      <button class="lvl-btn sel" data-lvl="normal" onclick="pickDifficulty('normal',this)">Normal</button>
+      <button class="lvl-btn" data-lvl="hard" onclick="pickDifficulty('hard',this)">Hard</button>
+    </div>
+    <p style="font-size:10px;opacity:.7">Use ← → arrow keys or the buttons below the tower to move.</p>
+    <button id="start-btn" onclick="startGame()">▶ Begin the Climb</button>
+  </div>
+
+  <!-- END OVERLAY -->
+  <div class="ov" id="ov-end" style="display:none">
+    <h2 id="end-title">🪨 SWEPT OFF THE TOWER</h2>
+    <p id="end-msg">Your grip gave out.</p>
+    <div id="end-stats"></div>
+    <button id="start-btn" onclick="restartGame()">🔄 Try Again</button>
+  </div>
+</div>
+
+<script>
+// ═══ AUDIO ═══
+let _actx=null;
+function actx(){if(!_actx)_actx=new(window.AudioContext||window.webkitAudioContext)();return _actx}
+function sfx(type){
+  try{
+    const c=actx(),now=c.currentTime;
+    const osc=c.createOscillator(),g=c.createGain();osc.connect(g);g.connect(c.destination);
+    if(type==='dodge'){osc.type='square';osc.frequency.setValueAtTime(700,now);osc.frequency.exponentialRampToValueAtTime(1100,now+.13);
+      g.gain.setValueAtTime(.2,now);g.gain.exponentialRampToValueAtTime(.001,now+.16);osc.start(now);osc.stop(now+.16);}
+    else if(type==='hurt'){osc.type='sawtooth';osc.frequency.setValueAtTime(200,now);osc.frequency.linearRampToValueAtTime(70,now+.3);
+      g.gain.setValueAtTime(.25,now);g.gain.exponentialRampToValueAtTime(.001,now+.35);osc.start(now);osc.stop(now+.35);}
+    else if(type==='wind'){osc.type='sine';osc.frequency.setValueAtTime(140,now);osc.frequency.linearRampToValueAtTime(60,now+.4);
+      g.gain.setValueAtTime(.14,now);g.gain.exponentialRampToValueAtTime(.001,now+.45);osc.start(now);osc.stop(now+.45);}
+    else if(type==='round'){const notes=[523,659];notes.forEach((f,i)=>{const o=c.createOscillator(),gn=c.createGain();o.connect(gn);gn.connect(c.destination);
+      o.type='triangle';o.frequency.value=f;gn.gain.setValueAtTime(.18,now+i*.09);gn.gain.exponentialRampToValueAtTime(.001,now+i*.09+.3);o.start(now+i*.09);o.stop(now+i*.09+.3);});}
+    else if(type==='win'){const notes=[440,554,659,880];notes.forEach((f,i)=>{const o=c.createOscillator(),gn=c.createGain();o.connect(gn);gn.connect(c.destination);
+      o.type='triangle';o.frequency.value=f;gn.gain.setValueAtTime(.22,now+i*.11);gn.gain.exponentialRampToValueAtTime(.001,now+i*.11+.45);o.start(now+i*.11);o.stop(now+i*.11+.45);});}
+    else if(type==='lose'){osc.type='sine';osc.frequency.setValueAtTime(300,now);osc.frequency.exponentialRampToValueAtTime(50,now+1.1);
+      g.gain.setValueAtTime(.22,now);g.gain.exponentialRampToValueAtTime(.001,now+1.2);osc.start(now);osc.stop(now+1.2);}
+  }catch(e){}
+}
+
+// ═══ STATE ═══
+const DIFF_MULT={easy:1.35,normal:1,hard:0.75};
+const S={
+  difficulty:'normal',
+  round:1,maxRound:50,
+  hazardInRound:1,hazardsPerRound:10,
+  grip:100,
+  combo:0,
+  score:0,
+  lane:1, // 0=left,1=mid,2=right
+  hazard:null,
+  playing:false,
+};
+const HAZARDS=['🪨','🥥','🍎','🌰','🪵'];
+
+function $id(id){return document.getElementById(id)}
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function pick(a){return a[rnd(0,a.length-1)]}
+function laneX(idx){ return (idx+0.5)*(100/3) + '%'; }
+
+// ═══ DIFFICULTY PICKER (start screen) ═══
+function pickDifficulty(d,el){
+  S.difficulty=d;
+  document.querySelectorAll('.lvl-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+// ═══ CONTROLS ═══
+function moveLane(dir){
+  if(!S.playing)return;
+  const next=S.lane+dir;
+  if(next<0||next>2)return;
+  S.lane=next;
+  positionClimber();
+}
+function positionClimber(){
+  $id('climber').style.left=laneX(S.lane);
+}
+// how far up the tower the climber has gotten, based on round/hazard progress
+function climbProgress(){
+  const progressUnits=(S.round-1)+(S.hazardInRound-1)/S.hazardsPerRound;
+  return Math.min(1, progressUnits/S.maxRound);
+}
+function climberBottomPx(){
+  const lane$=$id('lane');
+  const laneH=lane$.clientHeight;
+  const minB=18, maxB=Math.max(minB, laneH-92);
+  return minB + climbProgress()*(maxB-minB);
+}
+function positionClimberHeight(){
+  const bottom=climberBottomPx();
+  $id('climber').style.bottom=bottom+'px';
+  const rail=$id('ascent-rail');
+  const railH=rail.clientHeight;
+  const usable=Math.max(0,railH-20);
+  const frac=climbProgress();
+  $id('ascent-marker').style.top=(10+(1-frac)*usable)+'px';
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='ArrowLeft') moveLane(-1);
+  else if(e.key==='ArrowRight') moveLane(1);
+});
+
+// ═══ GAME FLOW ═══
+function startGame(){
+  S.round=1; S.hazardInRound=1; S.grip=100; S.combo=0; S.score=0; S.lane=1;
+  $id('ov-start').style.display='none';
+  $id('ov-end').style.display='none';
+  positionClimber();
+  positionClimberHeight();
+  updateGripBar(); updateBadges(); updateDots();
+  setFb('','');
+  narrate('start');
+  S.playing=true;
+  setTimeout(spawnHazard,900);
+}
+function restartGame(){
+  $id('ov-end').style.display='none';
+  $id('ov-start').style.display='flex';
+}
+function exitGame(){
+  try{
+    if(window.parent && window.parent!==window && typeof window.parent.closeMiniGameScene==='function'){
+      window.parent.closeMiniGameScene();
+      return;
+    }
+  }catch(e){}
+  S.playing=false;
+  clearHazard();
+  $id('ov-end').style.display='none';
+  $id('ov-start').style.display='flex';
+}
+function updateBadges(){
+  $id('round-badge').textContent=`ROUND ${S.round} / ${S.maxRound}`;
+  $id('hazard-badge').textContent=`HAZARD ${S.hazardInRound} / ${S.hazardsPerRound}`;
+}
+function updateGripBar(){
+  const pct=Math.max(0,S.grip);
+  $id('grip-fill').style.width=pct+'%';
+  $id('grip-pct').textContent=pct+'%';
+}
+function updateDots(){for(let i=1;i<=5;i++)$id('d'+i).classList.toggle('on',i<=S.combo)}
+function setFb(m,c){const e=$id('feedback');e.textContent=m;e.style.color=c||'#f3ecd9'}
+function narrate(k){
+  const lines={
+    start:['🌬️ The wind picks up above the canopy…'],
+    falling:['🪨 Something breaks loose above!','🌰 Debris comes crashing down!','🥥 Watch that track!','🪵 A branch snaps overhead!'],
+    dodge:['🌀 Nice dodge!','✅ Clean sidestep!','🎯 Sharp reflexes!'],
+    hit:['💥 Ouch — direct hit!','😬 That one caught you!'],
+    roundup:['⚡ Round cleared — hazards speed up!'],
+  };
+  $id('narrator').textContent=pick(lines[k]||lines.falling);
+}
+
+// speed curve: gets faster (shorter travel time) each round
+function travelMsForRound(round){
+  const base=1900 - (round-1)*28; // ms
+  const clamped=Math.max(420, base);
+  return Math.round(clamped * DIFF_MULT[S.difficulty]);
+}
+function gapMsForRound(round){
+  const base=650 - (round-1)*8;
+  return Math.max(220, base);
+}
+
+function spawnHazard(){
+  if(!S.playing)return;
+  clearHazard();
+  const lane=rnd(0,2);
+  const lane$=$id('lane');
+  const el=document.createElement('div');
+  el.className='hazard';
+  el.textContent=pick(HAZARDS);
+  el.style.left=laneX(lane);
+  el.style.top='4px';
+  lane$.appendChild(el);
+
+  const laneH=lane$.clientHeight;
+  const targetTop=laneH - climberBottomPx() - 38;
+  const travelMs=travelMsForRound(S.round);
+  el.style.transition=`top ${travelMs}ms linear`;
+  requestAnimationFrame(()=>{ el.style.top=targetTop+'px'; });
+
+  S.hazard={el,lane};
+  narrate('falling');
+  sfx('wind');
+
+  clearTimeout(S._arriveTO);
+  S._arriveTO=setTimeout(()=>{ if(S.playing) resolveHazard(); }, travelMs);
+}
+function clearHazard(){
+  if(S.hazard&&S.hazard.el&&S.hazard.el.parentNode) S.hazard.el.parentNode.removeChild(S.hazard.el);
+  S.hazard=null;
+  clearTimeout(S._arriveTO);
+}
+function resolveHazard(){
+  const h=S.hazard;
+  if(!h)return;
+  const dodged = S.lane!==h.lane;
+  if(dodged) onDodge(h); else onHit(h);
+}
+function onDodge(h){
+  sfx('dodge'); narrate('dodge');
+  S.score+=10; S.combo++;
+  updateDots();
+  setFb('✅ Dodged!', '#8fe28f');
+  h.el.classList.add('gone');
+  addThud(h.el,'+10','#4caf6a');
+  if(S.combo>=5){
+    S.combo=0; updateDots();
+    S.grip=Math.min(100,S.grip+8);
+    updateGripBar();
+    setFb('🔥 5-combo! Grip regen +8%','#f2b84b');
+  }
+  advance();
+}
+function onHit(h){
+  sfx('hurt'); narrate('hit');
+  S.combo=0; updateDots();
+  const dmg=rnd(10,17);
+  S.grip-=dmg;
+  updateGripBar();
+  setFb(`💥 Hit! Grip -${dmg}%`, '#ffb3a5');
+  addThud(h.el,'-'+dmg,'#e0523f');
+  const climber=$id('climber');
+  climber.classList.remove('hit'); void climber.offsetWidth; climber.classList.add('hit');
+  if(S.grip<=0){ clearHazard(); setTimeout(loseGame,650); return; }
+  advance();
+}
+function advance(){
+  clearHazard();
+  S.hazardInRound++;
+  if(S.hazardInRound>S.hazardsPerRound){
+    S.round++;
+    S.hazardInRound=1;
+    positionClimberHeight();
+    if(S.round>S.maxRound){ setTimeout(winGame,600); return; }
+    sfx('round'); narrate('roundup');
+    updateBadges();
+    setTimeout(spawnHazard, gapMsForRound(S.round)+300);
+    return;
+  }
+  positionClimberHeight();
+  updateBadges();
+  setTimeout(spawnHazard, gapMsForRound(S.round));
+}
+function addThud(refEl,txt,col){
+  const lane$=$id('lane');
+  const rect=refEl.getBoundingClientRect(), laneRect=lane$.getBoundingClientRect();
+  const s=document.createElement('div');
+  s.textContent=txt;
+  s.style.cssText=`position:absolute;left:${rect.left-laneRect.left+8}px;top:${rect.top-laneRect.top}px;
+    font-size:16px;font-weight:bold;color:${col};text-shadow:0 0 8px rgba(0,0,0,.8);
+    animation:thudUp .7s ease forwards;pointer-events:none;z-index:5`;
+  lane$.appendChild(s);
+  setTimeout(()=>s.remove(),750);
+}
+function winGame(){
+  S.playing=false; clearHazard();
+  S.round=S.maxRound+1; S.hazardInRound=1; positionClimberHeight();
+  sfx('win');
+  $id('end-title').textContent='🏔️ SUMMIT REACHED!';
+  $id('end-msg').textContent='You cleared all 50 rounds without losing your grip. Incredible reflexes!';
+  $id('end-stats').textContent=`Score: ${S.score} · Grip Strength: ${Math.max(0,S.grip)}%`;
+  $id('ov-end').style.display='flex';
+  try{
+    if(window.parent && window.parent!==window && typeof window.parent.postMessage==='function'){
+      window.parent.postMessage({type:'climb_game_won',score:S.score},'*');
+    }
+  }catch(e){}
+}
+function loseGame(){
+  S.playing=false; clearHazard();
+  sfx('lose');
+  $id('end-title').textContent='🪨 SWEPT OFF THE TOWER';
+  $id('end-msg').textContent=`Your grip gave out in round ${S.round} (hazard ${S.hazardInRound}/${S.hazardsPerRound}).`;
+  $id('end-stats').textContent=`Score: ${S.score}`;
+  $id('ov-end').style.display='flex';
+}
+
+// initial climber position on load
+window.addEventListener('DOMContentLoaded',()=>{ positionClimber(); positionClimberHeight(); });
+</script>
+</body>
+</html>
