@@ -842,12 +842,12 @@ body.sharp-off #pcp-img-wrap img{filter:none}
     <div id="map-subtitle">Choose a region to explore &nbsp;·&nbsp; 🪙 <span id="map-token-count">0</span> tokens (1 per level)</div>
     <button id="map-close" onclick="closeMiniMap()">✕ EXIT</button>
 
-    <!-- 4-pin map: corners -->
+    <!-- 5-pin map: 4 corners + Color Dash center -->
     <svg id="map-svg" viewBox="0 0 700 510" xmlns="http://www.w3.org/2000/svg">
-      <line x1="155" y1="200" x2="545" y2="420" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
-      <line x1="545" y1="200" x2="155" y2="420" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
-      <line x1="155" y1="200" x2="545" y2="200" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
-      <line x1="155" y1="420" x2="545" y2="420" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
+      <line x1="350" y1="310" x2="155" y2="200" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
+      <line x1="350" y1="310" x2="545" y2="200" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
+      <line x1="350" y1="310" x2="155" y2="420" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
+      <line x1="350" y1="310" x2="545" y2="420" stroke="#ffffff" stroke-width="2" stroke-dasharray="7,5" opacity=".8"/>
     </svg>
 
     <!-- 🌋 Lava — RED — top-left -->
@@ -880,8 +880,18 @@ body.sharp-off #pcp-img-wrap img{filter:none}
       <div class="pin-base"></div>
     </div>
 
-    <!-- 🎨 Color Dash — PURPLE — BOTTOM-LEFT -->
-    <div class="map-pin" style="left:155px;top:420px" onclick="playMiniGame('dash')">
+    <!-- 🌉 Broken Bridge — YELLOW — bottom-left -->
+    <div class="map-pin" style="left:155px;top:420px" onclick="playMiniGame('bridge')">
+      <div class="pin-flag" style="background:#bb8800;--fc:#bb8800;--fg:rgba(255,210,0,.7)">
+        <div class="pin-icon">🌉</div>
+        <div class="pin-fname">BROKEN BRIDGE</div>
+      </div>
+      <div class="pin-pole"></div>
+      <div class="pin-base"></div>
+    </div>
+
+    <!-- 🎨 Color Dash — PURPLE — CENTER -->
+    <div class="map-pin" style="left:350px;top:310px" onclick="playMiniGame('dash')">
       <div class="pin-flag" style="background:#6600cc;--fc:#6600cc;--fg:rgba(170,68,255,.8)">
         <div class="pin-icon">🎨</div>
         <div class="pin-fname">COLOR DASH</div>
@@ -1808,6 +1818,7 @@ function showDirs(){toggleScroll();showDialog('📖 How to Play',
 const MINI_INFO={
   lava:    {name:'🌋 Lava Ruins',     emoji:'🌋',desc:'React fast — dodge the lava!',color:'#ff6622'},
   obstacle:{name:'🏃 Obstacle Park',  emoji:'🏃',desc:'Run, jump and survive!',color:'#cc5500'},
+  bridge:  {name:'🌉 Broken Bridge',  emoji:'🌉',desc:'Repair the bridge before the Crocogon destroys it!',color:'#bb8800'},
   climb:   {name:'🧗 Climb',          emoji:'🧗',desc:'Scale the tower — react fast and reach the top!',color:'#2d7a3a'},
   dash:    {name:'🎨 Color Dash',     emoji:'🎨',desc:'Step on the right color before time runs out!',color:'#cc44ff'},
 };
@@ -1883,6 +1894,7 @@ function genMiniQ(type){
 const MINI_GAME_FILES={
   lava:'lava-ruins.html',
   obstacle:'obstacle-park.html',
+  bridge:'broken-bridge.html',
   climb:'climb.html',
   dash:'color-dash.html',
 };
