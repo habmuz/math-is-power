@@ -1393,17 +1393,17 @@ function submitAns(){
   adapt(ok);
   if(_mpCode){
     // Multiplayer: keep streak system
-    if(ok){sfx('correct');narrate('correct');G.streak++;updateDots();if(G.streak>=2){awardGear();G.streak=0;updateDots();if(G.gears.length>=3){setTimeout(goToBattlePage,1400);return}setTimeout(nextQ,1400);return}setFb('✅ Correct! Keep going!','#2d6a00');}
+    if(ok){sfx('correct');narrate('correct');G.streak++;updateDots();if(G.streak>=2){awardGear();G.streak=0;updateDots();if(G.gears.length>=3){setTimeout(goToBattlePage,1000);return}setTimeout(nextQ,1000);return}setFb('✅ Correct! Keep going!','#2d6a00');}
     else{sfx('wrong');narrate('wrong');G.streak=0;updateDots();setFb(`❌ ${smartHint(curQ,raw)}`,'#8b0000');}
-    setTimeout(nextQ,900);
+    setTimeout(nextQ,600);
   }else{
     // Solo: set of 3 questions — correct green, wrong red
     if(ok){sfx('correct');narrate('correct');G.setCorrect++;setFb('✅ Correct!','#2d6a00');}
     else{sfx('wrong');narrate('wrong');setFb(`❌ ${smartHint(curQ,raw)}`,'#8b0000');}
     G.dotResults[G.setQ]=ok?'correct':'wrong';
     G.setQ++;updateSetDots();
-    if(G.setQ>=2){const c=G.setCorrect;G.setQ=0;G.setCorrect=0;G.dotResults=['',''];setTimeout(()=>awardGearBySet(c),950);}
-    else{setTimeout(nextQ,950);}
+    if(G.setQ>=2){const c=G.setCorrect;G.setQ=0;G.setCorrect=0;G.dotResults=['',''];setTimeout(()=>awardGearBySet(c),600);}
+    else{setTimeout(nextQ,600);}
   }
 }
 
@@ -1426,7 +1426,7 @@ function awardGearBySet(correct){
   narrate('gear');updateSetDots();updateFlipStrip();
   if(_mpCode)_cSendGame({type:'gear_earned',gear});
   if(G.gears.length>=3){setTimeout(goToBattlePage,1600);}
-  else{setTimeout(nextQ,1900);}
+  else{setTimeout(nextQ,1000);}
 }
 function renderGears(){
   const row=$id('gear-row'); row.innerHTML='';
