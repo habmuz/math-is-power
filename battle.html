@@ -832,6 +832,10 @@ function _btApplyRelay(type,payload){
     renderRoster();refreshActive();refreshDragon();renderGearTray();
     updateHourglassBtn();updateCaveLight();
     if(payload.log)log(payload.log.text,payload.log.cls);
+  }else if(type==='question'){
+    G.qt=payload.type;
+    G.pq={question:payload.question,answer:payload.answer};
+    document.getElementById('q-text').textContent=payload.question;
   }else if(type==='win'){winGame();}
   else if(type==='lose'){loseGame();}
 }
@@ -1387,8 +1391,9 @@ function openQ(type){
   document.querySelectorAll('.yn-btn').forEach(b=>b.disabled=false);
   document.getElementById('q-pass-banner').style.display='none';
   document.getElementById('q-modal').classList.remove('hidden');
-  if(canAnswer)setTimeout(()=>document.getElementById('ans-inp').focus(),120);
+  setTimeout(()=>document.getElementById('ans-inp').focus(),120);
   startQTimer();
+  _btRelay('question',{type,question:qd.question,answer:qd.answer});
 }
 
 function renderQProg(){
@@ -1832,6 +1837,7 @@ function updateCaveLight(reset){
 function winGame(){
   if(G.done)return;G.done=true;
   clearInterval(_btInterval);clearInterval(_qTimerInterval);
+  document.getElementById('q-modal').classList.add('hidden');
   updateCaveLight(true);
   _btRelay('win',{});
   log('DRALIOSTER DEFEATED! Heroes WIN!','log-pwr');
@@ -1849,6 +1855,7 @@ function winGame(){
 function loseGame(){
   if(G.done)return;G.done=true;
   clearInterval(_btInterval);clearInterval(_qTimerInterval);
+  document.getElementById('q-modal').classList.add('hidden');
   updateCaveLight(true);
   _btRelay('lose',{});
   log('All heroes have fallen…','log-dmg');
